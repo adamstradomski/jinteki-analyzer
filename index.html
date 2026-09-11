@@ -129,6 +129,7 @@
   th.sorted-asc::after{ content: " \2191"; color: var(--accent); }
   td.num, th.num{ text-align:right; font-family: var(--mono); }
   td.card{ font-weight: 600; }
+  .instance-tag{ font-weight: 400; font-family: var(--mono); font-size: 10.5px; color: var(--dim); }
   td.neg{ color: var(--neg); }
   td.pos{ color: var(--accent); }
   tr:hover td{ background: var(--panel-2); }
@@ -209,7 +210,7 @@
           <div id="agendaTableWrap"></div>
         </details>
 
-        <h3>Credits gained per turn</h3>
+        <h3>Net credits gained per turn</h3>
         <div class="legend" id="creditsGainedLegend"></div>
         <div id="creditsGainedChart"></div>
         <details style="margin-top:10px;">
@@ -269,6 +270,8 @@
           <li>Start/end-of-game chat badges (GLHF / GG / TY4TG) are detected from simple keyword matches on chat lines — a message that doesn't use these words won't be picked up.</li>
           <li>Scored or stolen agendas aren't tracked as economy permanents, only in the agenda points chart.</li>
           <li>Both players are assumed to start with 5 credits and 5 cards in hand, per standard rules.</li>
+          <li>Concession is detected from a "&lt;player&gt; concedes" line — this phrasing hasn't been confirmed against a real jinteki.net concession log, so treat the CONCEDE badge as best-effort.</li>
+          <li>When a card's effect silently adds another agenda to a score area (e.g. Regenesis revealing an agenda from Archives), the points for that agenda aren't stated in the log. They're filled in from a small hardcoded table sourced from NetrunnerDB; an agenda not in that table is flagged instead of guessed.</li>
         </ul>
       </div>
     </div>
@@ -1365,6 +1368,17 @@ Corp Player scores Regenesis and gains 1 agenda point.
 Corp Player wins the game.`;
 
 const CLICK_GAIN_OVERRIDES = { 'nanomanagement': 2 };
+
+// Agenda point values, sourced from NetrunnerDB (https://netrunnerdb.com/search_new/?q=t%3Aagenda).
+// Used only to fill in points for agendas silently added to a score area by another
+// card's effect (e.g. Regenesis revealing an agenda from Archives) — the log never
+// states the point value for those, unlike a normal steal/score. This list only needs
+// to cover agendas that can be revealed this way; it is not a full agenda card list.
+const AGENDA_POINTS = {
+  'regenesis': 1,
+  'fujii asset retrieval': 3,
+  'sisyphus protocol': 2
+};
 const COLORS = ['#4fd6a8', '#d6a84f', '#d97878', '#7fb0d6'];
 const NETRUNNER_COLORS = { corp: '#5b93d9', runner: '#e2585f' };
 
@@ -1372,10 +1386,49 @@ function getChartColors(data){
   return data.players.map((p, idx) => NETRUNNER_COLORS[data.playerSide[p]] || COLORS[idx % COLORS.length]);
 }
 
+// Words that signal the start of appended ability/effect text rather than part of a
+// card name. Card names are always Title Case, so a run of lowercase words (or one of
+// these specific stop-words, lowercase) marks the boundary — used as a safety net for
+// any regex whose capture wasn't already bounded by a known stop-phrase.
+const NAME_BOUNDARY_STOPWORDS = new Set([
+  'to','gain','gains','draw','draws','trash','trashes','give','gives','place','places',
+  'choose','chooses','reveal','reveals','deal','deals','remove','removes','removed',
+  'force','forces','look','looks','search','searches','add','adds','install','installs',
+  'rez','rezzes','resolve','resolves','break','breaks','pay','pays','spend','spends',
+  'take','takes','host','hosts','shuffle','shuffles','discard','discards','score','scores',
+  'steal','steals','access','accesses','breach','breaches','approach','approaches',
+  'encounter','encounters','pass','passes','continue','continues','indicate','indicates',
+  'decline','declines','make','makes','use','uses','swap','swaps','expose','exposes',
+  'derez','derezzes','advance','advances','increase','increases','lose','loses',
+  'suffer','suffers'
+]);
+
+function extractCardNamePrefix(raw){
+  const words = raw.trim().split(/\s+/).filter(Boolean);
+  const result = [];
+  let pendingConnectors = [];
+  for (const w of words){
+    const isCapOrSymbol = /^[A-Z0-9"]/.test(w);
+    if (!isCapOrSymbol){
+      // Only a genuinely lowercase word can be ability text — a capitalized word
+      // that happens to match a stop-word (e.g. "Access" in "Public Access Plaza")
+      // is part of the name, not appended text, so it's never treated as a boundary.
+      const lower = w.toLowerCase().replace(/[^a-z]/g, '');
+      if (NAME_BOUNDARY_STOPWORDS.has(lower)) break;
+      pendingConnectors.push(w);
+    } else {
+      result.push(...pendingConnectors, w);
+      pendingConnectors = [];
+    }
+  }
+  return result.length ? result.join(' ') : raw.trim();
+}
+
 function cleanCardName(raw){
   let s = raw.replace(/\.$/, '').trim();
   s = s.replace(/\(paying\s*\d+\s*less\)/i, '').trim();
   s = s.replace(/\s+on\s+.+$/i, '').trim();
+  s = extractCardNamePrefix(s);
   return s;
 }
 
@@ -1397,7 +1450,48 @@ function extractChatBadges(lines){
   return badges;
 }
 
+// Some paste sources (e.g. copying from the jinteki.net game log panel with
+// timestamps visible) split each log entry across multiple lines:
+//   PlayerName
+//   [HH:MM:SS]
+//    rest of the message (leading space kept from the original "Name message" text)
+// or, for chat lines, the timestamp is simply inserted into the existing
+// Name / Name / message triplet. This reconstructs the normal single-line-per-entry
+// format so the rest of the parser doesn't need to know timestamps exist at all.
+function reconstructTimestampedLog(text){
+  const rawLines = text.split(/\r?\n/);
+  const hasTimestamps = rawLines.some(l => /^\s*\[\d{1,2}:\d{2}:\d{2}\]\s*$/.test(l));
+  if (!hasTimestamps) return text;
+
+  const cleaned = [];
+  for (const raw of rawLines){
+    if (/^\s*\[\d{1,2}:\d{2}:\d{2}\]\s*$/.test(raw)) continue; // drop timestamp marker lines
+    if (raw.trim() === '') continue; // drop now-blank lines
+    cleaned.push(raw);
+  }
+
+  // A line that's followed by a line starting with whitespace is a "Name" line whose
+  // message continuation got split off after the timestamp — rejoin them. A line
+  // followed by a non-indented line (e.g. the repeated name in a chat triplet) is left
+  // alone so the existing chat-badge detection still sees its normal Name/Name/message shape.
+  const merged = [];
+  let i = 0;
+  while (i < cleaned.length){
+    const line = cleaned[i];
+    const next = cleaned[i + 1];
+    if (next !== undefined && /^[ \t]+\S/.test(next)){
+      merged.push(line.trim() + next);
+      i += 2;
+    } else {
+      merged.push(line);
+      i += 1;
+    }
+  }
+  return merged.join('\n');
+}
+
 function parseLog(text){
+  text = reconstructTimestampedLog(text);
   const rawLines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
   const chatBadges = extractChatBadges(rawLines);
 
@@ -1409,16 +1503,18 @@ function parseLog(text){
   const gainDirectRe = /\buses?\s+(.+?)\s+to\s+gain\s*(\d+)?\b/;
   const gainRevealRe = /\buses?\s+(.+?)\s+to\s+reveal\s+.+?\s+and\s+gain\s*(\d+)?\b/;
   const gainAndThenRe = /\buses?\s+(.+?)\s+to\s+.+?\b(?:and|then)\s+gain\s*(\d+)?\b/;
-  const payFromRe = /\bpays\s+(\d+)\s+from\s+(?:his|her|their|the)?\s*([^.]+?)(?=\s+and\s+|\s+to\s+|\.|$)/g;
+  const payFromRe = /\bpays\s+(\d+)\s+from\s+(?:his|her|their|the)?\s*(.+?)(?=\s+and\s+|\s+to\s+|\.$|$)/g;
   const installRe = /\bto install (.+)$/;
   const installCostRe = /pays\s+(.+?)\s+to\s+install\b/;
-  const rezRe = /\bto rez (.+?)(?:\s+in\s+|\s+protecting\s+)/;
+  const rezRe = /\bto rez (.+?)\s+(?:in|protecting)\s+(.+?)(?:\s+at\s+position\s+\d+)?\.?$/;
   const rezCostRe = /pays\s+(.+?)\s+to\s+rez\b/;
   const playCostRe = /pays\s+(.+?)\s+to\s+play\s+(.+?)\.?$/;
   const useCostRe = /pays\s+(\d+)\s+to\s+use\s+(.+?)\s+to\s+/;
-  const trashRe = /\btrash(?:es)?\s+([^.]+?)(?=\s+to\s+use\s+|\s+from\s+the\s+root|\s+due\s+to|\.|$)/;
+  const trashRe = /\btrash(?:es)?\s+(.+?)(?=\s+to\s+use\s+|\s+from\s+the\s+root|\s+from\s+(?:Server\s+\d+|HQ|R&D|Archives)\b|\s+in\s+Server\s+\d+\b|\s+due\s+to|\.$|$)/;
+  const trashServerRefRe = /\b(?:from|in)\s+(Server\s+\d+|HQ|R&D|Archives)\b/i;
   const leftPlayRe = /^(.+?)\s+has left play/;
   const shuffleRemoveRe = /\buses?\s+(.+?)\s+to\s+shuffle\b/i;
+  const selfTrashRe = /\buses?\s+(.+?)\s+to\s+.*?\btrash(?:es)?\s+itself\b/i;
   const turnStartRe = /^(.+?)\s+started (?:his|her|their) turn (\d+) with (\d+)\s+and (\d+) cards? in/;
   const turnEndRe = /^(.+?)\s+is ending (?:his|her|their) turn (\d+) with (\d+)\s+and (\d+) cards? in/;
   const winRe = /^(.+?)\s+wins the game\.?/;
@@ -1427,7 +1523,10 @@ function parseLog(text){
   const trashResourceRe = /pays\s+(\d+)\s+to use Corp Basic Action Card to trash (?:a |an )?resource/i;
   const stealRe = /\bsteals\s+.+?\s+and\s+gains\s+(\d+)\s+agenda\s+points?/;
   const scoreRe = /\bscores\s+.+?\s+and\s+gains\s+(\d+)\s+agenda\s+points?/;
+  const concedeRe = /^(.+?)\s+concedes?\b/i;
+  const revealToScoreAreaRe = /\buses?\s+.+?\s+to\s+reveal\s+(.+?)\s+(?:from\s+.+?\s+)?and\s+add\s+it\s+to\s+(?:their|his|her)\s+score\s+area/i;
   const anyDrawRe = /\bdraws?\s+(\d+)\s+cards?\b/i;
+  const cardDrawRe = /\buses?\s+(.+?)\s+to\s+.*?\bdraws?\s+(\d+)\s+cards?\b/i;
   const mandatoryDrawRe = /\bmakes (?:his|her|their) mandatory start of turn draw\b/;
   const genericPaysRe1 = /\bpays\s+(.+?)\s+to\s+\S+/;
   const genericPaysRe2 = /\bpays\s+(\d+)\b/;
@@ -1468,6 +1567,7 @@ function parseLog(text){
   const totalSpent = {};
   const totalDraws = {};
   const creditsGainedByTurn = {}; // player -> {turn: amount}
+  const creditsSpentByTurn = {};  // player -> {turn: amount}
   const creditPoolByTurn = {};    // player -> {turn: amount}
   const handSizeByTurn = {};      // player -> {turn: amount}
   const drawsByTurn = {};         // player -> {turn: amount}
@@ -1479,6 +1579,7 @@ function parseLog(text){
   const cardsRezzed = {};
   const clicksGained = {};
   let winner = null;
+  let concededPlayer = null;
 
   function bump(obj, key, amt){ obj[key] = (obj[key] || 0) + amt; }
   function bumpTurn(obj, player, turn, amt){
@@ -1501,17 +1602,59 @@ function parseLog(text){
     if (!(p in currentTurn)) currentTurn[p] = 0;
   }
 
+  const rotationIndex = {}; // player::name -> next index into the open-copies list
+
   function findOpenInstance(player, name){
+    const open = [];
+    for (let i = 0; i < instances.length; i++){
+      const inst = instances[i];
+      if (inst.player === player && inst.name === name && inst.turnLeft === null) open.push(inst);
+    }
+    if (open.length === 0) return null;
+    if (open.length === 1) return open[0];
+    // Multiple simultaneous copies: the log gives no way to know which physical
+    // copy a given trigger belongs to, so rotate through the open copies in the
+    // order they entered play rather than always crediting the newest one.
+    const key = player + '::' + name;
+    const idx = (rotationIndex[key] || 0) % open.length;
+    rotationIndex[key] = idx + 1;
+    return open[idx];
+  }
+
+  function findOpenInstanceAnyPlayer(name){
     for (let i = instances.length - 1; i >= 0; i--){
+      if (instances[i].name === name && instances[i].turnLeft === null) return instances[i];
+    }
+    return null;
+  }
+
+  // For "leaves play" events (trash / shuffle-away / self-trash) there's no way to know
+  // which physical copy the log line refers to either, but the oldest copy in play is
+  // the more natural default guess (it's had the most chances to be the one discarded).
+  function findOldestOpenInstance(player, name){
+    for (let i = 0; i < instances.length; i++){
       const inst = instances[i];
       if (inst.player === player && inst.name === name && inst.turnLeft === null) return inst;
     }
     return null;
   }
 
-  function findOpenInstanceAnyPlayer(name){
-    for (let i = instances.length - 1; i >= 0; i--){
+  function findOldestOpenInstanceAnyPlayer(name){
+    for (let i = 0; i < instances.length; i++){
       if (instances[i].name === name && instances[i].turnLeft === null) return instances[i];
+    }
+    return null;
+  }
+
+  // Corp install/rez/trash lines always name a server, so when a card in play is
+  // trashed and the log states which server it came from, that identifies the exact
+  // physical copy — no need to guess. Runner cards aren't in servers, so this only
+  // ever matches corp-side instances (which is correct: runner trashes stay FIFO).
+  function findInstanceByServerAnyPlayer(name, server){
+    if (!server) return null;
+    for (let i = 0; i < instances.length; i++){
+      const inst = instances[i];
+      if (inst.name === name && inst.turnLeft === null && inst.server === server) return inst;
     }
     return null;
   }
@@ -1529,36 +1672,51 @@ function parseLog(text){
     op.perTurn.set(turn, pt);
   }
 
+  function logCardDraw(player, rawName, amount, turn){
+    const name = cleanCardName(rawName);
+    const inst = resolveInstance(player, name);
+    if (inst){
+      inst.events++;
+      inst.triggerLog.push({ turn, kind: 'draw', amount });
+    }
+  }
+
   function routeEvent(kind, player, rawName, amount, turn, rawLine){
     let name = cleanCardName(rawName);
-    if (kind === 'gain'){
-      if (/corp basic action card/i.test(name) || /runner basic action card/i.test(name)){
-        playerSide[player] = /corp basic action card/i.test(name) ? 'corp' : 'runner';
-        if (!clickCredits[player]) clickCredits[player] = { count: 0, gained: 0 };
-        clickCredits[player].count++;
-        if (amount !== null) clickCredits[player].gained += amount;
-        else flagged.push({ reason: `Click for credit (${player}) — credit amount not readable in log text`, line: rawLine });
-        return;
-      }
-      if (amount === null){
-        const clickAmt = CLICK_GAIN_OVERRIDES[name.toLowerCase()] || 1;
-        bump(clicksGained, player, clickAmt);
-        return;
-      }
+    if (kind === 'gain' && (/corp basic action card/i.test(name) || /runner basic action card/i.test(name))){
+      playerSide[player] = /corp basic action card/i.test(name) ? 'corp' : 'runner';
+      if (!clickCredits[player]) clickCredits[player] = { count: 0, gained: 0 };
+      clickCredits[player].count++;
+      if (amount !== null) clickCredits[player].gained += amount;
+      else flagged.push({ reason: `Click for credit (${player}) — credit amount not readable in log text`, line: rawLine });
+      return;
     }
 
-    let inst = findOpenInstance(player, name);
+    let inst = resolveInstance(player, name);
     if (!inst && kind === 'gain' && /:/.test(name)){
-      inst = { name, player, turnInstalled: 1, turnLeft: null, credits: 0, cost: 0, events: 0, isIdentity: true };
+      inst = { name, player, turnInstalled: 1, turnLeft: null, credits: 0, cost: 0, events: 0, isIdentity: true, triggerLog: [], server: null };
       instances.push(inst);
+      lineInstanceCache[player + '::' + name] = inst;
     }
+
+    if (kind === 'gain' && amount === null){
+      const clickAmt = CLICK_GAIN_OVERRIDES[name.toLowerCase()] || 1;
+      if (inst){
+        inst.events++;
+        inst.triggerLog.push({ turn, kind: 'click', amount: clickAmt });
+      } else {
+        bump(clicksGained, player, clickAmt);
+      }
+      return;
+    }
+
     if (inst){
       if (kind === 'gain'){
         inst.events++;
-        if (amount !== null) inst.credits += amount;
-        else flagged.push({ reason: `${name} (${player}) — credit amount not readable in log text`, line: rawLine });
+        inst.credits += amount;
+        inst.triggerLog.push({ turn, kind: 'credit', amount });
       } else {
-        if (amount !== null) inst.cost += amount;
+        inst.cost += amount;
       }
       return;
     }
@@ -1567,15 +1725,39 @@ function parseLog(text){
     let op = operations.get(key);
     if (!op){ op = { player, name, gain: 0, cost: 0, gainCount: 0, costCount: 0, turns: new Set(), perTurn: new Map() }; operations.set(key, op); }
     if (kind === 'gain'){
-      if (amount !== null){ op.gain += amount; op.gainCount++; op.turns.add(turn); addPerTurn(op, turn, amount, 0); }
-      else flagged.push({ reason: `${name} (${player}) — credit amount not readable in log text`, line: rawLine });
+      op.gain += amount; op.gainCount++; op.turns.add(turn); addPerTurn(op, turn, amount, 0);
     } else {
-      if (amount !== null){ op.cost += amount; op.costCount++; op.turns.add(turn); addPerTurn(op, turn, 0, amount); }
+      op.cost += amount; op.costCount++; op.turns.add(turn); addPerTurn(op, turn, 0, amount);
     }
+  }
+
+  let lineInstanceCache = {};
+  // When a card's own use empties its last counter (or otherwise causes it to leave
+  // play) mid-resolution, the game engine can log the trash *before* the rest of that
+  // same click's effect (e.g. Dr. Nuka Vrolyck's draw) — so the benefit line arrives
+  // right after its own instance just closed, with no newer instance to belong to.
+  // Only fall back to it within the same turn, so a genuinely later, unrelated instance
+  // (or a real re-install) never gets misattributed to old, already-closed history.
+  function findRecentlyClosedInstance(player, name, turn){
+    for (let i = instances.length - 1; i >= 0; i--){
+      const inst = instances[i];
+      if (inst.player === player && inst.name === name && inst.turnLeft === turn) return inst;
+    }
+    return null;
+  }
+
+  function resolveInstance(player, name){
+    const key = player + '::' + name;
+    if (key in lineInstanceCache) return lineInstanceCache[key];
+    let inst = findOpenInstance(player, name);
+    if (!inst) inst = findRecentlyClosedInstance(player, name, currentTurn[player] || 0);
+    lineInstanceCache[key] = inst;
+    return inst;
   }
 
   for (const line of rawLines){
     let m;
+    lineInstanceCache = {};
 
     if ((m = line.match(turnStartRe))){
       const p = m[1].trim(), t = +m[2], credits = +m[3], hand = +m[4];
@@ -1609,7 +1791,7 @@ function parseLog(text){
       if (!/^(a card in the root|ice protecting)/i.test(raw.trim())){
         const name = cleanCardName(raw);
         if (name){
-          const inst = { name, player, turnInstalled: turn, turnLeft: null, credits: 0, cost: 0, events: 0 };
+          const inst = { name, player, turnInstalled: turn, turnLeft: null, credits: 0, cost: 0, events: 0, triggerLog: [], server: null };
           const cm = line.match(installCostRe);
           if (cm) inst.cost = sumDigits(cm[1]);
           instances.push(inst);
@@ -1619,10 +1801,11 @@ function parseLog(text){
 
     if ((m = line.match(rezRe))){
       const name = cleanCardName(m[1]);
+      const server = m[2] ? m[2].trim() : null;
       bump(cardsRezzed, player, 1);
       // Each rez is a distinct physical copy — always open a new instance,
       // even if another copy of the same card is already in play unrezzed/rezzed elsewhere.
-      const inst = { name, player, turnInstalled: turn, turnLeft: null, credits: 0, cost: 0, events: 0 };
+      const inst = { name, player, turnInstalled: turn, turnLeft: null, credits: 0, cost: 0, events: 0, triggerLog: [], server };
       const cm = line.match(rezCostRe);
       if (cm) inst.cost = sumDigits(cm[1]);
       instances.push(inst);
@@ -1630,6 +1813,10 @@ function parseLog(text){
 
     if ((m = matchGain(line))){
       routeEvent('gain', player, m[1], m[2] ? +m[2] : null, turn, line);
+    }
+
+    if ((m = line.match(cardDrawRe))){
+      logCardDraw(player, m[1], +m[2], turn);
     }
 
     if ((m = line.match(playCostRe))){
@@ -1648,23 +1835,35 @@ function parseLog(text){
       routeEvent('gain', player, name, amt, turn, line);
     }
 
-    if ((m = line.match(trashRe))){
+    // "trashes X due to net/meat/core damage" discards from the Runner's grip, never
+    // from play — an installed copy of the same name should not be closed by this.
+    const isDamageDiscard = /\bdue\s+to\s+(?:net|meat|core)\s+damage\b/i.test(line);
+    if (!isDamageDiscard && (m = line.match(trashRe))){
+      const serverRef = (line.match(trashServerRefRe) || [])[1] || null;
       m[1].split(/\s+and\s+/).forEach(raw => {
         const name = cleanCardName(raw);
-        const inst = findOpenInstance(player, name) || findOpenInstanceAnyPlayer(name);
+        const inst = findInstanceByServerAnyPlayer(name, serverRef)
+          || findOldestOpenInstance(player, name)
+          || findOldestOpenInstanceAnyPlayer(name);
         if (inst) inst.turnLeft = currentTurn[inst.player] || turn;
       });
     }
 
+    if ((m = line.match(selfTrashRe))){
+      const name = cleanCardName(m[1]);
+      const inst = findOldestOpenInstance(player, name);
+      if (inst) inst.turnLeft = turn;
+    }
+
     if ((m = line.match(shuffleRemoveRe))){
       const name = cleanCardName(m[1]);
-      const inst = findOpenInstance(player, name);
+      const inst = findOldestOpenInstance(player, name);
       if (inst) inst.turnLeft = turn;
     }
 
     if ((m = line.match(leftPlayRe))){
       const name = cleanCardName(m[1]);
-      const inst = findOpenInstanceAnyPlayer(name);
+      const inst = findOldestOpenInstanceAnyPlayer(name);
       if (inst) inst.turnLeft = currentTurn[inst.player] || turn;
     }
 
@@ -1694,7 +1893,11 @@ function parseLog(text){
       bumpTurn(creditsGainedByTurn, player, turn, amt);
     }
     let payMatch = line.match(genericPaysRe1) || line.match(genericPaysRe2);
-    if (payMatch) bump(totalSpent, player, sumDigits(payMatch[1]));
+    if (payMatch){
+      const spentAmt = sumDigits(payMatch[1]);
+      bump(totalSpent, player, spentAmt);
+      bumpTurn(creditsSpentByTurn, player, turn, spentAmt);
+    }
 
     // draws
     if (mandatoryDrawRe.test(line)){
@@ -1745,6 +1948,18 @@ function parseLog(text){
     if ((m = line.match(scoreRe))){
       agendaEvents.push({ player, turn, points: +m[1] });
     }
+    if ((m = line.match(revealToScoreAreaRe))){
+      const revealedName = cleanCardName(m[1]);
+      const pts = AGENDA_POINTS[revealedName.toLowerCase()];
+      if (pts !== undefined){
+        agendaEvents.push({ player, turn, points: pts });
+      } else {
+        flagged.push({ reason: `${revealedName} (${player}) — added to score area by another card's effect, but its agenda point value isn't in the lookup table, so it's not counted in the agenda chart`, line });
+      }
+    }
+    if ((m = line.match(concedeRe))){
+      concededPlayer = m[1].trim();
+    }
   }
 
   const rounds = Object.keys(maxTurn).length ? Math.max(...Object.values(maxTurn)) : 0;
@@ -1762,9 +1977,28 @@ function parseLog(text){
       events: inst.events,
       gained: inst.credits,
       cost: inst.cost,
-      net: inst.credits - inst.cost
+      net: inst.credits - inst.cost,
+      instanceIndex: null,
+      triggerLog: (inst.triggerLog || []).slice().sort((a, b) => a.turn - b.turn)
     };
   });
+
+  // Number copies of the same card (per player) in chronological order, only when 2+ exist.
+  {
+    const countByKey = {};
+    installedRows.forEach(r => {
+      const key = r.player + '::' + r.name;
+      countByKey[key] = (countByKey[key] || 0) + 1;
+    });
+    const seenByKey = {};
+    installedRows.forEach(r => {
+      const key = r.player + '::' + r.name;
+      if (countByKey[key] > 1){
+        seenByKey[key] = (seenByKey[key] || 0) + 1;
+        r.instanceIndex = seenByKey[key];
+      }
+    });
+  }
 
   const opsRows = Array.from(operations.values()).map(op => {
     const triggered = Math.max(op.gainCount, op.costCount);
@@ -1830,6 +2064,11 @@ function parseLog(text){
   }
 
   const creditsGainedSeries = buildDeltaSeries(creditsGainedByTurn);
+  const creditsSpentSeries = buildDeltaSeries(creditsSpentByTurn);
+  const creditsNetSeries = {};
+  players.forEach(p => {
+    creditsNetSeries[p] = creditsGainedSeries[p].map((v, i) => v - (creditsSpentSeries[p][i] || 0));
+  });
   const creditPoolSeries = buildSnapshotSeries(creditPoolByTurn);
   const handSizeSeries = buildSnapshotSeries(handSizeByTurn);
   const cardsDrawnSeries = buildCumulativeSeries(drawsByTurn);
@@ -1846,11 +2085,11 @@ function parseLog(text){
   }
 
   return {
-    installedRows, opsRows, flagged, maxTurn, rounds, winner, players,
+    installedRows, opsRows, flagged, maxTurn, rounds, winner, concededPlayer, players,
     drawClicks, tagRemovals, trashResources, clickCredits, playerSide, chatBadges, agendaSeries,
     totalGained, totalSpent, totalDraws, cardsRezzed, tagsGained, runsMade, eventsPlayed,
     cardsAccessed, breachCounts, clicksGained,
-    creditsGainedSeries, creditPoolSeries, handSizeSeries, cardsDrawnSeries
+    creditsGainedSeries, creditsNetSeries, creditPoolSeries, handSizeSeries, cardsDrawnSeries
   };
 }
 
@@ -1890,6 +2129,7 @@ function renderSummary(data){
     if (b.glhf) chips.push('<span class="badge">GLHF</span>');
     if (b.gg) chips.push('<span class="badge">GG</span>');
     if (b.ty) chips.push('<span class="badge">TY4TG</span>');
+    if (data.concededPlayer === p) chips.push('<span class="badge" style="border-color:var(--neg);color:var(--neg);">CONCEDE</span>');
     const div = document.createElement('div');
     div.className = 'player-badges';
     div.innerHTML = `<strong>${p}</strong>${chips.length ? chips.join('') : '<span style="color:var(--dim);">no chat detected</span>'}`;
@@ -1913,33 +2153,64 @@ function netCell(val){
   return `<td class="num ${cls}">${fmt(val)}</td>`;
 }
 
-function renderInstalledTable(tbody, rows, hideZero){
+const expandState = {};
+
+function benefitLabel(kind){
+  return kind === 'credit' ? 'Credit' : (kind === 'click' ? 'Click' : 'Draw');
+}
+
+function renderInstalledTable(tableId, tbody, rows, hideZero){
   const filtered = hideZero ? rows.filter(r => r.gained !== 0) : rows;
   tbody.innerHTML = '';
   filtered.forEach(r => {
+    const rowKey = `${tableId}::${r.player}::${r.name}::${r.instanceIndex || 0}::${r.turnInstalled}`;
+    const expanded = !!expandState[rowKey];
     const tr = document.createElement('tr');
     tr.innerHTML =
-      `<td class="card">${r.name}</td>` +
+      `<td class="card">${r.name}${r.instanceIndex ? ` <span class="instance-tag">#${r.instanceIndex}</span>` : ''}</td>` +
       `<td class="num">${fmt(r.turnInstalled)}</td>` +
       `<td class="num">${fmt(r.turnLeftDisplay)}</td>` +
       `<td class="num">${fmt(r.turnsInPlay)}</td>` +
       `<td class="num">${fmt(r.events)}</td>` +
       `<td class="num">${fmt(r.gained)}</td>` +
       `<td class="num">${fmt(r.cost)}</td>` +
-      netCell(r.net);
+      netCell(r.net) +
+      `<td class="num"><button class="secondary" data-expand-toggle="${rowKey}">${expanded ? '\u2212' : '+'}</button></td>`;
     tbody.appendChild(tr);
+
+    if (expanded){
+      if (!r.triggerLog.length){
+        const sub = document.createElement('tr');
+        sub.style.background = 'var(--panel-2)';
+        sub.innerHTML = `<td colspan="9" style="padding-left:28px;color:var(--dim);">No individual triggers recorded for this card.</td>`;
+        tbody.appendChild(sub);
+      }
+      r.triggerLog.forEach(ev => {
+        const sub = document.createElement('tr');
+        sub.style.background = 'var(--panel-2)';
+        sub.innerHTML = `<td colspan="9" style="padding-left:28px;color:var(--dim);">Turn ${ev.turn} — ${benefitLabel(ev.kind)}: ${fmt(ev.amount)}</td>`;
+        tbody.appendChild(sub);
+      });
+    }
   });
+
+  tbody.querySelectorAll('[data-expand-toggle]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const key = btn.dataset.expandToggle;
+      expandState[key] = !expandState[key];
+      renderAllTables();
+    });
+  });
+
   return filtered.length;
 }
-
-const opsExpandState = {};
 
 function renderOpsTable(tableId, tbody, rows, hideZero){
   const filtered = hideZero ? rows.filter(r => r.totalGain !== 0) : rows;
   tbody.innerHTML = '';
   filtered.forEach((r, i) => {
     const rowKey = `${tableId}::${r.player}::${r.name}`;
-    const expanded = !!opsExpandState[rowKey];
+    const expanded = !!expandState[rowKey];
     const tr = document.createElement('tr');
     tr.innerHTML =
       `<td class="card">${r.name}</td>` +
@@ -1970,7 +2241,7 @@ function renderOpsTable(tableId, tbody, rows, hideZero){
   tbody.querySelectorAll('[data-expand-toggle]').forEach(btn => {
     btn.addEventListener('click', () => {
       const key = btn.dataset.expandToggle;
-      opsExpandState[key] = !opsExpandState[key];
+      expandState[key] = !expandState[key];
       renderAllTables();
     });
   });
@@ -2051,6 +2322,7 @@ function buildPlayerSections(data){
             <th class="num" data-key="gained">Gained</th>
             <th class="num" data-key="cost">Cost</th>
             <th class="num" data-key="net">Net credits</th>
+            <th class="num"></th>
           </tr>
         </thead>
         <tbody></tbody>
@@ -2102,7 +2374,7 @@ function renderAllTables(){
     const emptyEl = document.querySelector(`[data-empty="${tableId}"]`);
     const hideZero = hideZeroState[tableId];
     let shown;
-    if (state.type === 'installed') shown = renderInstalledTable(tbody, state.rows, hideZero);
+    if (state.type === 'installed') shown = renderInstalledTable(tableId, tbody, state.rows, hideZero);
     else shown = renderOpsTable(tableId, tbody, state.rows, hideZero);
     if (emptyEl) emptyEl.style.display = shown ? 'none' : 'block';
   });
@@ -2190,6 +2462,7 @@ function renderLineChart(ids, series, players, rounds, opts){
     if (s){ maxVal = Math.max(maxVal, ...s.slice(1)); minVal = Math.min(minVal, ...s.slice(1)); }
   });
   if (opts.yTicks) maxVal = Math.max(maxVal, ...opts.yTicks);
+  if (opts.minMaxVal !== undefined) maxVal = Math.max(maxVal, opts.minMaxVal);
   if (opts.referenceLines) maxVal = Math.max(maxVal, ...opts.referenceLines) * 1.05;
   if (maxVal === minVal) maxVal = minVal + 1;
 
@@ -2203,16 +2476,32 @@ function renderLineChart(ids, series, players, rounds, opts){
   svg += `<line x1="${padL}" y1="${padT+plotH}" x2="${padL+plotW}" y2="${padT+plotH}" stroke="var(--line)" />`;
   svg += `<text x="${padL+plotW}" y="${padT-4}" font-size="10" fill="var(--dim)" text-anchor="end">Last turn: ${rounds}</text>`;
 
-  const tickVals = opts.yTicks || (() => {
-    const arr = [];
-    for (let i = 0; i <= 4; i++) arr.push(Math.round(minVal + ((maxVal - minVal) / 4) * i));
-    return arr;
-  })();
+  let tickVals;
+  if (opts.cappedTicks){
+    // Fixed base ticks (e.g. 0..6), plus one extra tick at the actual max only if it exceeds the base range.
+    tickVals = opts.cappedTicks.slice();
+    const base = tickVals[tickVals.length - 1];
+    if (maxVal > base) tickVals.push(Math.round(maxVal));
+  } else if (opts.yStep){
+    tickVals = [];
+    const start = Math.floor(minVal / opts.yStep) * opts.yStep;
+    for (let v = start; v <= maxVal; v += opts.yStep) tickVals.push(v);
+  } else if (opts.yTicks){
+    tickVals = opts.yTicks;
+  } else {
+    tickVals = [];
+    for (let i = 0; i <= 4; i++) tickVals.push(Math.round(minVal + ((maxVal - minVal) / 4) * i));
+  }
   tickVals.forEach(v => {
     const y = yFor(v);
     svg += `<text x="${padL - 8}" y="${y + 3}" font-size="9" fill="var(--dim)" text-anchor="end">${v}</text>`;
     svg += `<line x1="${padL}" y1="${y}" x2="${padL+plotW}" y2="${y}" stroke="var(--line)" stroke-dasharray="2,3" />`;
   });
+
+  if (minVal < 0){
+    const y0 = yFor(0);
+    svg += `<line x1="${padL}" y1="${y0}" x2="${padL+plotW}" y2="${y0}" stroke="var(--dim)" stroke-width="1" />`;
+  }
 
   if (opts.referenceLines){
     opts.referenceLines.forEach(v => {
@@ -2236,10 +2525,10 @@ function renderLineChart(ids, series, players, rounds, opts){
     if (!s) return;
     if (opts.style === 'bar'){
       const barW = Math.max(2, (plotW / rounds) / (players.length + 1));
+      const y0 = yFor(0);
       for (let t = 1; t <= rounds; t++){
         const x = xFor(t) - barW * (players.length / 2) + barW * idx;
-        const y = yFor(Math.max(0, s[t]));
-        const y0 = yFor(0);
+        const y = yFor(s[t]);
         svg += `<rect x="${x}" y="${Math.min(y, y0)}" width="${barW}" height="${Math.abs(y0 - y)}" fill="${color}" />`;
       }
     } else {
@@ -2278,23 +2567,23 @@ function renderAllCharts(data){
   const colors = getChartColors(data);
   renderLineChart(
     { legend: 'agendaLegend', chart: 'agendaChart', table: 'agendaTableWrap' },
-    data.agendaSeries, data.players, data.rounds, { colors }
+    data.agendaSeries, data.players, data.rounds, { colors, yStep: 1, minMaxVal: 7 }
   );
   renderLineChart(
     { legend: 'creditsGainedLegend', chart: 'creditsGainedChart', table: 'creditsGainedTableWrap' },
-    data.creditsGainedSeries, data.players, data.rounds, { style: 'bar', colors }
+    data.creditsNetSeries, data.players, data.rounds, { style: 'bar', colors, yStep: 5 }
   );
   renderLineChart(
     { legend: 'creditPoolLegend', chart: 'creditPoolChart', table: 'creditPoolTableWrap' },
-    data.creditPoolSeries, data.players, data.rounds, { yTicks: [0, 5, 10], colors }
+    data.creditPoolSeries, data.players, data.rounds, { colors, yStep: 5 }
   );
   renderLineChart(
     { legend: 'handSizeLegend', chart: 'handSizeChart', table: 'handSizeTableWrap' },
-    data.handSizeSeries, data.players, data.rounds, { colors }
+    data.handSizeSeries, data.players, data.rounds, { colors, cappedTicks: [0, 1, 2, 3, 4, 5, 6] }
   );
   renderLineChart(
     { legend: 'cardsDrawnLegend', chart: 'cardsDrawnChart', table: 'cardsDrawnTableWrap' },
-    data.cardsDrawnSeries, data.players, data.rounds, { referenceLines: [40, 45, 49], colors }
+    data.cardsDrawnSeries, data.players, data.rounds, { colors, yStep: 10, referenceLines: [40, 45, 49] }
   );
 }
 
