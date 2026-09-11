@@ -1,0 +1,2378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Netrunner Log Parser</title>
+<style>
+  :root{
+    --bg: #0d1210;
+    --panel: #131a17;
+    --panel-2: #182019;
+    --line: #24322b;
+    --text: #d8e6dd;
+    --dim: #7f9689;
+    --accent: #4fd6a8;
+    --accent-dim: #2d7a5c;
+    --accent2: #d6a84f;
+    --warn: #d6a84f;
+    --neg: #d97878;
+    --mono: "IBM Plex Mono", "SF Mono", Menlo, Consolas, monospace;
+    --serif: "Source Serif 4", Georgia, serif;
+  }
+  *{ box-sizing: border-box; }
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family: var(--serif); line-height:1.5;
+    padding: 40px 20px 80px;
+  }
+  .wrap{ max-width: 1080px; margin: 0 auto; }
+
+  header{ margin-bottom: 28px; }
+  header .kicker{ font-family: var(--mono); font-size: 13px; color: var(--accent); letter-spacing: 0.02em; }
+  h1{ font-family: var(--serif); font-weight: 600; font-size: 32px; margin: 6px 0 8px; color: var(--text); }
+  header p{ color: var(--dim); max-width: 66ch; font-size: 15px; }
+
+  .panel{
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 20px 22px;
+    margin-bottom: 22px;
+  }
+  .panel h2{
+    font-family: var(--mono); font-size: 13px; font-weight: 600;
+    color: var(--accent); margin: 0;
+  }
+  .panel-header{
+    display:flex; justify-content:space-between; align-items:center;
+    cursor: pointer; user-select: none; margin-bottom: 14px;
+  }
+  .panel-header:hover .collapse-icon{ color: var(--text); border-color: var(--accent-dim); }
+  .collapse-icon{
+    font-family: var(--mono); font-size: 13px; color: var(--dim);
+    border: 1px solid var(--line); border-radius: 4px;
+    width: 22px; height: 22px; display:flex; align-items:center; justify-content:center;
+    flex-shrink: 0; line-height: 1;
+  }
+  .panel.collapsed .panel-body{ display: none; }
+  .panel.collapsed .panel-header{ margin-bottom: 0; }
+  .panel h3{
+    font-family: var(--mono); font-size: 12px; font-weight: 600;
+    color: var(--dim); margin: 22px 0 10px; text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .panel h3:first-of-type{ margin-top: 0; }
+
+  .player-name{
+    font-family: var(--serif); font-weight: 600; font-size: 21px;
+    color: var(--text); margin: 0 0 4px;
+  }
+  .player-sub{ font-family: var(--mono); font-size: 11.5px; color: var(--dim); margin-bottom: 14px; }
+
+  textarea{
+    width: 100%; min-height: 220px; resize: vertical;
+    background: var(--panel-2); color: var(--text);
+    border: 1px solid var(--line); border-radius: 4px;
+    font-family: var(--mono); font-size: 12.5px; padding: 12px;
+  }
+  textarea:focus{ outline: none; border-color: var(--accent-dim); }
+
+  .row{ display:flex; gap:10px; margin-top: 14px; flex-wrap: wrap; align-items:center; }
+
+  button{
+    font-family: var(--mono); font-size: 13px; cursor:pointer;
+    background: var(--accent); color: #06120d; border: none;
+    padding: 10px 18px; border-radius: 4px; font-weight: 600;
+    transition: background 0.15s ease;
+  }
+  button:hover{ background: #6ee6bc; }
+  button.secondary{
+    background: transparent; color: var(--dim);
+    border: 1px solid var(--line);
+    font-weight: 500; padding: 6px 12px; font-size: 12px;
+  }
+  button.secondary:hover{ color: var(--text); border-color: var(--accent-dim); }
+
+  .status{ font-family: var(--mono); font-size: 12.5px; color: var(--dim); }
+
+  label.toggle{
+    font-family: var(--mono); font-size: 11.5px; color: var(--dim);
+    display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+  }
+  label.toggle input{ accent-color: var(--accent); }
+  label.toggle:hover{ color: var(--text); }
+
+  .summary-grid{
+    display:grid; grid-template-columns: repeat(auto-fit, minmax(140px,1fr));
+    gap: 14px; margin-bottom: 16px;
+  }
+  .stat{ border-left: 2px solid var(--accent-dim); padding: 4px 0 4px 12px; }
+  .stat .num{ font-family: var(--mono); font-size: 24px; color: var(--accent); display:block; }
+  .stat .label{ font-family: var(--mono); font-size: 11.5px; color: var(--dim); }
+
+  .badges-row{ display:flex; gap: 24px; flex-wrap: wrap; border-top: 1px solid var(--line); padding-top: 14px; }
+  .player-badges{ font-family: var(--mono); font-size: 12.5px; display:flex; align-items:center; gap: 8px; }
+  .badge{
+    display:inline-block; font-family: var(--mono); font-size: 10.5px;
+    border: 1px solid var(--accent-dim); color: var(--accent); border-radius: 3px;
+    padding: 2px 7px; letter-spacing: 0.03em;
+  }
+
+  table{ width:100%; border-collapse: collapse; font-size: 13.5px; margin-bottom: 6px; }
+  th, td{ text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); }
+  th{
+    font-family: var(--mono); font-size: 11px; color: var(--dim);
+    font-weight: 500; cursor: pointer; user-select:none; white-space: nowrap;
+  }
+  th:hover{ color: var(--accent); }
+  th.sorted::after{ content: " \2193"; color: var(--accent); }
+  th.sorted-asc::after{ content: " \2191"; color: var(--accent); }
+  td.num, th.num{ text-align:right; font-family: var(--mono); }
+  td.card{ font-weight: 600; }
+  td.neg{ color: var(--neg); }
+  td.pos{ color: var(--accent); }
+  tr:hover td{ background: var(--panel-2); }
+  .empty-note{ color: var(--dim); font-size: 13px; font-family: var(--mono); padding: 8px 0 14px; }
+
+  .table-actions{ display:flex; justify-content: space-between; align-items:center; gap: 14px; margin-bottom: 8px; flex-wrap: wrap; }
+  .table-actions h3{ margin: 0; }
+  .table-actions .controls{ display:flex; align-items:center; gap: 12px; }
+
+  .mini-table{ margin-bottom: 4px; }
+
+  details{ margin-top: 4px; }
+  summary{
+    font-family: var(--mono); font-size: 12.5px; color: var(--dim);
+    cursor: pointer; padding: 4px 0;
+  }
+  summary:hover{ color: var(--text); }
+  .flag-line{
+    font-family: var(--mono); font-size: 11.5px; color: var(--dim);
+    padding: 6px 0; border-bottom: 1px solid var(--line);
+  }
+  .flag-line .reason{ color: var(--warn); }
+
+  .caveats{ font-size: 13px; color: var(--dim); }
+  .caveats li{ margin-bottom: 6px; }
+
+  .legend{ display:flex; gap: 18px; font-family: var(--mono); font-size: 12px; color: var(--dim); margin-bottom: 10px; }
+  .legend-item{ display:flex; align-items:center; gap: 6px; }
+  .legend-swatch{ width: 12px; height: 3px; display:inline-block; }
+
+  footer{ text-align:center; color: var(--dim); font-family: var(--mono); font-size: 11.5px; margin-top: 40px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="kicker">jinteki.net / log analysis</div>
+    <h1>Netrunner Log Parser</h1>
+    <p>Paste a game log copied from the jinteki.net chat panel. This reads it for turn count, when each card entered and left play, each card's net credit contribution, and agenda points scored over time.</p>
+  </header>
+
+  <div class="panel">
+    <div class="panel-header"><h2>1. Paste log</h2><span class="collapse-icon">−</span></div>
+    <div class="panel-body">
+      <textarea id="logInput" placeholder="Paste the full jinteki.net game log here..."></textarea>
+      <div class="row">
+        <button id="parseBtn">Parse log</button>
+        <button class="secondary" id="example1Btn">Log example 1</button>
+        <button class="secondary" id="example2Btn">Log example 2</button>
+        <button class="secondary" id="clearBtn">Clear</button>
+        <span class="status" id="statusMsg"></span>
+      </div>
+    </div>
+  </div>
+
+  <div id="results" style="display:none;">
+
+    <div class="panel">
+      <div class="panel-header"><h2>Game summary</h2><span class="collapse-icon">−</span></div>
+      <div class="panel-body">
+        <div class="summary-grid" id="summaryGrid"></div>
+        <div class="badges-row" id="badgesRow"></div>
+        <h3>Game stats</h3>
+        <div id="gameStatsWrap"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header"><h2>Charts</h2><span class="collapse-icon">−</span></div>
+      <div class="panel-body">
+
+        <h3>Agenda points over time</h3>
+        <div class="legend" id="agendaLegend"></div>
+        <div id="agendaChart"></div>
+        <details style="margin-top:10px;">
+          <summary>Turn-by-turn table</summary>
+          <div id="agendaTableWrap"></div>
+        </details>
+
+        <h3>Credits gained per turn</h3>
+        <div class="legend" id="creditsGainedLegend"></div>
+        <div id="creditsGainedChart"></div>
+        <details style="margin-top:10px;">
+          <summary>Turn-by-turn table</summary>
+          <div id="creditsGainedTableWrap"></div>
+        </details>
+
+        <h3>Credits in pool over time</h3>
+        <div class="legend" id="creditPoolLegend"></div>
+        <div id="creditPoolChart"></div>
+        <details style="margin-top:10px;">
+          <summary>Turn-by-turn table</summary>
+          <div id="creditPoolTableWrap"></div>
+        </details>
+
+        <h3>Cards in hand over time</h3>
+        <div class="legend" id="handSizeLegend"></div>
+        <div id="handSizeChart"></div>
+        <details style="margin-top:10px;">
+          <summary>Turn-by-turn table</summary>
+          <div id="handSizeTableWrap"></div>
+        </details>
+
+        <h3>Cumulative cards drawn over time</h3>
+        <p style="font-size:12.5px;color:var(--dim);margin:-6px 0 12px;">Starting deck size isn't recorded in the log, so this shows cards drawn rather than cards remaining. Dashed reference lines mark 40 / 45 / 49 cards, common deck sizes.</p>
+        <div class="legend" id="cardsDrawnLegend"></div>
+        <div id="cardsDrawnChart"></div>
+        <details style="margin-top:10px;">
+          <summary>Turn-by-turn table</summary>
+          <div id="cardsDrawnTableWrap"></div>
+        </details>
+
+      </div>
+    </div>
+
+    <div id="playerSections"></div>
+
+    <div class="panel">
+      <div class="panel-header"><h2>Flagged / unresolved lines</h2><span class="collapse-icon">−</span></div>
+      <div class="panel-body">
+        <div id="flaggedList"></div>
+        <div class="empty-note" id="flaggedEmpty" style="display:none;">Nothing flagged — every recognized credit-gain line had a readable amount.</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header"><h2>How this is read</h2><span class="collapse-icon">−</span></div>
+      <div class="panel-body">
+        <ul class="caveats">
+          <li>Corp assets and ice are installed face-down, so the log doesn't reveal a name until they're rezzed. "In play from" for those cards is the turn they were rezzed, not the (unknown) turn they were actually installed.</li>
+          <li>Credits are attributed to a card via its own "uses X to gain N" / "reveal ... and gain N" triggers, plus any "pays N from X" spend that draws from a card's hosted credits.</li>
+          <li>Cost is the credits spent to install, rez, play, or activate a card — net credits is gained minus cost.</li>
+          <li>In the operations &amp; events table, "triggered" is the larger of how many times the card generated credits and how many times it cost credits — per-trigger figures divide by that.</li>
+          <li>Identity abilities (cards with a "Faction: Title" name) are tracked as in play from turn 1 for the whole game.</li>
+          <li>Click-for-credit is grouped separately per side rather than attributed to any card. When a card's "gain" line has no number (the credit icon was stripped from the log text), it's read as a click gain rather than a credit — 1 click by default, or a hardcoded amount for specific cards known to grant more (e.g. Nanomanagement grants 2).</li>
+          <li>A card that shuffles itself away (e.g. Spin Doctor's "shuffle" ability) is treated as leaving play at that point, same as being trashed.</li>
+          <li>Start/end-of-game chat badges (GLHF / GG / TY4TG) are detected from simple keyword matches on chat lines — a message that doesn't use these words won't be picked up.</li>
+          <li>Scored or stolen agendas aren't tracked as economy permanents, only in the agenda points chart.</li>
+          <li>Both players are assumed to start with 5 credits and 5 cards in hand, per standard rules.</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>Parses locally in your browser — nothing is uploaded.</footer>
+</div>
+
+<script>
+const EXAMPLE_LOG_1 = `Corp Player started his turn 1 with 5  and 5 cards in HQ.
+Corp Player makes his mandatory start of turn draw.
+Corp Player spends  to install a card in the root of Server 1 (new remote).
+Corp Player pays 0  to rez Spin Doctor in Server 1.
+Corp Player uses Spin Doctor to draw 2 cards.
+Corp Player spends  and pays 0  to install ice protecting HQ.
+Corp Player spends  to use Corp Basic Action Card to draw 1 card.
+Corp Player discards 2 cards from HQ at end of turn.
+Corp Player is ending his turn 1 with 5  and 5 cards in HQ.
+Runner Player started his turn 1 with 5  and 5 cards in his Grip.
+Runner Player spends  and pays 1  to install Touchstone.
+Runner Player spends  and pays 3  to play Bravado.
+Runner Player approaches ice protecting HQ at position 0.
+Corp Player pays 5  to rez Starlit Knight protecting HQ at position 0.
+Runner Player encounters Starlit Knight protecting HQ at position 0.
+Runner Player indicates to fire all unbroken subroutines on Starlit Knight.
+Corp Player uses Starlit Knight to give the Runner 1 tag.
+Corp Player uses NBN: Reality Plus to gain 2 .
+Corp Player uses Starlit Knight to give the Runner 1 tag.
+Corp Player resolves 2 unbroken subroutines on Starlit Knight (" Give the Runner 1 tag" and " Give the Runner 1 tag").
+Runner Player passes Starlit Knight protecting HQ at position 0.
+Runner Player approaches HQ.
+Runner Player breaches HQ.
+Runner Player accesses Embedded Reporting from HQ.
+Runner Player steals Embedded Reporting and gains 2 agenda points.
+Runner Player uses Bravado to gain 7 .
+Runner Player spends  and pays 2  to use Runner Basic Action Card to remove 1 tag.
+Runner Player spends  and pays 2  to use Runner Basic Action Card to remove 1 tag.
+Runner Player is ending his turn 1 with 4  and 3 cards in his Grip.
+Corp Player uses Spin Doctor to shuffle 2 unseen cards into R&D.
+Corp Player started his turn 2 with 2  and 4 cards in HQ.
+Corp Player makes his mandatory start of turn draw.
+Corp Player spends  to use Corp Basic Action Card to draw 1 card.
+Corp Player spends  and pays 0  to install ice protecting R&D.
+Corp Player spends  to use Corp Basic Action Card to gain 1 .
+Corp Player is ending his turn 2 with 3  and 5 cards in HQ.
+Runner Player started his turn 2 with 4  and 3 cards in his Grip.
+Runner Player spends  to use Runner Basic Action Card to draw 1 card.
+Runner Player spends  and pays 2  to install Revolver.
+Runner Player spends  and pays 0  to play Transfer of Wealth.
+Runner Player uses Transfer of Wealth to make a run on HQ.
+Runner Player approaches Starlit Knight protecting HQ at position 0.
+Corp Player has no further action.
+Runner Player encounters Starlit Knight protecting HQ at position 0.
+Runner Player pays 2  from Touchstone and spends 2 hosted power counters from on Revolver to increase the strength of Revolver to 4 and break all 2 subroutines on Starlit Knight.
+Runner Player has no further action.
+Runner Player passes Starlit Knight protecting HQ at position 0.
+Runner Player approaches HQ.
+Runner Player uses Transfer of Wealth to take 1 tagand force the Corp to lose 3 , and then gain 6 .
+Corp Player uses NBN: Reality Plus to gain 2 .
+Runner Player breaches HQ.
+Runner Player accesses Artificial Cryptocrash from HQ.
+Runner Player steals Artificial Cryptocrash and gains 2 agenda points.
+Runner Player spends  and pays 2  to use Runner Basic Action Card to remove 1 tag.
+Runner Player is ending his turn 2 with 6  and 2 cards in his Grip.
+Corp Player started his turn 3 with 2  and 4 cards in HQ.
+Corp Player makes his mandatory start of turn draw.
+Corp Player spends  to use Corp Basic Action Card to draw 1 card.
+Corp Player spends  to install a card in the root of Server 2 (new remote).
+Corp Player spends  to install a card in the root of Server 3 (new remote).
+Corp Player is ending his turn 3 with 2  and 4 cards in HQ.
+Runner Player started his turn 3 with 6  and 2 cards in his Grip.
+Runner Player spends  to use Runner Basic Action Card to draw 1 card.
+Runner Player spends  to use Runner Basic Action Card to draw 1 card.
+Runner Player spends  to use Runner Basic Action Card to draw 1 card.
+Runner Player spends  and pays 0  to install Dr. Nuka Vrolyck.
+Runner Player is ending his turn 3 with 6  and 4 cards in his Grip.
+Corp Player pays 1  to rez Balanced Coverage in Server 2.
+Corp Player started his turn 4 with 1  and 4 cards in HQ.
+Corp Player uses Balanced Coverage to choose Asset.
+Corp Player declines to use Balanced Coverage to reveal the top card of R&D.
+Corp Player makes his mandatory start of turn draw.
+Corp Player spends  to install a card in the root of R&D.
+Corp Player spends  to use Corp Basic Action Card to gain 1 .
+Corp Player spends  to install a card in the root of Server 4 (new remote).
+Corp Player is ending his turn 4 with 2  and 3 cards in HQ.
+Runner Player started his turn 4 with 6  and 4 cards in his Grip.
+Runner Player spends  and spends 1 hosted power counter from on Dr. Nuka Vrolyck to use Dr. Nuka Vrolyck to draw 3 cards.
+Runner Player spends  and pays 5  to play Sure Gamble.
+Runner Player uses Sure Gamble to gain 9 .
+Runner Player spends  and pays 2  to install Pennyshaver.
+Runner Player spends  and pays 1  to install Cupellation.
+Runner Player is ending his turn 4 with 7  and 4 cards in his Grip.
+Corp Player started his turn 5 with 2  and 3 cards in HQ.
+Corp Player uses Balanced Coverage to choose Asset.
+Corp Player uses Balanced Coverage to reveal Wage Workers from the top of R&D and gain 2 .
+Corp Player makes his mandatory start of turn draw.
+Corp Player spends  to use Corp Basic Action Card to draw 1 card.
+Corp Player spends  to install a card in the root of Server 5 (new remote).
+Corp Player spends  to install a card in the root of Server 6 (new remote).
+Corp Player is ending his turn 5 with 4  and 3 cards in HQ.
+Runner Player started his turn 5 with 7  and 4 cards in his Grip.
+Runner Player trashes Dr. Nuka Vrolyck.
+Runner Player spends  and spends 1 hosted power counter from on Dr. Nuka Vrolyck to use Dr. Nuka Vrolyck to draw 3 cards.
+Runner Player spends  and pays 3  to play Clean Getaway.
+Runner Player uses Clean Getaway to make a run on Server 6.
+Runner Player approaches Server 6.
+Runner Player uses Clean Getaway to gain 6 .
+Runner Player uses Pennyshaver to place 1 .
+Runner Player breaches Server 6.
+Runner Player accesses Wage Workers from Server 6.
+Runner Player pays 1  from Touchstone to use Cupellation to host Wage Workers on itself.
+Runner Player spends  to make a run on Server 5.
+Runner Player approaches Server 5.
+Runner Player uses Pennyshaver to place 1 .
+Runner Player breaches Server 5.
+Runner Player accesses Federal Fundraising from Server 5.
+Runner Player pays 1  from Touchstone and 1  from his credit pool to trash Federal Fundraising from Server 5.
+Runner Player spends  and pays 2  to install Hackerspace.
+Runner Player is ending his turn 5 with 7  and 5 cards in his Grip.
+Corp Player started his turn 6 with 4  and 3 cards in HQ.
+Corp Player uses Balanced Coverage to choose Asset.
+Corp Player uses Balanced Coverage to reveal Tiered Subscription from the top of R&D and gain 2 .
+Corp Player makes his mandatory start of turn draw.
+Corp Player spends  to use Corp Basic Action Card to draw 1 card.
+Corp Player spends  to install a card in the root of Server 7 (new remote).
+Corp Player spends  and pays 2  to play Oppo Research.
+Corp Player uses Oppo Research to give the Runner 2 tags.
+Corp Player uses NBN: Reality Plus to gain 2 .
+Corp Player pays 5  to use Oppo Research to give the Runner 2 tags.
+Corp Player is ending his turn 6 with 1  and 3 cards in HQ.
+Corp Player pays 0  to rez Tiered Subscription in Server 7.
+Runner Player started his turn 6 with 7  and 5 cards in his Grip.
+Runner Player spends  and pays 5  to play Sure Gamble.
+Runner Player uses Sure Gamble to gain 9 .
+Runner Player spends  and pays 2  to use Runner Basic Action Card to remove 1 tag.
+Runner Player spends  and pays 2  to use Runner Basic Action Card to remove 1 tag.
+Runner Player spends  and pays 2  to use Runner Basic Action Card to remove 1 tag.
+Runner Player is ending his turn 6 with 5  and 4 cards in his Grip.
+Corp Player started his turn 7 with 1  and 3 cards in HQ.
+Corp Player uses Balanced Coverage to choose Asset.
+Corp Player declines to use Balanced Coverage to reveal the top card of R&D.
+Corp Player makes his mandatory start of turn draw.
+Corp Player spends  to use Corp Basic Action Card to draw 1 card.
+Corp Player spends  to install a card in the root of Server 8 (new remote).
+Corp Player spends  and pays 1  to play Retribution.
+Corp Player uses Retribution to trash Pennyshaver.
+Corp Player is ending his turn 7 with 0  and 3 cards in HQ.
+Runner Player started his turn 7 with 5  and 4 cards in his Grip.
+Runner Player spends  to use Runner Basic Action Card to draw 1 card.
+Runner Player spends  and pays 2  to use Runner Basic Action Card to remove 1 tag.
+Runner Player spends  to use Runner Basic Action Card to draw 1 card.
+Runner Player spends  and pays 0  to install Paladin Poemu (paying 1  less) on Hackerspace.
+Runner Player is ending his turn 7 with 3  and 5 cards in his Grip.
+Corp Player pays 0  to rez Federal Fundraising in Server 8.
+Corp Player started his turn 8 with 0  and 3 cards in HQ.
+Corp Player uses Federal Fundraising to rearrange the top 3 cards of R&D.
+Corp Player uses Federal Fundraising to draw 1 card.
+Corp Player uses Balanced Coverage to choose Operation.
+Corp Player uses Balanced Coverage to reveal Oppo Research from the top of R&D and gain 2 .
+Corp Player makes his mandatory start of turn draw.
+Corp Player pays 2  to rez Wage Workers in Server 3.
+Corp Player spends  to use Corp Basic Action Card to gain 1 .
+Corp Player spends  to use Corp Basic Action Card to gain 1 .
+Corp Player spends  to use Corp Basic Action Card to gain 1 .
+Corp Player uses Wage Workers to gain .
+Corp Player spends  to install a card in the root of Server 9 (new remote).
+Corp Player is ending his turn 8 with 3  and 4 cards in HQ.
+Runner Player started his turn 8 with 3  and 5 cards in his Grip.
+Runner Player uses Paladin Poemu to add 1  to itself.
+Runner Player spends  to use Runner Basic Action Card to draw 1 card.
+Runner Player spends  and pays 2  to install The Class Act (paying 1  less) on Hackerspace.
+Runner Player spends  to use Runner Basic Action Card to draw 1 card.
+Runner Player spends  and pays 0  to install Fencer Fueno.
+Runner Player is ending his turn 8 with 1  and 5 cards in his Grip.
+Runner Player uses The Class Act to draw 4 cards.
+Corp Player pays 0  to rez Spin Doctor in Server 9.
+Corp Player uses Spin Doctor to draw 2 cards.
+Corp Player started his turn 9 with 3  and 6 cards in HQ.
+Corp Player uses Federal Fundraising to rearrange the top 3 cards of R&D.
+Corp Player uses Federal Fundraising to draw 1 card.
+Corp Player uses Balanced Coverage to choose Asset.
+Corp Player uses Balanced Coverage to reveal Public Access Plaza from the top of R&D and gain 2 .
+Corp Player makes his mandatory start of turn draw.
+Corp Player spends  to install a card in the root of Server 10 (new remote).
+Corp Player spends  to install a card in the root of Server 11 (new remote).
+Corp Player spends  to install a card in the root of Server 12 (new remote).
+Corp Player uses Wage Workers to gain .
+Corp Player spends  to install a card in the root of Server 13 (new remote).
+Corp Player is ending his turn 9 with 5  and 4 cards in HQ.
+Runner Player started his turn 9 with 1  and 9 cards in his Grip.
+Runner Player uses Paladin Poemu to add 1  to itself.
+Runner Player uses Fencer Fueno to add 1  to itself.
+Corp Player pays 0  to rez Tiered Subscription in Server 11.
+Runner Player spends  and pays 2  from Paladin Poemu to install Pennyshaver.
+Runner Player spends  to use Runner Basic Action Card to gain 1 .
+Runner Player spends  to use Runner Basic Action Card to gain 1 .
+Runner Player spends  and pays 3  to play Clean Getaway.
+Runner Player uses Clean Getaway to make a run on Archives.
+Corp Player uses Tiered Subscription to gain 1 .
+Corp Player uses Tiered Subscription to gain 1 .
+Runner Player approaches Archives.
+Runner Player uses Clean Getaway to gain 6 .
+Runner Player uses Pennyshaver to place 1 .
+Runner Player breaches Archives.
+Runner Player accesses everything else in Archives.
+Runner Player is ending his turn 9 with 6  and 7 cards in his Grip.
+Corp Player pays 1  to rez Public Access Plaza in Server 12.
+Corp Player started his turn 10 with 6  and 4 cards in HQ.
+Corp Player uses Public Access Plaza to gain 1 .
+Corp Player uses Federal Fundraising to rearrange the top 3 cards of R&D.
+Corp Player declines to use Federal Fundraising to draw 1 card.
+Corp Player uses Balanced Coverage to choose Asset.
+Corp Player uses Balanced Coverage to reveal Federal Fundraising from the top of R&D and gain 2 .
+Corp Player makes his mandatory start of turn draw.
+Corp Player spends  and pays 1  to use Corp Basic Action Card to advance a card in Server 10.
+Corp Player spends  and pays 1  to use Corp Basic Action Card to advance a card in Server 10.
+Corp Player spends  and pays 1  to use Corp Basic Action Card to advance a card in Server 10.
+Corp Player uses Wage Workers to gain .
+Corp Player spends  and pays 1  to use Corp Basic Action Card to advance a card in Server 10.
+Corp Player scores Artificial Cryptocrash and gains 2 agenda points.
+Corp Player uses Artificial Cryptocrash to make the Runner lose 7 .
+Corp Player is ending his turn 10 with 5  and 5 cards in HQ.
+Runner Player started his turn 10 with 0  and 7 cards in his Grip.
+Runner Player uses Paladin Poemu to add 1  to itself.
+Runner Player uses Fencer Fueno to add 1  to itself.
+Runner Player spends  and pays 0  to install Debbie "Downtown" Moreira (paying 1  less) on Hackerspace.
+Runner Player uses Debbie "Downtown" Moreira to place 2  on itself.
+Runner Player spends  to use Pennyshaver to gain 2 .
+Runner Player spends  and pays 0  to play Transfer of Wealth.
+Runner Player uses Transfer of Wealth to make a run on HQ.
+Corp Player uses Tiered Subscription to gain 1 .
+Corp Player uses Tiered Subscription to gain 1 .
+Runner Player approaches Starlit Knight protecting HQ at position 0.
+Corp Player has no further action.
+Runner Player encounters Starlit Knight protecting HQ at position 0.
+Runner Player pays 2  from Touchstone and spends 2 hosted power counters from on Revolver to increase the strength of Revolver to 4 and break all 2 subroutines on Starlit Knight.
+Runner Player has no further action.
+Runner Player passes Starlit Knight protecting HQ at position 0.
+Runner Player will continue the run.
+Runner Player approaches HQ.
+Runner Player uses Transfer of Wealth to take 1 tagand force the Corp to lose 3 , and then gain 6 .
+Corp Player uses NBN: Reality Plus to draw 2 cards.
+Runner Player uses Pennyshaver to place 1 .
+Runner Player breaches HQ.
+Cupellation has left play: Wage Workers is trashed.
+Runner Player pays 1  from Touchstone and trashes Cupellation to use Cupellation to access 2 additional cards from HQ.
+Runner Player accesses Federal Fundraising from HQ.
+Runner Player accesses Funhouse from HQ.
+Runner Player accesses Balanced Coverage from HQ.
+Runner Player spends  and pays 2  to use Runner Basic Action Card to remove 1 tag.
+Runner Player is ending his turn 10 with 6  and 5 cards in his Grip.
+Corp Player started his turn 11 with 4  and 7 cards in HQ.
+Corp Player uses Public Access Plaza to gain 1 .
+Corp Player uses Federal Fundraising to rearrange the top 3 cards of R&D.
+Corp Player uses Federal Fundraising to draw 1 card.
+Corp Player uses Balanced Coverage to choose Asset.
+Corp Player uses Balanced Coverage to reveal Tiered Subscription from the top of R&D and gain 2 .
+Corp Player makes his mandatory start of turn draw.
+Corp Player spends  to install a card in the root of Server 14 (new remote).
+Corp Player spends  to install a card in the root of Server 15 (new remote).
+Corp Player spends  to install a card in the root of Server 16 (new remote).
+Corp Player uses Wage Workers to gain .
+Corp Player spends  to install a card in the root of Server 17 (new remote).
+Corp Player is ending his turn 11 with 7  and 5 cards in HQ.
+Runner Player started his turn 11 with 6  and 5 cards in his Grip.
+Runner Player uses Paladin Poemu to add 1  to itself.
+Runner Player uses Fencer Fueno to add 1  to itself.
+Runner Player spends  and pays 5  to play Sure Gamble.
+Runner Player uses Sure Gamble to gain 9 .
+Runner Player spends  to use Debbie "Downtown" Moreira to make a run on Server 14.
+Corp Player uses Tiered Subscription to gain 1 .
+Corp Player uses Tiered Subscription to gain 1 .
+Runner Player approaches Server 14.
+Runner Player uses Pennyshaver to place 1 .
+Runner Player breaches Server 14.
+Runner Player accesses Tomorrow's Headline from Server 14.
+Runner Player steals Tomorrow's Headline and gains 2 agenda points.
+Runner Player uses Paladin Poemu to add 1  to itself.
+Runner Player uses Fencer Fueno to add 1  to itself.
+Corp Player uses Tomorrow's Headline to give the Runner 1 tag.
+Corp Player uses NBN: Reality Plus to draw 2 cards.
+Runner Player spends  to use Debbie "Downtown" Moreira to make a run on Server 15.
+Corp Player pays 1  to rez Public Access Plaza in Server 15.
+Runner Player approaches Server 15.
+Runner Player uses Pennyshaver to place 1 .
+Runner Player breaches Server 15.
+Runner Player accesses Public Access Plaza from Server 15.
+Runner Player spends  and pays 2  to use Runner Basic Action Card to remove 1 tag.
+Runner Player is ending his turn 11 with 8  and 4 cards in his Grip.
+Runner Player uses Fencer Fueno to pay 1 .
+Runner Player uses Paladin Poemu to trash The Class Act.
+Corp Player pays 0  to rez Federal Fundraising in Server 17.
+Corp Player pays 1  to rez Balanced Coverage in Server 16.
+Corp Player started his turn 12 with 7  and 7 cards in HQ.
+Corp Player uses Public Access Plaza to gain 1 .
+Corp Player uses Public Access Plaza to gain 1 .
+Corp Player uses Federal Fundraising to rearrange the top 3 cards of R&D.
+Corp Player declines to use Federal Fundraising to draw 1 card.
+Corp Player uses Balanced Coverage to choose ICE.
+Corp Player uses Balanced Coverage to reveal Unsmiling Tsarevna from the top of R&D and gain 2 .
+Corp Player uses Balanced Coverage to choose ICE.
+Corp Player uses Balanced Coverage to reveal Unsmiling Tsarevna from the top of R&D and gain 2 .
+Corp Player declines to use Federal Fundraising to draw 1 card.
+Corp Player makes his mandatory start of turn draw.
+Corp Player spends  and pays 1  to use Corp Basic Action Card to advance a card in Server 13.
+Corp Player spends  and pays 1  to use Corp Basic Action Card to advance a card in Server 13.
+Corp Player spends  and pays 1  to use Corp Basic Action Card to advance a card in Server 13.
+Corp Player uses Wage Workers to gain .
+Corp Player scores Embedded Reporting and gains 2 agenda points.
+Corp Player spends  and pays 2  to play Oppo Research.
+Corp Player uses Oppo Research to give the Runner 2 tags.
+Corp Player uses NBN: Reality Plus to gain 2 .
+Corp Player pays 5  to use Oppo Research to give the Runner 2 tags.
+Corp Player discards 2 cards from HQ at end of turn.
+Corp Player is ending his turn 12 with 5  and 5 cards in HQ.
+Runner Player started his turn 12 with 7  and 4 cards in his Grip.
+Runner Player uses Paladin Poemu to add 1  to itself.
+Runner Player uses Fencer Fueno to add 1  to itself.
+Runner Player spends  to use Debbie "Downtown" Moreira to make a run on HQ.
+Corp Player uses Tiered Subscription to gain 1 .
+Corp Player uses Tiered Subscription to gain 1 .
+Runner Player approaches Starlit Knight protecting HQ at position 0.
+Corp Player has no further action.
+Runner Player encounters Starlit Knight protecting HQ at position 0.
+Runner Player pays 2  from Debbie "Downtown" Moreira to increase the strength of Revolver to 4.
+Runner Player spends  to make a run on Archives.
+Corp Player uses Tiered Subscription to gain 1 .
+Corp Player uses Tiered Subscription to gain 1 .
+Runner Player approaches Archives.
+Runner Player uses Pennyshaver to place 1 .
+Runner Player breaches Archives.
+Runner Player accesses everything else in Archives.
+Runner Player spends  and pays 3  from Paladin Poemu to install Curupira.
+Runner Player spends  to use Debbie "Downtown" Moreira to make a run on R&D.
+Runner Player approaches ice protecting R&D at position 0.
+Corp Player pays 2  to rez Ping protecting R&D at position 0.
+Corp Player uses Ping to give the Runner 1 tag.
+Corp Player uses NBN: Reality Plus to gain 2 .
+Runner Player encounters Ping protecting R&D at position 0.
+Runner Player uses Curupira to place 1 power counter on itself.
+Runner Player pays 1  from Debbie "Downtown" Moreira to use Curupira to break all 1 subroutines on Ping.
+Runner Player has no further action.
+Runner Player passes Ping protecting R&D at position 0.
+Runner Player will continue the run.
+Runner Player approaches R&D.
+Runner Player uses Pennyshaver to place 1 .
+Runner Player breaches R&D.
+Runner Player accesses End of the Line from R&D.
+Runner Player accesses AMAZE Amusements from the root of R&D.
+Runner Player pays 3  from Fencer Fueno to trash AMAZE Amusements from the root of R&D.
+Runner Player spends  to use Runner Basic Action Card to draw 1 card.
+Runner Player is ending his turn 12 with 7  and 4 cards in his Grip.
+Corp Player started his turn 13 with 7  and 5 cards in HQ.
+Corp Player uses Public Access Plaza to gain 1 .
+Corp Player uses Public Access Plaza to gain 1 .
+Corp Player uses Federal Fundraising to rearrange the top 3 cards of R&D.
+Corp Player uses Federal Fundraising to draw 1 card.
+Corp Player uses Balanced Coverage to choose Operation.
+Corp Player uses Balanced Coverage to reveal End of the Line from the top of R&D and gain 2 .
+Corp Player uses Balanced Coverage to choose Operation.
+Corp Player uses Balanced Coverage to reveal End of the Line from the top of R&D and gain 2 .
+Corp Player uses Federal Fundraising to rearrange the top 3 cards of R&D.
+Corp Player declines to use Federal Fundraising to draw 1 card.
+Corp Player makes his mandatory start of turn draw.
+Corp Player spends  to install a card in the root of Server 18 (new remote).
+Corp Player scores Freedom of Information and gains 2 agenda points.
+Corp Player spends  to install a card in the root of Server 19 (new remote).
+Corp Player scores Freedom of Information and gains 2 agenda points.
+Corp Player wins the game.`;
+
+const EXAMPLE_LOG_2 = `Corp Player started their turn 1 with 5  and 5 cards in HQ.
+Corp Player makes their mandatory start of turn draw.
+Corp Player spends  and pays 0  to install ice protecting HQ.
+Corp Player spends  and pays 0  to install ice protecting R&D.
+Corp Player spends  and pays 5  to play Hansei Review.
+Corp Player uses Hansei Review to gain 10 .
+Corp Player uses Hansei Review to trash a card from HQ.
+Corp Player is ending their turn 1 with 10  and 2 cards in HQ.
+Corp Player uses Jinteki: Restoring Humanity to gain 1 .
+Runner Player started his turn 1 with 5  and 5 cards in his Grip.
+Runner Player spends  to use Runner Basic Action Card to draw 1 card.
+Runner Player spends  to use Runner Basic Action Card to draw 1 card.
+Runner Player spends  and pays 3  to play Clean Getaway.
+Runner Player uses Clean Getaway to make a run on Archives.
+Runner Player will continue the run.
+Runner Player approaches Archives.
+Runner Player uses Clean Getaway to gain 6 .
+Runner Player breaches Archives.
+Runner Player accesses everything else in Archives.
+Runner Player spends  and pays 2  to install Revolver.
+Runner Player is ending his turn 1 with 6  and 5 cards in his Grip.
+Corp Player started their turn 2 with 11  and 2 cards in HQ.
+Corp Player makes their mandatory start of turn draw.
+Corp Player spends  and pays 0  to play Cultivate.
+Corp Player uses Cultivate to look at the top 5 cards of R&D.
+Corp Player uses Cultivate to trash a card from among the top 5 cards of R&D, add another one of those cards to HQ, and re-arrange the remainder.
+Corp Player spends  and pays 0  to install ice protecting Archives.
+Corp Player spends  to use Corp Basic Action Card to draw 1 card.
+Corp Player is ending their turn 2 with 11  and 3 cards in HQ.
+Corp Player uses Jinteki: Restoring Humanity to gain 1 .
+Runner Player started his turn 2 with 6  and 5 cards in his Grip.
+Runner Player spends  and pays 5  to play Sure Gamble.
+Runner Player uses Sure Gamble to gain 9 .
+Runner Player spends  and pays 3  to play Bravado.
+Runner Player approaches ice protecting HQ at position 0.
+Corp Player pays 6  to rez Attini protecting HQ at position 0.
+Runner Player encounters Attini protecting HQ at position 0.
+Runner Player indicates to fire all unbroken subroutines on Attini.
+Corp Player uses Attini to force the runner to pay 2 .
+Corp Player uses Attini to force the runner to pay 2 .
+Corp Player uses Attini to force the runner to pay 2 .
+Corp Player resolves 3 unbroken subroutines on Attini (" Do 1 net damage unless the Runner pays 2 " and " Do 1 net damage unless the Runner pays 2 " and " Do 1 net damage unless the Runner pays 2 ").
+Runner Player has no further action.
+Runner Player passes Attini protecting HQ at position 0.
+Runner Player will continue the run.
+Runner Player approaches HQ.
+Runner Player breaches HQ.
+Runner Player accesses Esca from HQ.
+Corp Player uses Esca to force the Runner to lose 1 .
+Runner Player uses Bravado to gain 7 .
+Runner Player spends  to use Runner Basic Action Card to draw 1 card.
+Runner Player spends  and pays 1  to install Mystic Maemi.
+Runner Player is ending his turn 2 with 6  and 3 cards in his Grip.
+Corp Player started their turn 3 with 6  and 3 cards in HQ.
+Corp Player makes their mandatory start of turn draw.
+Corp Player spends  and pays 0  to install ice protecting Server 1 (new remote).
+Corp Player spends  to use Corp Basic Action Card to draw 1 card.
+Corp Player spends  to use Corp Basic Action Card to draw 1 card.
+Corp Player is ending their turn 3 with 6  and 5 cards in HQ.
+Corp Player uses Jinteki: Restoring Humanity to gain 1 .
+Runner Player started his turn 3 with 6  and 3 cards in his Grip.
+Runner Player uses Mystic Maemi to add 1  to itself.
+Runner Player spends  to use Runner Basic Action Card to draw 1 card.
+Runner Player spends  to use Runner Basic Action Card to draw 1 card.
+Runner Player spends  to use Runner Basic Action Card to draw 1 card.
+Runner Player spends  and pays 1  to install Paladin Poemu.
+Runner Player is ending his turn 3 with 5  and 5 cards in his Grip.
+Corp Player started their turn 4 with 7  and 5 cards in HQ.
+Corp Player makes their mandatory start of turn draw.
+Corp Player spends  to install a card in the root of Server 1.
+Corp Player spends  to use Corp Basic Action Card to draw 1 card.
+Corp Player spends  to use Corp Basic Action Card to gain 1 .
+Corp Player discards 1 card from HQ at end of turn.
+Corp Player is ending their turn 4 with 8  and 5 cards in HQ.
+Corp Player uses Jinteki: Restoring Humanity to gain 1 .
+Runner Player started his turn 4 with 5  and 5 cards in his Grip.
+Runner Player uses Mystic Maemi to add 1  to itself.
+Runner Player uses Paladin Poemu to add 1  to itself.
+Runner Player spends  and pays 2  from Mystic Maemi and 3  from his credit pool to play Sure Gamble.
+Runner Player uses Sure Gamble to gain 9 .
+Runner Player spends  and pays 1  from Paladin Poemu and 2  from his credit pool to install Curupira.
+Runner Player spends  to make a run on Archives.
+Runner Player approaches ice protecting Archives at position 0.
+Corp Player pays 2  to rez Tatu-Bola protecting Archives at position 0.
+Runner Player encounters Tatu-Bola protecting Archives at position 0.
+Runner Player uses Curupira to place 1 power counter on itself.
+Runner Player pays 1  to use Curupira to break all 1 subroutines on Tatu-Bola.
+Runner Player has no further action.
+Runner Player passes Tatu-Bola protecting Archives at position 0.
+Corp Player uses Tatu-Bola to swap Tatu-Bola protecting Archives at position 0 with a piece of ice from HQ and gain 4 .
+Runner Player approaches Archives.
+Runner Player breaches Archives.
+Runner Player accesses Esca from Archives.
+Corp Player uses Esca to force the Runner to lose 1 .
+Runner Player accesses Esca from Archives.
+Corp Player uses Esca to force the Runner to lose 1 .
+Runner Player accesses everything else in Archives.
+Runner Player spends  to use Runner Basic Action Card to draw 1 card.
+Runner Player is ending his turn 4 with 6  and 4 cards in his Grip.
+Corp Player started their turn 5 with 11  and 5 cards in HQ.
+Corp Player makes their mandatory start of turn draw.
+Corp Player spends  to install a card in the root of Server 2 (new remote).
+Corp Player pays 0  to rez Spin Doctor in Server 2.
+Corp Player uses Spin Doctor to draw 2 cards.
+Corp Player spends  and pays 1  to install ice protecting Archives.
+Corp Player spends  to use Corp Basic Action Card to gain 1 .
+Corp Player discards 1 card from HQ at end of turn.
+Corp Player is ending their turn 5 with 11  and 5 cards in HQ.
+Corp Player uses Jinteki: Restoring Humanity to gain 1 .
+Runner Player started his turn 5 with 6  and 4 cards in his Grip.
+Runner Player uses Mystic Maemi to add 1  to itself.
+Runner Player uses Paladin Poemu to add 1  to itself.
+Runner Player spends  to use Runner Basic Action Card to draw 1 card.
+Runner Player spends  to use Runner Basic Action Card to draw 1 card.
+Runner Player spends  and pays 1  from Paladin Poemu to install Docklands Pass.
+Runner Player spends  to use Runner Basic Action Card to gain 1 .
+Runner Player is ending his turn 5 with 7  and 5 cards in his Grip.
+Corp Player started their turn 6 with 12  and 5 cards in HQ.
+Corp Player makes their mandatory start of turn draw.
+Corp Player spends  and pays 1  to use Corp Basic Action Card to advance a card in Server 1.
+Corp Player spends  and pays 1  to use Corp Basic Action Card to advance a card in Server 1.
+Corp Player spends  and pays 1  to use Corp Basic Action Card to advance a card in Server 1.
+Corp Player scores Regenesis and gains 1 agenda point.
+Corp Player uses Regenesis to reveal Fujii Asset Retrieval and add it to their score area.
+Corp Player discards 1 card from HQ at end of turn.
+Corp Player is ending their turn 6 with 9  and 5 cards in HQ.
+Corp Player uses Jinteki: Restoring Humanity to gain 1 .
+Runner Player started his turn 6 with 7  and 5 cards in his Grip.
+Runner Player uses Mystic Maemi to add 1  to itself.
+Runner Player uses Paladin Poemu to add 1  to itself.
+Runner Player spends  to use Runner Basic Action Card to draw 1 card.
+Runner Player spends  to use Runner Basic Action Card to draw 1 card.
+Runner Player spends  and pays 1  from Paladin Poemu and 2  from his credit pool to install Unity.
+Runner Player spends  to use Runner Basic Action Card to gain 1 .
+Runner Player discards Pinhole Threading from his Grip at end of turn.
+Runner Player is ending his turn 6 with 6  and 5 cards in his Grip.
+Corp Player started their turn 7 with 10  and 5 cards in HQ.
+Corp Player makes their mandatory start of turn draw.
+Corp Player spends  to install a card in the root of Server 1.
+Corp Player spends  and pays 1  to use Corp Basic Action Card to advance a card in Server 1.
+Corp Player spends  and pays 1  to install ice protecting HQ.
+Corp Player is ending their turn 7 with 8  and 4 cards in HQ.
+Corp Player uses Jinteki: Restoring Humanity to gain 1 .
+Runner Player started his turn 7 with 6  and 5 cards in his Grip.
+Runner Player uses Mystic Maemi to add 1  to itself.
+Runner Player uses Paladin Poemu to add 1  to itself.
+Runner Player spends  and pays 3  from Mystic Maemi to play Bravado.
+Runner Player approaches ice protecting R&D at position 0.
+Corp Player pays 4  to rez Phoneutria protecting R&D at position 0.
+Corp Player has no further action.
+Runner Player encounters Phoneutria protecting R&D at position 0.
+Runner Player pays 2  and spends 2 hosted power counters from on Revolver to increase the strength of Revolver to 4 and break all 2 subroutines on Phoneutria.
+Runner Player has no further action.
+Runner Player passes Phoneutria protecting R&D at position 0.
+Corp Player uses Phoneutria to give the Runner 1 tag.
+Runner Player will continue the run.
+Runner Player approaches R&D.
+Runner Player breaches R&D.
+Runner Player accesses Cultivate from R&D.
+Runner Player uses Bravado to gain 7 .
+Runner Player spends  and pays 0  to play Transfer of Wealth.
+Runner Player uses Transfer of Wealth to make a run on HQ.
+Corp Player pays 0  to rez Charlotte Caçador in Server 1.
+Corp Player spends 1 hosted advancement counter from on Charlotte Caçador and trashes Charlotte Caçador to use Charlotte Caçador to gain 3 .
+Runner Player approaches ice protecting HQ at position 1.
+Corp Player pays 7  to rez Empiricist protecting HQ at position 1.
+Corp Player has no further action.
+Runner Player encounters Empiricist protecting HQ at position 1.
+Runner Player pays 4  to increase the strength of Revolver to 7.
+Runner Player spends 1 hosted power counter from on Revolver to use Revolver to break 1 Sentry subroutine on Empiricist (" Do 1 net damage and give the Runner 1 tag").
+Runner Player spends 1 hosted power counter from on Revolver to use Revolver to break 1 Sentry subroutine on Empiricist (" Do 2 net damage").
+Runner Player indicates to fire all unbroken subroutines on Empiricist.
+Corp Player uses Empiricist to draw 1 card.
+Corp Player uses Empiricist to add 1 card in HQ to the top of R&D.
+Corp Player resolves 1 unbroken subroutine on Empiricist (" Draw 1 card. You may add 1 card from HQ to the top of R&D.").
+Runner Player passes Empiricist protecting HQ at position 1.
+Runner Player jacks out.
+Runner Player spends  to use Runner Basic Action Card to draw 1 card.
+Runner Player spends  and pays 2  to use Runner Basic Action Card to remove 1 tag.
+Runner Player is ending his turn 7 with 5  and 4 cards in his Grip.
+Corp Player started their turn 8 with 1  and 4 cards in HQ.
+Corp Player makes their mandatory start of turn draw.
+Corp Player spends  to install a card in the root of Server 1.
+Corp Player spends  to use Corp Basic Action Card to gain 1 .
+Corp Player spends  to use Corp Basic Action Card to gain 1 .
+Corp Player is ending their turn 8 with 3  and 4 cards in HQ.
+Corp Player uses Jinteki: Restoring Humanity to gain 1 .
+Runner Player started his turn 8 with 5  and 4 cards in his Grip.
+Runner Player uses Mystic Maemi to add 1  to itself.
+Runner Player uses Paladin Poemu to add 1  to itself.
+Runner Player spends  to use Runner Basic Action Card to draw 1 card.
+Runner Player spends  and pays 1  from Paladin Poemu to install Cupellation.
+Runner Player spends  and pays 1  from Mystic Maemi and 2  from his credit pool to play Bravado.
+Runner Player approaches ice protecting Server 1 at position 0.
+Corp Player has no further action.
+Runner Player passes ice protecting Server 1 at position 0.
+Runner Player approaches Server 1.
+Runner Player breaches Server 1.
+Runner Player accesses Regolith Mining License from Server 1.
+Runner Player pays 3  to trash Regolith Mining License from Server 1.
+Runner Player uses Bravado to gain 7 .
+Runner Player spends  to use Runner Basic Action Card to gain 1 .
+Runner Player is ending his turn 8 with 8  and 3 cards in his Grip.
+Corp Player started their turn 9 with 4  and 4 cards in HQ.
+Corp Player makes their mandatory start of turn draw.
+Corp Player spends  and pays 0  to play Cultivate.
+Corp Player uses Cultivate to look at the top 5 cards of R&D.
+Corp Player uses Cultivate to trash a card from among the top 5 cards of R&D, add another one of those cards to HQ, and re-arrange the remainder.
+Corp Player spends  and pays 1  to install ice protecting Server 1.
+Corp Player spends  to use Corp Basic Action Card to gain 1 .
+Corp Player is ending their turn 9 with 4  and 4 cards in HQ.
+Corp Player uses Jinteki: Restoring Humanity to gain 1 .
+Runner Player started his turn 9 with 8  and 3 cards in his Grip.
+Runner Player uses Mystic Maemi to add 1  to itself.
+Runner Player uses Paladin Poemu to add 1  to itself.
+Runner Player spends  to use Runner Basic Action Card to draw 1 card.
+Runner Player spends  to use Runner Basic Action Card to draw 1 card.
+Runner Player spends  to use Runner Basic Action Card to draw 1 card.
+Runner Player spends  and pays 1  from Paladin Poemu to install Side Hustle.
+Runner Player is ending his turn 9 with 8  and 5 cards in his Grip.
+Corp Player started their turn 10 with 5  and 4 cards in HQ.
+Corp Player makes their mandatory start of turn draw.
+Corp Player spends  and pays 2  to install ice protecting HQ.
+Corp Player spends  to use Corp Basic Action Card to gain 1 .
+Corp Player spends  to use Corp Basic Action Card to gain 1 .
+Corp Player is ending their turn 10 with 5  and 4 cards in HQ.
+Corp Player uses Jinteki: Restoring Humanity to gain 1 .
+Runner Player started his turn 10 with 8  and 5 cards in his Grip.
+Runner Player uses Mystic Maemi to add 1  to itself.
+Runner Player uses Paladin Poemu to add 1  to itself.
+Runner Player spends  to use Runner Basic Action Card to draw 1 card.
+Runner Player spends  to use Runner Basic Action Card to draw 1 card.
+Runner Player spends  and pays 2  from Paladin Poemu to install Pennyshaver.
+Runner Player spends  and pays 2  to install Cezve.
+! Cezve - Recurring credits usage not restricted
+Runner Player is ending his turn 10 with 6  and 5 cards in his Grip.
+Corp Player started their turn 11 with 6  and 4 cards in HQ.
+Corp Player makes their mandatory start of turn draw.
+Corp Player spends  and pays 1  to install ice protecting R&D.
+Corp Player spends  to use Corp Basic Action Card to gain 1 .
+Corp Player spends  to use Corp Basic Action Card to gain 1 .
+Corp Player is ending their turn 11 with 7  and 4 cards in HQ.
+Corp Player uses Jinteki: Restoring Humanity to gain 1 .
+Runner Player started his turn 11 with 6  and 5 cards in his Grip.
+Runner Player uses Mystic Maemi to add 1  to itself.
+Runner Player uses Paladin Poemu to add 1  to itself.
+Runner Player spends  to use Runner Basic Action Card to draw 1 card.
+Runner Player spends  to make a run on Server 2.
+Corp Player uses Spin Doctor to shuffle Regolith Mining License and 1 unseen card into R&D.
+Runner Player spends  and pays 3  from Mystic Maemi and 2  from his credit pool to play Sure Gamble.
+Runner Player uses Sure Gamble to gain 9 .
+Runner Player spends  and pays 3  to install The Class Act.
+Runner Player is ending his turn 11 with 10  and 4 cards in his Grip.
+Runner Player uses The Class Act to draw 4 cards.
+Corp Player started their turn 12 with 8  and 4 cards in HQ.
+Corp Player makes their mandatory start of turn draw.
+Corp Player spends  to use Corp Basic Action Card to draw 1 card.
+Corp Player spends  to install a card in the root of Server 1.
+Corp Player spends  to use Corp Basic Action Card to gain 1 .
+Corp Player is ending their turn 12 with 9  and 5 cards in HQ.
+Corp Player uses Jinteki: Restoring Humanity to gain 1 .
+Runner Player started his turn 12 with 10  and 8 cards in his Grip.
+Runner Player uses Mystic Maemi to add 1  to itself.
+Runner Player uses Paladin Poemu to add 1  to itself.
+Runner Player spends  and pays 1  from Paladin Poemu to install Side Hustle.
+Runner Player uses Paladin Poemu to take 1 .
+Runner Player spends  and pays 1  from Mystic Maemi and 2  from his credit pool to play Clean Getaway.
+Runner Player uses Clean Getaway to make a run on R&D.
+Runner Player approaches ice protecting R&D at position 1.
+Runner Player passes ice protecting R&D at position 1.
+Runner Player approaches Phoneutria protecting R&D at position 0.
+Corp Player has no further action.
+Runner Player encounters Phoneutria protecting R&D at position 0.
+Runner Player pays 2  from Cezve and spends 2 hosted power counters from on Revolver to increase the strength of Revolver to 4 and break all 2 subroutines on Phoneutria.
+Runner Player has no further action.
+Runner Player passes Phoneutria protecting R&D at position 0.
+Corp Player uses Phoneutria to give the Runner 1 tag.
+Runner Player will continue the run.
+Runner Player approaches R&D.
+Runner Player uses Clean Getaway to gain 6 .
+Runner Player uses Pennyshaver to place 1 .
+Runner Player breaches R&D.
+Runner Player accesses Tatu-Bola from R&D.
+Runner Player spends  and pays 3  to install Carmen.
+Runner Player spends  and pays 2  to use Runner Basic Action Card to remove 1 tag.
+Runner Player is ending his turn 12 with 10  and 5 cards in his Grip.
+Corp Player started their turn 13 with 10  and 5 cards in HQ.
+Corp Player makes their mandatory start of turn draw.
+Corp Player spends  to use Corp Basic Action Card to draw 1 card.
+Corp Player spends  to install a card in the root of Server 1.
+Corp Player trashes a card in Server 1.
+Corp Player spends  and pays 1  to use Corp Basic Action Card to advance a card in Server 1.
+Corp Player discards 1 card from HQ at end of turn.
+Corp Player is ending their turn 13 with 9  and 5 cards in HQ.
+Corp Player uses Jinteki: Restoring Humanity to gain 1 .
+Runner Player started his turn 13 with 10  and 5 cards in his Grip.
+Runner Player uses Mystic Maemi to add 1  to itself.
+Runner Player uses Paladin Poemu to add 1  to itself.
+Runner Player spends  and pays 1  from Mystic Maemi to play Pinhole Threading.
+Runner Player uses Pinhole Threading to make a run on Archives.
+Runner Player approaches ice protecting Archives at position 1.
+Runner Player passes ice protecting Archives at position 1.
+Runner Player approaches ice protecting Archives at position 0.
+Corp Player pays 6  to rez Attini protecting Archives at position 0.
+Corp Player has no further action.
+Runner Player encounters Attini protecting Archives at position 0.
+Runner Player pays 2  from Cezve and 3  from his credit pool to increase the strength of Unity to 7 and break all 3 subroutines on Attini.
+Runner Player has no further action.
+Runner Player passes Attini protecting Archives at position 0.
+Runner Player will continue the run.
+Corp Player pays 0  to rez Charlotte Caçador in Server 1.
+Corp Player spends 1 hosted advancement counter from on Charlotte Caçador and trashes Charlotte Caçador to use Charlotte Caçador to gain 3 .
+Runner Player approaches Archives.
+Runner Player uses Pennyshaver to place 1 .
+Runner Player uses the replacement effect from Pinhole Threading.
+Runner Player spends  to use Runner Basic Action Card to draw 1 card.
+Runner Player uses The Class Act to add the second card on the top of the stack (Touchstone) to the bottom.
+Runner Player spends  to use Pennyshaver to gain 3 .
+Runner Player spends  and pays 1  from Paladin Poemu to install Open Market.
+Runner Player is ending his turn 13 with 10  and 4 cards in his Grip.
+Corp Player started their turn 14 with 7  and 5 cards in HQ.
+Corp Player makes their mandatory start of turn draw.
+Corp Player spends  to install a card in the root of Server 1.
+Corp Player spends  to use Corp Basic Action Card to gain 1 .
+Corp Player spends  to use Corp Basic Action Card to gain 1 .
+Corp Player is ending their turn 14 with 9  and 5 cards in HQ.
+Corp Player uses Jinteki: Restoring Humanity to gain 1 .
+Runner Player started his turn 14 with 10  and 4 cards in his Grip.
+Runner Player uses Mystic Maemi to add 1  to itself.
+Runner Player uses Paladin Poemu to add 1  to itself.
+Runner Player uses Open Market to gain 1 .
+Runner Player spends  to use Runner Basic Action Card to draw 1 card.
+Runner Player uses The Class Act to add the first card on the top of the stack (Pennyshaver) to the bottom.
+Runner Player spends  to make a run on R&D.
+Runner Player approaches ice protecting R&D at position 1.
+Corp Player has no further action.
+Runner Player passes ice protecting R&D at position 1.
+Runner Player jacks out.
+Runner Player spends  and pays 0  to play Transfer of Wealth.
+Runner Player uses Transfer of Wealth to make a run on HQ.
+Runner Player uses Side Hustle to gain 6 , draw 1 card, and trash itself.
+Runner Player approaches ice protecting HQ at position 2.
+Corp Player pays 6  to rez Boto protecting HQ at position 2.
+Corp Player has no further action.
+Runner Player encounters Boto protecting HQ at position 2.
+Runner Player uses Curupira to place 1 power counter on itself.
+Runner Player pays 2  from Cezve and 6  from his credit pool to increase the strength of Curupira to 6 and break all 3 subroutines on Boto.
+Runner Player has no further action.
+Runner Player passes Boto protecting HQ at position 2.
+Runner Player approaches Empiricist protecting HQ at position 1.
+Corp Player has no further action.
+Runner Player encounters Empiricist protecting HQ at position 1.
+Runner Player pays 5  to increase the strength of Carmen to 5 and break all 3 subroutines on Empiricist.
+Runner Player has no further action.
+Runner Player passes Empiricist protecting HQ at position 1.
+Runner Player approaches Attini protecting HQ at position 0.
+Runner Player encounters Attini protecting HQ at position 0.
+Runner Player pays 5  to increase the strength of Unity to 7 and break all 3 subroutines on Attini.
+Runner Player has no further action.
+Runner Player passes Attini protecting HQ at position 0.
+Runner Player will continue the run.
+Corp Player pays 3  to rez La Costa Grid in Server 1.
+Runner Player approaches HQ.
+Runner Player uses Transfer of Wealth to take 1 tagand force the Corp to lose 1 , and then gain 2 .
+Runner Player uses Pennyshaver to place 1 .
+Runner Player breaches HQ.
+Runner Player uses Docklands Pass to access 1 additional card from HQ.
+Runner Player accesses Fujii Asset Retrieval from HQ.
+Runner Player steals Fujii Asset Retrieval and gains 3 agenda points.
+Runner Player uses Mystic Maemi to add 1  to itself.
+Runner Player uses Paladin Poemu to add 1  to itself.
+Corp Player uses Fujii Asset Retrieval to do 2 net damage.
+Corp Player trashes Curupira and Pennyshaver due to net damage.
+Runner Player accesses Tatu-Bola from HQ.
+Runner Player pays 1  to use Cupellation to host Tatu-Bola on itself.
+Runner Player spends  and pays 2  to use Runner Basic Action Card to remove 1 tag.
+Runner Player is ending his turn 14 with 0  and 3 cards in his Grip.
+Corp Player started their turn 15 with 0  and 3 cards in HQ.
+Corp Player uses La Costa Grid to place 1 advancement counter on La Costa Grid in Server 1.
+Corp Player makes their mandatory start of turn draw.
+Corp Player spends  to install a card in the root of Server 1.
+Corp Player spends  to use Corp Basic Action Card to gain 1 .
+Corp Player spends  and pays 1  to use Corp Basic Action Card to advance a card in Server 1.
+Corp Player is ending their turn 15 with 0  and 3 cards in HQ.
+Corp Player uses Jinteki: Restoring Humanity to gain 1 .
+Runner Player started his turn 15 with 0  and 3 cards in his Grip.
+Runner Player uses Mystic Maemi to add 1  to itself.
+Runner Player uses Paladin Poemu to add 1  to itself.
+Runner Player uses Open Market to gain 1 .
+Runner Player spends  to use Runner Basic Action Card to draw 1 card.
+Runner Player uses The Class Act to add the first card on the top of the stack (Cezve) to the bottom.
+Runner Player spends  to make a run on Server 1.
+Runner Player uses Side Hustle to gain 6 , draw 1 card, and trash itself.
+Runner Player approaches ice protecting Server 1 at position 1.
+Runner Player passes ice protecting Server 1 at position 1.
+Runner Player will continue the run.
+Runner Player approaches ice protecting Server 1 at position 0.
+Corp Player has no further action.
+Runner Player passes ice protecting Server 1 at position 0.
+Runner Player will continue the run.
+Corp Player pays 0  to rez Charlotte Caçador in Server 1.
+Corp Player spends 1 hosted advancement counter from on Charlotte Caçador and trashes Charlotte Caçador to use Charlotte Caçador to gain 3 .
+Runner Player approaches Server 1.
+Runner Player uses Pennyshaver to place 1 .
+Runner Player breaches Server 1.
+Runner Player accesses La Costa Grid from Server 1.
+Runner Player spends  and pays 1  from Paladin Poemu to install Side Hustle.
+Runner Player spends  to use Runner Basic Action Card to draw 1 card.
+Runner Player is ending his turn 15 with 7  and 5 cards in his Grip.
+Runner Player uses Mystic Maemi to trash itself.
+Corp Player started their turn 16 with 4  and 3 cards in HQ.
+Corp Player uses La Costa Grid to place 1 advancement counter on La Costa Grid in Server 1.
+Corp Player makes their mandatory start of turn draw.
+Corp Player spends  to install a card in the root of Server 1.
+Corp Player spends  to use Corp Basic Action Card to gain 1 .
+Corp Player spends  to use Corp Basic Action Card to gain 1 .
+Corp Player is ending their turn 16 with 6  and 3 cards in HQ.
+Corp Player uses Jinteki: Restoring Humanity to gain 1 .
+Runner Player started his turn 16 with 7  and 5 cards in his Grip.
+Runner Player uses Paladin Poemu to add 1  to itself.
+Runner Player uses Open Market to gain 1 .
+Runner Player spends  to use Runner Basic Action Card to draw 1 card.
+Runner Player uses The Class Act to add the second card on the top of the stack (Dr. Nuka Vrolyck) to the bottom.
+Runner Player spends  and pays 0  to install Debbie "Downtown" Moreira.
+Runner Player uses Debbie "Downtown" Moreira to place 2  on itself.
+Runner Player spends  to use Debbie "Downtown" Moreira to make a run on Server 1.
+Runner Player approaches ice protecting Server 1 at position 1.
+Corp Player pays 6  to rez Attini protecting Server 1 at position 1.
+Runner Player encounters Attini protecting Server 1 at position 1.
+Runner Player pays 2  from Debbie "Downtown" Moreira and 3  from his credit pool to increase the strength of Unity to 7 and break all 3 subroutines on Attini.
+Runner Player passes Attini protecting Server 1 at position 1.
+Runner Player approaches ice protecting Server 1 at position 0.
+Runner Player passes ice protecting Server 1 at position 0.
+Runner Player will continue the run.
+Runner Player approaches Server 1.
+Runner Player uses Pennyshaver to place 1 .
+Runner Player breaches Server 1.
+Runner Player accesses Let Them Dream from Server 1.
+Runner Player steals Let Them Dream and gains 1 agenda point.
+Runner Player uses Paladin Poemu to add 1  to itself.
+Runner Player accesses La Costa Grid from Server 1.
+Runner Player pays 4  to trash La Costa Grid from Server 1.
+Runner Player spends  and pays 1  from Open Market to install Dr. Nuka Vrolyck.
+Runner Player is ending his turn 16 with 1  and 4 cards in his Grip.
+Runner Player uses Paladin Poemu to trash Debbie "Downtown" Moreira.
+Corp Player started their turn 17 with 1  and 3 cards in HQ.
+Corp Player makes their mandatory start of turn draw.
+Corp Player spends  to install a card in the root of Server 1.
+Corp Player spends  to use Corp Basic Action Card to gain 1 .
+Corp Player spends  to use Corp Basic Action Card to gain 1 .
+Corp Player is ending their turn 17 with 3  and 3 cards in HQ.
+Corp Player uses Jinteki: Restoring Humanity to gain 1 .
+Runner Player started his turn 17 with 1  and 4 cards in his Grip.
+Runner Player uses Paladin Poemu to add 1  to itself.
+Runner Player uses Open Market to gain 1 .
+Runner Player spends  and spends 1 hosted power counter from on Dr. Nuka Vrolyck to use Dr. Nuka Vrolyck to draw 3 cards.
+Runner Player uses The Class Act to add the third card on the top of the stack (Shibboleth) to the bottom.
+Runner Player spends  to make a run on R&D.
+Runner Player approaches ice protecting R&D at position 1.
+Runner Player passes ice protecting R&D at position 1.
+Runner Player approaches Phoneutria protecting R&D at position 0.
+Corp Player has no further action.
+Runner Player encounters Phoneutria protecting R&D at position 0.
+Runner Player pays 2  from Cezve to use Carmen to break all 2 subroutines on Phoneutria.
+Runner Player has no further action.
+Runner Player passes Phoneutria protecting R&D at position 0.
+Corp Player uses Phoneutria to give the Runner 1 tag.
+Runner Player will continue the run.
+Corp Player pays 0  to rez Spin Doctor in Server 1.
+Corp Player uses Spin Doctor to draw 2 cards.
+Corp Player uses Spin Doctor to shuffle Esca and Esca into R&D.
+Runner Player approaches R&D.
+Runner Player uses Pennyshaver to place 1 .
+Runner Player breaches R&D.
+Runner Player accesses Cloud Eater from R&D.
+Runner Player spends  to use Pennyshaver to gain 5 .
+Runner Player spends  to use Runner Basic Action Card to gain 1 .
+Runner Player discards Zenit Chip JZ-2MJ and Zenit Chip JZ-2MJ from his Grip at end of turn.
+Runner Player is ending his turn 17 with 8  and 5 cards in his Grip.
+Runner Player uses Paladin Poemu to trash Paladin Poemu.
+Corp Player started their turn 18 with 4  and 5 cards in HQ.
+Corp Player makes their mandatory start of turn draw.
+Corp Player spends  to install a card in the root of Server 1.
+Corp Player spends  to use Corp Basic Action Card to gain 1 .
+Corp Player spends  to use Corp Basic Action Card to gain 1 .
+Corp Player is ending their turn 18 with 6  and 5 cards in HQ.
+Corp Player uses Jinteki: Restoring Humanity to gain 1 .
+Runner Player started his turn 18 with 8  and 5 cards in his Grip.
+Runner Player uses Open Market to gain 1 .
+Runner Player trashes Open Market.
+Runner Player trashes Dr. Nuka Vrolyck.
+Runner Player spends  and spends 1 hosted power counter from on Dr. Nuka Vrolyck to use Dr. Nuka Vrolyck to draw 3 cards.
+Runner Player uses The Class Act to add the fourth card on the top of the stack (Pennyshaver) to the bottom.
+Runner Player spends  and pays 3  to play Clean Getaway.
+Runner Player uses Clean Getaway to make a run on R&D.
+Runner Player approaches ice protecting R&D at position 1.
+Corp Player pays 6  to rez Lionsmane protecting R&D at position 1.
+Runner Player encounters Lionsmane protecting R&D at position 1.
+Runner Player pays 2  from Cezve and 3  from his credit pool to increase the strength of Carmen to 5 and break all 3 subroutines on Lionsmane.
+Runner Player has no further action.
+Runner Player passes Lionsmane protecting R&D at position 1.
+Runner Player approaches Phoneutria protecting R&D at position 0.
+Corp Player has no further action.
+Runner Player encounters Phoneutria protecting R&D at position 0.
+Runner Player indicates to fire all unbroken subroutines on Phoneutria.
+Corp Player uses Phoneutria to do 1 net damage.
+Corp Player trashes The Class Act due to net damage.
+Corp Player uses Phoneutria to do 1 net damage.
+Corp Player trashes Fencer Fueno due to net damage.
+Corp Player resolves 2 unbroken subroutines on Phoneutria (" Do 1 net damage" and " Do 1 net damage").
+Runner Player passes Phoneutria protecting R&D at position 0.
+Corp Player uses Phoneutria to give the Runner 1 tag.
+Runner Player approaches R&D.
+Runner Player uses Clean Getaway to gain 6 .
+Runner Player uses Pennyshaver to place 1 .
+Runner Player breaches R&D.
+Runner Player accesses Empiricist from R&D.
+Runner Player spends  to make a run on Server 1.
+Runner Player approaches Attini protecting Server 1 at position 1.
+Corp Player has no further action.
+Runner Player encounters Attini protecting Server 1 at position 1.
+Runner Player indicates to fire all unbroken subroutines on Attini.
+Corp Player trashes T400 Memory Diamond due to net damage.
+Corp Player trashes Hackerspace due to net damage.
+Corp Player trashes Touchstone due to net damage.
+Corp Player resolves 3 unbroken subroutines on Attini (" Do 1 net damage unless the Runner pays 2 " and " Do 1 net damage unless the Runner pays 2 " and " Do 1 net damage unless the Runner pays 2 ").
+Runner Player passes Attini protecting Server 1 at position 1.
+Runner Player approaches ice protecting Server 1 at position 0.
+Runner Player passes ice protecting Server 1 at position 0.
+Runner Player approaches Server 1.
+Runner Player uses Pennyshaver to place 1 .
+Runner Player breaches Server 1.
+Runner Player accesses La Costa Grid from Server 1.
+Runner Player pays 4  to trash La Costa Grid from Server 1.
+Runner Player spends  to use Pennyshaver to gain 3 .
+Runner Player is ending his turn 18 with 8  and 2 cards in his Grip.
+Corp Player started their turn 19 with 1  and 5 cards in HQ.
+Corp Player makes their mandatory start of turn draw.
+Corp Player spends  to install a card in the root of Server 1.
+Corp Player spends  to use Corp Basic Action Card to gain 1 .
+Corp Player spends  to use Corp Basic Action Card to gain 1 .
+Corp Player is ending their turn 19 with 3  and 5 cards in HQ.
+Corp Player uses Jinteki: Restoring Humanity to gain 1 .
+Runner Player started his turn 19 with 8  and 2 cards in his Grip.
+Runner Player spends  to use Runner Basic Action Card to draw 1 card.
+Runner Player uses The Class Act to add the second card on the top of the stack (Dr. Nuka Vrolyck) to the bottom.
+Runner Player spends  to use Runner Basic Action Card to gain 1 .
+Runner Player spends  to use Runner Basic Action Card to gain 1 .
+Runner Player spends  and pays 0  to play Transfer of Wealth.
+Runner Player uses Transfer of Wealth to make a run on HQ.
+Runner Player uses Side Hustle to gain 6 , draw 1 card, and trash itself.
+Runner Player approaches Boto protecting HQ at position 2.
+Corp Player has no further action.
+Runner Player encounters Boto protecting HQ at position 2.
+Runner Player uses Curupira to place 1 power counter on itself.
+Runner Player pays 2  from Cezve and 6  from his credit pool to increase the strength of Curupira to 6 and break all 3 subroutines on Boto.
+Runner Player passes Boto protecting HQ at position 2.
+Runner Player will continue the run.
+Runner Player approaches Empiricist protecting HQ at position 1.
+Corp Player has no further action.
+Runner Player encounters Empiricist protecting HQ at position 1.
+Runner Player pays 2  to increase the strength of Unity to 7.
+Runner Player pays 5  to increase the strength of Carmen to 5 and break all 3 subroutines on Empiricist.
+Runner Player passes Empiricist protecting HQ at position 1.
+Runner Player will continue the run.
+Runner Player approaches Attini protecting HQ at position 0.
+Runner Player encounters Attini protecting HQ at position 0.
+Runner Player pays 2  to increase the strength of Unity to 7.
+Runner Player pays 1  to use Unity to break 1 Code Gate subroutine on Attini (" Do 1 net damage unless the Runner pays 2 ").
+Runner Player pays 1  to use Unity to break 1 Code Gate subroutine on Attini (" Do 1 net damage unless the Runner pays 2 ").
+Runner Player pays 1  to use Unity to break 1 Code Gate subroutine on Attini (" Do 1 net damage unless the Runner pays 2 ").
+Runner Player has no further action.
+Runner Player passes Attini protecting HQ at position 0.
+Runner Player will continue the run.
+Runner Player approaches HQ.
+Runner Player uses Transfer of Wealth to take 1 tagand force the Corp to lose 3 , and then gain 6 .
+Runner Player uses Pennyshaver to place 1 .
+Runner Player breaches HQ.
+Runner Player uses Docklands Pass to access 1 additional card from HQ.
+Cupellation has left play: Tatu-Bola is trashed.
+Runner Player pays 1  and trashes Cupellation to use Cupellation to access 2 additional cards from HQ.
+Runner Player accesses Cloud Eater from HQ.
+Runner Player accesses Tatu-Bola from HQ.
+Runner Player accesses Empiricist from HQ.
+Runner Player accesses Measured Response from HQ.
+Runner Player pays 3  to trash Measured Response from HQ.
+Runner Player is ending his turn 19 with 2  and 3 cards in his Grip.
+Corp Player started their turn 20 with 1  and 4 cards in HQ.
+Corp Player makes their mandatory start of turn draw.
+Corp Player spends  and pays 1  to use Corp Basic Action Card to advance a card in Server 1.
+Corp Player spends  to use Corp Basic Action Card to gain 1 .
+Corp Player spends  to use Corp Basic Action Card to gain 1 .
+Corp Player is ending their turn 20 with 2  and 5 cards in HQ.
+Corp Player uses Jinteki: Restoring Humanity to gain 1 .
+Runner Player started his turn 20 with 2  and 3 cards in his Grip.
+Runner Player spends  to use Runner Basic Action Card to draw 1 card.
+Runner Player uses The Class Act to add the second card on the top of the stack (Dr. Nuka Vrolyck) to the bottom.
+Runner Player spends  to use Pennyshaver to gain 2 .
+Runner Player spends  to use Runner Basic Action Card to gain 1 .
+Runner Player spends  to use Runner Basic Action Card to gain 1 .
+Runner Player is ending his turn 20 with 6  and 4 cards in his Grip.
+Corp Player started their turn 21 with 3  and 5 cards in HQ.
+Corp Player makes their mandatory start of turn draw.
+Corp Player spends  to use Corp Basic Action Card to gain 1 .
+Corp Player spends  to use Corp Basic Action Card to gain 1 .
+Corp Player spends  and pays 5  to play Hedge Fund.
+Corp Player uses Hedge Fund to gain 9 .
+Corp Player is ending their turn 21 with 9  and 5 cards in HQ.
+Corp Player uses Jinteki: Restoring Humanity to gain 1 .
+Runner Player started his turn 21 with 6  and 4 cards in his Grip.
+Runner Player spends  and pays 2  to install Cezve.
+! Cezve - Recurring credits usage not restricted
+Runner Player spends  to make a run on R&D.
+Runner Player approaches Lionsmane protecting R&D at position 1.
+Corp Player has no further action.
+Runner Player encounters Lionsmane protecting R&D at position 1.
+Runner Player pays 2  from Cezve and 2  from Cezve and 1  from his credit pool to increase the strength of Carmen to 5 and break all 3 subroutines on Lionsmane.
+Runner Player has no further action.
+Runner Player passes Lionsmane protecting R&D at position 1.
+Runner Player approaches Phoneutria protecting R&D at position 0.
+Corp Player has no further action.
+Runner Player encounters Phoneutria protecting R&D at position 0.
+Runner Player pays 2  to use Carmen to break all 2 subroutines on Phoneutria.
+Runner Player has no further action.
+Runner Player passes Phoneutria protecting R&D at position 0.
+Runner Player approaches R&D.
+Runner Player uses Pennyshaver to place 1 .
+Runner Player breaches R&D.
+Runner Player accesses Sisyphus Protocol from R&D.
+Runner Player steals Sisyphus Protocol and gains 2 agenda points.
+Runner Player spends  to use Runner Basic Action Card to draw 1 card.
+Runner Player spends  to use Pennyshaver to gain 2 .
+Runner Player is ending his turn 21 with 3  and 4 cards in his Grip.
+Corp Player started their turn 22 with 10  and 5 cards in HQ.
+Corp Player makes their mandatory start of turn draw.
+Corp Player spends  and pays 1  to use Corp Basic Action Card to advance a card in Server 1.
+Corp Player spends  and pays 1  to use Corp Basic Action Card to advance a card in Server 1.
+Corp Player spends  and pays 1  to use Corp Basic Action Card to advance a card in Server 1.
+Corp Player scores Let Them Dream and gains 2 agenda points.
+Corp Player uses Let Them Dream to reveal Fujii Asset Retrieval from Archives and add it to HQ.
+Corp Player discards 2 cards from HQ at end of turn.
+Corp Player is ending their turn 22 with 7  and 5 cards in HQ.
+Corp Player uses Jinteki: Restoring Humanity to gain 1 .
+Runner Player started his turn 22 with 3  and 4 cards in his Grip.
+Runner Player spends  to use Runner Basic Action Card to gain 1 .
+Runner Player spends  to use Runner Basic Action Card to gain 1 .
+Runner Player spends  to use Runner Basic Action Card to gain 1 .
+Runner Player spends  to use Runner Basic Action Card to gain 1 .
+Runner Player is ending his turn 22 with 7  and 4 cards in his Grip.
+Corp Player started their turn 23 with 8  and 5 cards in HQ.
+Corp Player makes their mandatory start of turn draw.
+Corp Player spends  and pays 5  to play Hansei Review.
+Corp Player uses Hansei Review to gain 10 .
+Corp Player uses Hansei Review to trash a card from HQ.
+Corp Player spends  to install a card in the root of Server 1.
+Corp Player spends  to use Corp Basic Action Card to gain 1 .
+Corp Player is ending their turn 23 with 14  and 3 cards in HQ.
+Corp Player uses Jinteki: Restoring Humanity to gain 1 .
+Runner Player started his turn 23 with 7  and 4 cards in his Grip.
+Runner Player spends  to make a run on Archives.
+Runner Player approaches ice protecting Archives at position 1.
+Runner Player passes ice protecting Archives at position 1.
+Runner Player approaches Attini protecting Archives at position 0.
+Corp Player has no further action.
+Runner Player encounters Attini protecting Archives at position 0.
+Runner Player pays 2  from Cezve and 2  from Cezve and 1  from his credit pool to increase the strength of Unity to 7 and break all 3 subroutines on Attini.
+Runner Player has no further action.
+Runner Player passes Attini protecting Archives at position 0.
+Runner Player will continue the run.
+Corp Player pays 0  to rez Spin Doctor in Server 1.
+Corp Player uses Spin Doctor to draw 2 cards.
+Corp Player uses Spin Doctor to shuffle Cultivate and 1 unseen card into R&D.
+Runner Player approaches Archives.
+Runner Player uses Pennyshaver to place 1 .
+Runner Player breaches Archives.
+Runner Player accesses Esca from Archives.
+Corp Player uses Esca to force the Runner to lose 1 .
+Corp Player uses Esca to do 1 net damage.
+Corp Player trashes Pennyshaver due to net damage.
+Runner Player accesses everything else in Archives.
+Runner Player spends  to use Pennyshaver to gain 2 .
+Runner Player spends  to use Runner Basic Action Card to gain 1 .
+Runner Player spends  to use Runner Basic Action Card to gain 1 .
+Runner Player is ending his turn 23 with 9  and 3 cards in his Grip.
+Corp Player started their turn 24 with 15  and 5 cards in HQ.
+Corp Player makes their mandatory start of turn draw.
+Corp Player spends  to install a card in the root of Server 1.
+Corp Player spends  and pays 5  to play Measured Response.
+Runner Player pays 8  to satisfy Measured Response.
+Corp Player spends  to use Corp Basic Action Card to gain 1 .
+Corp Player is ending their turn 24 with 11  and 4 cards in HQ.
+Runner Player started his turn 24 with 1  and 3 cards in his Grip.
+Runner Player spends  to use Runner Basic Action Card to gain 1 .
+Runner Player spends  to use Runner Basic Action Card to gain 1 .
+Runner Player spends  to make a run on R&D.
+Corp Player has no further action.
+Runner Player approaches Lionsmane protecting R&D at position 1.
+Runner Player encounters Lionsmane protecting R&D at position 1.
+Runner Player pays 2  from Cezve and 2  from Cezve and 1  from his credit pool to increase the strength of Carmen to 5 and break all 3 subroutines on Lionsmane.
+Runner Player passes Lionsmane protecting R&D at position 1.
+Corp Player has no further action.
+Runner Player approaches Phoneutria protecting R&D at position 0.
+Runner Player encounters Phoneutria protecting R&D at position 0.
+Runner Player pays 2  to use Carmen to break all 2 subroutines on Phoneutria.
+Runner Player passes Phoneutria protecting R&D at position 0.
+Runner Player will continue the run.
+Runner Player approaches R&D.
+Runner Player uses Pennyshaver to place 1 .
+Runner Player breaches R&D.
+Runner Player accesses Esca from R&D.
+Runner Player must reveal they accessed Esca.
+Corp Player uses Esca to force the Runner to lose 1 .
+Corp Player uses Esca to do 1 net damage.
+Corp Player trashes Dr. Nuka Vrolyck due to net damage.
+Runner Player spends  to use Pennyshaver to gain 2 .
+Runner Player is ending his turn 24 with 2  and 2 cards in his Grip.
+Corp Player started their turn 25 with 11  and 4 cards in HQ.
+Corp Player makes their mandatory start of turn draw.
+Corp Player spends  and pays 1  to use Corp Basic Action Card to advance a card in Server 1.
+Corp Player spends  and pays 1  to use Corp Basic Action Card to advance a card in Server 1.
+Corp Player spends  and pays 1  to use Corp Basic Action Card to advance a card in Server 1.
+Corp Player scores Regenesis and gains 1 agenda point.
+Corp Player wins the game.`;
+
+const CLICK_GAIN_OVERRIDES = { 'nanomanagement': 2 };
+const COLORS = ['#4fd6a8', '#d6a84f', '#d97878', '#7fb0d6'];
+const NETRUNNER_COLORS = { corp: '#5b93d9', runner: '#e2585f' };
+
+function getChartColors(data){
+  return data.players.map((p, idx) => NETRUNNER_COLORS[data.playerSide[p]] || COLORS[idx % COLORS.length]);
+}
+
+function cleanCardName(raw){
+  let s = raw.replace(/\.$/, '').trim();
+  s = s.replace(/\(paying\s*\d+\s*less\)/i, '').trim();
+  s = s.replace(/\s+on\s+.+$/i, '').trim();
+  return s;
+}
+
+function extractChatBadges(lines){
+  const GLHF_RE = /\b(glhf|gl\s*hf|good luck|have fun)\b/i;
+  const GG_RE = /\bgg\b/i;
+  const TY_RE = /\b(ty4tg|tftg|thank you for the game|thanks for the game|thank you)\b/i;
+  const badges = {};
+  for (let i = 0; i < lines.length - 2; i++){
+    if (lines[i] === lines[i+1] && /^[^\s.]+$/.test(lines[i]) && lines[i].length < 40){
+      const player = lines[i];
+      const text = lines[i+2];
+      if (!badges[player]) badges[player] = { glhf: false, gg: false, ty: false };
+      if (GLHF_RE.test(text)) badges[player].glhf = true;
+      if (GG_RE.test(text)) badges[player].gg = true;
+      if (TY_RE.test(text)) badges[player].ty = true;
+    }
+  }
+  return badges;
+}
+
+function parseLog(text){
+  const rawLines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  const chatBadges = extractChatBadges(rawLines);
+
+  const VERBS = ['spends','pays','uses','installs','approaches','encounters','breaches',
+    'accesses','steals','trashes','is','started','makes','declines','has','will',
+    'resolves','indicates','passes','discards','scores','wins','must','jacks','sets'];
+  const playerRe = new RegExp('^(.+?)\\s+(?:' + VERBS.join('|') + ')\\b');
+
+  const gainDirectRe = /\buses?\s+(.+?)\s+to\s+gain\s*(\d+)?\b/;
+  const gainRevealRe = /\buses?\s+(.+?)\s+to\s+reveal\s+.+?\s+and\s+gain\s*(\d+)?\b/;
+  const gainAndThenRe = /\buses?\s+(.+?)\s+to\s+.+?\b(?:and|then)\s+gain\s*(\d+)?\b/;
+  const payFromRe = /\bpays\s+(\d+)\s+from\s+(?:his|her|their|the)?\s*([^.]+?)(?=\s+and\s+|\s+to\s+|\.|$)/g;
+  const installRe = /\bto install (.+)$/;
+  const installCostRe = /pays\s+(.+?)\s+to\s+install\b/;
+  const rezRe = /\bto rez (.+?)(?:\s+in\s+|\s+protecting\s+)/;
+  const rezCostRe = /pays\s+(.+?)\s+to\s+rez\b/;
+  const playCostRe = /pays\s+(.+?)\s+to\s+play\s+(.+?)\.?$/;
+  const useCostRe = /pays\s+(\d+)\s+to\s+use\s+(.+?)\s+to\s+/;
+  const trashRe = /\btrash(?:es)?\s+([^.]+?)(?=\s+to\s+use\s+|\s+from\s+the\s+root|\s+due\s+to|\.|$)/;
+  const leftPlayRe = /^(.+?)\s+has left play/;
+  const shuffleRemoveRe = /\buses?\s+(.+?)\s+to\s+shuffle\b/i;
+  const turnStartRe = /^(.+?)\s+started (?:his|her|their) turn (\d+) with (\d+)\s+and (\d+) cards? in/;
+  const turnEndRe = /^(.+?)\s+is ending (?:his|her|their) turn (\d+) with (\d+)\s+and (\d+) cards? in/;
+  const winRe = /^(.+?)\s+wins the game\.?/;
+  const drawClickRe = /to use (Corp|Runner) Basic Action Card to draw 1 card/;
+  const tagRemovalRe = /pays\s+(\d+)\s+to use Runner Basic Action Card to remove 1 tag/;
+  const trashResourceRe = /pays\s+(\d+)\s+to use Corp Basic Action Card to trash (?:a |an )?resource/i;
+  const stealRe = /\bsteals\s+.+?\s+and\s+gains\s+(\d+)\s+agenda\s+points?/;
+  const scoreRe = /\bscores\s+.+?\s+and\s+gains\s+(\d+)\s+agenda\s+points?/;
+  const anyDrawRe = /\bdraws?\s+(\d+)\s+cards?\b/i;
+  const mandatoryDrawRe = /\bmakes (?:his|her|their) mandatory start of turn draw\b/;
+  const genericPaysRe1 = /\bpays\s+(.+?)\s+to\s+\S+/;
+  const genericPaysRe2 = /\bpays\s+(\d+)\b/;
+  const genericGainRe = /\bgains?\s+(\d+)(?!\s*agenda)/g;
+  const giveTagRe = /\bgives?\s+the Runner (\d+) tags?/i;
+  const takeTagRe = /\btakes?\s+(\d+)\s+tags?/i;
+  const runRe = /\bmakes? a run on\b/i;
+  const eventPlayRe = /\bto\s+play\s+(.+?)\.?$/;
+  const accessFromRe = /\baccesses\s+.+?\s+from\s+(.+?)\.?$/i;
+  const accessEverythingRe = /\baccesses everything else in\s+(.+?)\.?$/i;
+  const breachRe = /\bbreaches\s+(.+?)\.?$/i;
+
+  function zoneCategory(raw){
+    const z = (raw || '').trim();
+    if (/the root of R&D/i.test(z)) return 'RD';
+    if (/the root of HQ/i.test(z)) return 'HQ';
+    if (/the root of Archives/i.test(z)) return 'Archives';
+    if (/the root of Server/i.test(z)) return 'remote';
+    if (/^HQ/i.test(z)) return 'HQ';
+    if (/^R&D/i.test(z)) return 'RD';
+    if (/^Archives/i.test(z)) return 'Archives';
+    if (/Server\s*\d+/i.test(z)) return 'remote';
+    return null;
+  }
+
+  const currentTurn = {};
+  const maxTurn = {};
+  const instances = [];
+  const operations = new Map();
+  const flagged = [];
+  const drawClicks = {};
+  const tagRemovals = {};
+  const trashResources = {};
+  const clickCredits = {};
+  const playerSide = {};
+  const agendaEvents = [];
+  const totalGained = {};
+  const totalSpent = {};
+  const totalDraws = {};
+  const creditsGainedByTurn = {}; // player -> {turn: amount}
+  const creditPoolByTurn = {};    // player -> {turn: amount}
+  const handSizeByTurn = {};      // player -> {turn: amount}
+  const drawsByTurn = {};         // player -> {turn: amount}
+  const rawTagEvents = [];        // {kind:'give'|'take', actor, amount}
+  const runsMade = {};
+  const eventsPlayed = {};
+  const cardsAccessed = {};       // player -> {HQ,RD,remote}
+  const breachCounts = {};        // player -> {HQ,RD,Archives}
+  const cardsRezzed = {};
+  const clicksGained = {};
+  let winner = null;
+
+  function bump(obj, key, amt){ obj[key] = (obj[key] || 0) + amt; }
+  function bumpTurn(obj, player, turn, amt){
+    if (!obj[player]) obj[player] = {};
+    obj[player][turn] = (obj[player][turn] || 0) + amt;
+  }
+  function bumpZone(obj, player, zone, amt){
+    if (!zone) return;
+    if (!obj[player]) obj[player] = { HQ: 0, RD: 0, Archives: 0, remote: 0 };
+    obj[player][zone] = (obj[player][zone] || 0) + amt;
+  }
+
+  function sumDigits(str){
+    const nums = str.match(/\d+/g) || [];
+    return nums.reduce((a, b) => a + +b, 0);
+  }
+
+  function ensurePlayer(p){
+    if (!(p in maxTurn)) maxTurn[p] = 0;
+    if (!(p in currentTurn)) currentTurn[p] = 0;
+  }
+
+  function findOpenInstance(player, name){
+    for (let i = instances.length - 1; i >= 0; i--){
+      const inst = instances[i];
+      if (inst.player === player && inst.name === name && inst.turnLeft === null) return inst;
+    }
+    return null;
+  }
+
+  function findOpenInstanceAnyPlayer(name){
+    for (let i = instances.length - 1; i >= 0; i--){
+      if (instances[i].name === name && instances[i].turnLeft === null) return instances[i];
+    }
+    return null;
+  }
+
+  function matchGain(line){
+    let m = line.match(gainDirectRe); if (m) return m;
+    m = line.match(gainRevealRe); if (m) return m;
+    m = line.match(gainAndThenRe); if (m) return m;
+    return null;
+  }
+
+  function addPerTurn(op, turn, gainAmt, costAmt){
+    const pt = op.perTurn.get(turn) || { turn, gain: 0, cost: 0 };
+    pt.gain += gainAmt; pt.cost += costAmt;
+    op.perTurn.set(turn, pt);
+  }
+
+  function routeEvent(kind, player, rawName, amount, turn, rawLine){
+    let name = cleanCardName(rawName);
+    if (kind === 'gain'){
+      if (/corp basic action card/i.test(name) || /runner basic action card/i.test(name)){
+        playerSide[player] = /corp basic action card/i.test(name) ? 'corp' : 'runner';
+        if (!clickCredits[player]) clickCredits[player] = { count: 0, gained: 0 };
+        clickCredits[player].count++;
+        if (amount !== null) clickCredits[player].gained += amount;
+        else flagged.push({ reason: `Click for credit (${player}) — credit amount not readable in log text`, line: rawLine });
+        return;
+      }
+      if (amount === null){
+        const clickAmt = CLICK_GAIN_OVERRIDES[name.toLowerCase()] || 1;
+        bump(clicksGained, player, clickAmt);
+        return;
+      }
+    }
+
+    let inst = findOpenInstance(player, name);
+    if (!inst && kind === 'gain' && /:/.test(name)){
+      inst = { name, player, turnInstalled: 1, turnLeft: null, credits: 0, cost: 0, events: 0, isIdentity: true };
+      instances.push(inst);
+    }
+    if (inst){
+      if (kind === 'gain'){
+        inst.events++;
+        if (amount !== null) inst.credits += amount;
+        else flagged.push({ reason: `${name} (${player}) — credit amount not readable in log text`, line: rawLine });
+      } else {
+        if (amount !== null) inst.cost += amount;
+      }
+      return;
+    }
+
+    const key = player + '::' + name;
+    let op = operations.get(key);
+    if (!op){ op = { player, name, gain: 0, cost: 0, gainCount: 0, costCount: 0, turns: new Set(), perTurn: new Map() }; operations.set(key, op); }
+    if (kind === 'gain'){
+      if (amount !== null){ op.gain += amount; op.gainCount++; op.turns.add(turn); addPerTurn(op, turn, amount, 0); }
+      else flagged.push({ reason: `${name} (${player}) — credit amount not readable in log text`, line: rawLine });
+    } else {
+      if (amount !== null){ op.cost += amount; op.costCount++; op.turns.add(turn); addPerTurn(op, turn, 0, amount); }
+    }
+  }
+
+  for (const line of rawLines){
+    let m;
+
+    if ((m = line.match(turnStartRe))){
+      const p = m[1].trim(), t = +m[2], credits = +m[3], hand = +m[4];
+      ensurePlayer(p);
+      currentTurn[p] = t;
+      maxTurn[p] = Math.max(maxTurn[p] || 0, t);
+      creditPoolByTurn[p] = creditPoolByTurn[p] || {};
+      creditPoolByTurn[p][t] = credits;
+      handSizeByTurn[p] = handSizeByTurn[p] || {};
+      handSizeByTurn[p][t] = hand;
+      continue;
+    }
+    if ((m = line.match(turnEndRe))){
+      const p = m[1].trim(), t = +m[2];
+      ensurePlayer(p);
+      maxTurn[p] = Math.max(maxTurn[p] || 0, t);
+      continue;
+    }
+    if ((m = line.match(winRe))){
+      winner = m[1].trim();
+      continue;
+    }
+
+    const pm = line.match(playerRe);
+    const player = pm ? pm[1].trim() : null;
+    if (!player || !(player in maxTurn)) continue;
+    const turn = currentTurn[player] || 0;
+
+    if ((m = line.match(installRe))){
+      const raw = m[1];
+      if (!/^(a card in the root|ice protecting)/i.test(raw.trim())){
+        const name = cleanCardName(raw);
+        if (name){
+          const inst = { name, player, turnInstalled: turn, turnLeft: null, credits: 0, cost: 0, events: 0 };
+          const cm = line.match(installCostRe);
+          if (cm) inst.cost = sumDigits(cm[1]);
+          instances.push(inst);
+        }
+      }
+    }
+
+    if ((m = line.match(rezRe))){
+      const name = cleanCardName(m[1]);
+      bump(cardsRezzed, player, 1);
+      // Each rez is a distinct physical copy — always open a new instance,
+      // even if another copy of the same card is already in play unrezzed/rezzed elsewhere.
+      const inst = { name, player, turnInstalled: turn, turnLeft: null, credits: 0, cost: 0, events: 0 };
+      const cm = line.match(rezCostRe);
+      if (cm) inst.cost = sumDigits(cm[1]);
+      instances.push(inst);
+    }
+
+    if ((m = matchGain(line))){
+      routeEvent('gain', player, m[1], m[2] ? +m[2] : null, turn, line);
+    }
+
+    if ((m = line.match(playCostRe))){
+      routeEvent('cost', player, m[2], sumDigits(m[1]), turn, line);
+    }
+    if ((m = line.match(useCostRe))){
+      if (!/basic action card/i.test(m[2])) routeEvent('cost', player, m[2], +m[1], turn, line);
+    }
+
+    let pm2;
+    payFromRe.lastIndex = 0;
+    while ((pm2 = payFromRe.exec(line))){
+      const amt = +pm2[1];
+      const name = pm2[2].trim();
+      if (/credit pool/i.test(name)) continue;
+      routeEvent('gain', player, name, amt, turn, line);
+    }
+
+    if ((m = line.match(trashRe))){
+      m[1].split(/\s+and\s+/).forEach(raw => {
+        const name = cleanCardName(raw);
+        const inst = findOpenInstance(player, name) || findOpenInstanceAnyPlayer(name);
+        if (inst) inst.turnLeft = currentTurn[inst.player] || turn;
+      });
+    }
+
+    if ((m = line.match(shuffleRemoveRe))){
+      const name = cleanCardName(m[1]);
+      const inst = findOpenInstance(player, name);
+      if (inst) inst.turnLeft = turn;
+    }
+
+    if ((m = line.match(leftPlayRe))){
+      const name = cleanCardName(m[1]);
+      const inst = findOpenInstanceAnyPlayer(name);
+      if (inst) inst.turnLeft = currentTurn[inst.player] || turn;
+    }
+
+    if ((m = line.match(drawClickRe))){
+      playerSide[player] = m[1].toLowerCase() === 'corp' ? 'corp' : 'runner';
+      drawClicks[player] = (drawClicks[player] || 0) + 1;
+    }
+    if ((m = line.match(tagRemovalRe))){
+      playerSide[player] = 'runner';
+      if (!tagRemovals[player]) tagRemovals[player] = { count: 0, cost: 0 };
+      tagRemovals[player].count++;
+      tagRemovals[player].cost += +m[1];
+    }
+    if ((m = line.match(trashResourceRe))){
+      playerSide[player] = 'corp';
+      if (!trashResources[player]) trashResources[player] = { count: 0, cost: 0 };
+      trashResources[player].count++;
+      trashResources[player].cost += +m[1];
+    }
+
+    // total credits gained/spent (independent comprehensive scan)
+    let gm;
+    genericGainRe.lastIndex = 0;
+    while ((gm = genericGainRe.exec(line))){
+      const amt = +gm[1];
+      bump(totalGained, player, amt);
+      bumpTurn(creditsGainedByTurn, player, turn, amt);
+    }
+    let payMatch = line.match(genericPaysRe1) || line.match(genericPaysRe2);
+    if (payMatch) bump(totalSpent, player, sumDigits(payMatch[1]));
+
+    // draws
+    if (mandatoryDrawRe.test(line)){
+      bump(totalDraws, player, 1);
+      bumpTurn(drawsByTurn, player, turn, 1);
+    }
+    if ((m = line.match(anyDrawRe))){
+      const n = +m[1];
+      bump(totalDraws, player, n);
+      bumpTurn(drawsByTurn, player, turn, n);
+    }
+
+    // tags
+    if ((m = line.match(giveTagRe))){
+      rawTagEvents.push({ kind: 'give', amount: +m[1] });
+    }
+    if ((m = line.match(takeTagRe))){
+      rawTagEvents.push({ kind: 'take', actor: player, amount: +m[1] });
+    }
+
+    // runs
+    if (runRe.test(line)) bump(runsMade, player, 1);
+
+    // events played (operations played, regardless of side; only shown for runner)
+    if ((m = line.match(eventPlayRe))){
+      const evName = cleanCardName(m[1]);
+      if (!/basic action card/i.test(evName)) bump(eventsPlayed, player, 1);
+    }
+
+    // accesses (cards accessed, by zone)
+    if ((m = line.match(accessFromRe))){
+      bumpZone(cardsAccessed, player, zoneCategory(m[1]), 1);
+    } else if ((m = line.match(accessEverythingRe))){
+      bumpZone(cardsAccessed, player, zoneCategory(m[1]), 1);
+    }
+
+    // breaches (times accessed a zone)
+    if ((m = line.match(breachRe))){
+      const zone = zoneCategory(m[1]);
+      if (zone === 'HQ' || zone === 'RD' || zone === 'Archives'){
+        bumpZone(breachCounts, player, zone, 1);
+      }
+    }
+
+    if ((m = line.match(stealRe))){
+      agendaEvents.push({ player, turn, points: +m[1] });
+    }
+    if ((m = line.match(scoreRe))){
+      agendaEvents.push({ player, turn, points: +m[1] });
+    }
+  }
+
+  const rounds = Object.keys(maxTurn).length ? Math.max(...Object.values(maxTurn)) : 0;
+  const players = Object.keys(maxTurn);
+
+  const installedRows = instances.map(inst => {
+    const endTurn = inst.turnLeft !== null ? inst.turnLeft : (maxTurn[inst.player] || inst.turnInstalled);
+    const turnsInPlay = Math.max(1, endTurn - inst.turnInstalled + 1);
+    return {
+      name: inst.name,
+      player: inst.player,
+      turnInstalled: inst.turnInstalled,
+      turnLeftDisplay: inst.turnLeft !== null ? inst.turnLeft : '-',
+      turnsInPlay,
+      events: inst.events,
+      gained: inst.credits,
+      cost: inst.cost,
+      net: inst.credits - inst.cost
+    };
+  });
+
+  const opsRows = Array.from(operations.values()).map(op => {
+    const triggered = Math.max(op.gainCount, op.costCount);
+    const perTurnRows = Array.from(op.perTurn.values())
+      .map(pt => ({ turn: pt.turn, cost: pt.cost, gain: pt.gain, net: pt.gain - pt.cost }))
+      .sort((a, b) => a.turn - b.turn);
+    return {
+      name: op.name,
+      player: op.player,
+      triggered,
+      totalCost: op.cost,
+      totalGain: op.gain,
+      totalNet: op.gain - op.cost,
+      turnsList: Array.from(op.turns).sort((a,b)=>a-b).join(', '),
+      perTurnRows
+    };
+  });
+
+  // agenda cumulative series
+  const agendaSeries = {};
+  players.forEach(p => { agendaSeries[p] = new Array(rounds + 1).fill(0); });
+  agendaEvents.forEach(e => {
+    if (!agendaSeries[e.player]) return;
+    const t = Math.max(1, Math.min(rounds, e.turn || 1));
+    agendaSeries[e.player][t] += e.points;
+  });
+  players.forEach(p => {
+    let running = 0;
+    for (let t = 1; t <= rounds; t++){ running += agendaSeries[p][t]; agendaSeries[p][t] = running; }
+  });
+
+  function buildSnapshotSeries(byTurn){
+    const series = {};
+    players.forEach(p => {
+      const arr = new Array(rounds + 1).fill(0);
+      let last = 5;
+      for (let t = 1; t <= rounds; t++){
+        if (byTurn[p] && byTurn[p][t] !== undefined) last = byTurn[p][t];
+        arr[t] = last;
+      }
+      series[p] = arr;
+    });
+    return series;
+  }
+  function buildDeltaSeries(byTurn){
+    const series = {};
+    players.forEach(p => {
+      const arr = new Array(rounds + 1).fill(0);
+      for (let t = 1; t <= rounds; t++) arr[t] = (byTurn[p] && byTurn[p][t]) || 0;
+      series[p] = arr;
+    });
+    return series;
+  }
+  function buildCumulativeSeries(byTurn){
+    const series = {};
+    players.forEach(p => {
+      const arr = new Array(rounds + 1).fill(0);
+      let running = 0;
+      for (let t = 1; t <= rounds; t++){ running += (byTurn[p] && byTurn[p][t]) || 0; arr[t] = running; }
+      series[p] = arr;
+    });
+    return series;
+  }
+
+  const creditsGainedSeries = buildDeltaSeries(creditsGainedByTurn);
+  const creditPoolSeries = buildSnapshotSeries(creditPoolByTurn);
+  const handSizeSeries = buildSnapshotSeries(handSizeByTurn);
+  const cardsDrawnSeries = buildCumulativeSeries(drawsByTurn);
+
+  const runnerPlayer = players.find(p => playerSide[p] === 'runner');
+  const tagsGained = {};
+  if (runnerPlayer){
+    let total = 0;
+    rawTagEvents.forEach(e => {
+      if (e.kind === 'give') total += e.amount;
+      else if (e.kind === 'take' && e.actor === runnerPlayer) total += e.amount;
+    });
+    tagsGained[runnerPlayer] = total;
+  }
+
+  return {
+    installedRows, opsRows, flagged, maxTurn, rounds, winner, players,
+    drawClicks, tagRemovals, trashResources, clickCredits, playerSide, chatBadges, agendaSeries,
+    totalGained, totalSpent, totalDraws, cardsRezzed, tagsGained, runsMade, eventsPlayed,
+    cardsAccessed, breachCounts, clicksGained,
+    creditsGainedSeries, creditPoolSeries, handSizeSeries, cardsDrawnSeries
+  };
+}
+
+// ---- UI wiring ----
+const logInput = document.getElementById('logInput');
+const statusMsg = document.getElementById('statusMsg');
+const results = document.getElementById('results');
+
+let currentData = null;
+const sortState = {};
+const hideZeroState = {};
+
+function fmt(n){ return (typeof n === 'number') ? n.toLocaleString() : n; }
+
+function renderSummary(data){
+  const grid = document.getElementById('summaryGrid');
+  grid.innerHTML = '';
+  const stats = [
+    { label: 'Winner', num: data.winner || '—' },
+    { label: 'Rounds', num: data.rounds || 0 }
+  ];
+  data.players.forEach(p => {
+    stats.push({ label: `${p} — turns taken`, num: data.maxTurn[p] || 0 });
+  });
+  stats.forEach(s => {
+    const div = document.createElement('div');
+    div.className = 'stat';
+    div.innerHTML = `<span class="num">${s.num}</span><span class="label">${s.label}</span>`;
+    grid.appendChild(div);
+  });
+
+  const badgesRow = document.getElementById('badgesRow');
+  badgesRow.innerHTML = '';
+  data.players.forEach(p => {
+    const b = data.chatBadges[p] || {};
+    const chips = [];
+    if (b.glhf) chips.push('<span class="badge">GLHF</span>');
+    if (b.gg) chips.push('<span class="badge">GG</span>');
+    if (b.ty) chips.push('<span class="badge">TY4TG</span>');
+    const div = document.createElement('div');
+    div.className = 'player-badges';
+    div.innerHTML = `<strong>${p}</strong>${chips.length ? chips.join('') : '<span style="color:var(--dim);">no chat detected</span>'}`;
+    badgesRow.appendChild(div);
+  });
+}
+
+function sortRows(rows, key, dir){
+  return [...rows].sort((a, b) => {
+    let av = a[key], bv = b[key];
+    if (typeof av === 'string') av = av.toLowerCase();
+    if (typeof bv === 'string') bv = bv.toLowerCase();
+    if (av < bv) return dir === 'asc' ? -1 : 1;
+    if (av > bv) return dir === 'asc' ? 1 : -1;
+    return 0;
+  });
+}
+
+function netCell(val){
+  const cls = val > 0 ? 'pos' : (val < 0 ? 'neg' : '');
+  return `<td class="num ${cls}">${fmt(val)}</td>`;
+}
+
+function renderInstalledTable(tbody, rows, hideZero){
+  const filtered = hideZero ? rows.filter(r => r.gained !== 0) : rows;
+  tbody.innerHTML = '';
+  filtered.forEach(r => {
+    const tr = document.createElement('tr');
+    tr.innerHTML =
+      `<td class="card">${r.name}</td>` +
+      `<td class="num">${fmt(r.turnInstalled)}</td>` +
+      `<td class="num">${fmt(r.turnLeftDisplay)}</td>` +
+      `<td class="num">${fmt(r.turnsInPlay)}</td>` +
+      `<td class="num">${fmt(r.events)}</td>` +
+      `<td class="num">${fmt(r.gained)}</td>` +
+      `<td class="num">${fmt(r.cost)}</td>` +
+      netCell(r.net);
+    tbody.appendChild(tr);
+  });
+  return filtered.length;
+}
+
+const opsExpandState = {};
+
+function renderOpsTable(tableId, tbody, rows, hideZero){
+  const filtered = hideZero ? rows.filter(r => r.totalGain !== 0) : rows;
+  tbody.innerHTML = '';
+  filtered.forEach((r, i) => {
+    const rowKey = `${tableId}::${r.player}::${r.name}`;
+    const expanded = !!opsExpandState[rowKey];
+    const tr = document.createElement('tr');
+    tr.innerHTML =
+      `<td class="card">${r.name}</td>` +
+      `<td class="num">${fmt(r.triggered)}</td>` +
+      `<td class="num">${fmt(r.totalCost)}</td>` +
+      `<td class="num">${fmt(r.totalGain)}</td>` +
+      netCell(r.totalNet) +
+      `<td>${r.turnsList}</td>` +
+      `<td class="num"><button class="secondary" data-expand-toggle="${rowKey}">${expanded ? '\u2212' : '+'}</button></td>`;
+    tbody.appendChild(tr);
+
+    if (expanded){
+      r.perTurnRows.forEach(pt => {
+        const sub = document.createElement('tr');
+        sub.style.background = 'var(--panel-2)';
+        sub.innerHTML =
+          `<td style="padding-left:28px;color:var(--dim);">turn ${pt.turn}</td>` +
+          `<td></td>` +
+          `<td class="num">${fmt(pt.cost)}</td>` +
+          `<td class="num">${fmt(pt.gain)}</td>` +
+          netCell(pt.net) +
+          `<td></td><td></td>`;
+        tbody.appendChild(sub);
+      });
+    }
+  });
+
+  tbody.querySelectorAll('[data-expand-toggle]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const key = btn.dataset.expandToggle;
+      opsExpandState[key] = !opsExpandState[key];
+      renderAllTables();
+    });
+  });
+
+  return filtered.length;
+}
+
+const installedCols = ['name','turnInstalled','turnLeftDisplay','turnsInPlay','events','gained','cost','net'];
+const opsCols = ['name','triggered','totalCost','totalGain','totalNet','turnsList'];
+
+function buildPlayerSections(data){
+  const container = document.getElementById('playerSections');
+  container.innerHTML = '';
+
+  data.players.forEach((player, idx) => {
+    const panel = document.createElement('div');
+    panel.className = 'panel';
+
+    const installedRows = sortRows(data.installedRows.filter(r => r.player === player), 'net', 'desc');
+    const opsRows = sortRows(data.opsRows.filter(r => r.player === player), 'totalNet', 'desc');
+
+    const instTableId = `installed-${idx}`;
+    const opsTableId = `ops-${idx}`;
+
+    const drawCount = data.drawClicks[player] || 0;
+    const tagInfo = data.tagRemovals[player] || { count: 0, cost: 0 };
+    const trashInfo = data.trashResources[player] || { count: 0, cost: 0 };
+    const clickCreditInfo = data.clickCredits[player] || { count: 0, gained: 0 };
+    const side = data.playerSide[player];
+
+    let sideActionRow = '';
+    if (side === 'corp'){
+      sideActionRow = `<tr><td class="card">Trash resource</td><td class="num">${fmt(trashInfo.count)}</td>${netCell(-trashInfo.cost)}</tr>`;
+    } else if (side === 'runner'){
+      sideActionRow = `<tr><td class="card">Tags removed</td><td class="num">${fmt(tagInfo.count)}</td>${netCell(-tagInfo.cost)}</tr>`;
+    }
+
+    const permTitle = side === 'corp' ? 'Rezzed cards' : (side === 'runner' ? 'Installed cards' : 'Installed &amp; rezzed cards');
+    const opsTitle = side === 'corp' ? 'Operations' : (side === 'runner' ? 'Events' : 'Operations &amp; events');
+    const permEmptyNote = side === 'corp' ? 'No rezzed cards to show.' : 'No installed cards to show.';
+    const opsEmptyNote = side === 'corp' ? 'No operations generated credits for this side.' : 'No events generated credits for this side.';
+
+    panel.innerHTML = `
+      <div class="panel-header">
+        <div>
+          <div class="player-name">${player}</div>
+          <div class="player-sub">${data.maxTurn[player] || 0} turns taken</div>
+        </div>
+        <span class="collapse-icon">−</span>
+      </div>
+      <div class="panel-body">
+
+      <h3>Click actions</h3>
+      <table class="mini-table">
+        <thead><tr><th>Action</th><th class="num">Times</th><th class="num">Credits</th></tr></thead>
+        <tbody>
+          <tr><td class="card">Click for credit</td><td class="num">${fmt(clickCreditInfo.count)}</td>${netCell(clickCreditInfo.gained)}</tr>
+          <tr><td class="card">Cards drawn</td><td class="num">${fmt(drawCount)}</td><td class="num">—</td></tr>
+          ${sideActionRow}
+        </tbody>
+      </table>
+
+      <div class="table-actions">
+        <h3>${permTitle}</h3>
+        <div class="controls">
+          <label class="toggle"><input type="checkbox" data-hidezero="${instTableId}" checked> Hide cards that gained no credits</label>
+          <button class="secondary" data-export="${instTableId}">Export CSV</button>
+        </div>
+      </div>
+      <table id="${instTableId}">
+        <thead>
+          <tr>
+            <th data-key="name">Card</th>
+            <th class="num" data-key="turnInstalled">In play from</th>
+            <th class="num" data-key="turnLeftDisplay">Left play</th>
+            <th class="num" data-key="turnsInPlay">Turns in play</th>
+            <th class="num" data-key="events">Triggers</th>
+            <th class="num" data-key="gained">Gained</th>
+            <th class="num" data-key="cost">Cost</th>
+            <th class="num" data-key="net">Net credits</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div class="empty-note" data-empty="${instTableId}" style="display:none;">${permEmptyNote}</div>
+
+      <div class="table-actions">
+        <h3>${opsTitle}</h3>
+        <div class="controls">
+          <label class="toggle"><input type="checkbox" data-hidezero="${opsTableId}" checked> Hide cards that gained no credits</label>
+          <button class="secondary" data-export="${opsTableId}">Export CSV</button>
+        </div>
+      </div>
+      <table id="${opsTableId}">
+        <thead>
+          <tr>
+            <th data-key="name">Card</th>
+            <th class="num" data-key="triggered">Triggered</th>
+            <th class="num" data-key="totalCost">Total cost</th>
+            <th class="num" data-key="totalGain">Total gain</th>
+            <th class="num" data-key="totalNet">Total net</th>
+            <th data-key="turnsList">Turns played</th>
+            <th class="num"></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div class="empty-note" data-empty="${opsTableId}" style="display:none;">${opsEmptyNote}</div>
+
+      </div>
+    `;
+    container.appendChild(panel);
+
+    sortState[instTableId] = { key: 'net', dir: 'desc', rows: installedRows, type: 'installed' };
+    sortState[opsTableId] = { key: 'totalNet', dir: 'desc', rows: opsRows, type: 'ops' };
+    hideZeroState[instTableId] = true;
+    hideZeroState[opsTableId] = true;
+  });
+
+  wireAllSorts();
+  wireHideZeroToggles();
+  renderAllTables();
+}
+
+function renderAllTables(){
+  Object.keys(sortState).forEach(tableId => {
+    const state = sortState[tableId];
+    const tbody = document.querySelector(`#${tableId} tbody`);
+    const emptyEl = document.querySelector(`[data-empty="${tableId}"]`);
+    const hideZero = hideZeroState[tableId];
+    let shown;
+    if (state.type === 'installed') shown = renderInstalledTable(tbody, state.rows, hideZero);
+    else shown = renderOpsTable(tableId, tbody, state.rows, hideZero);
+    if (emptyEl) emptyEl.style.display = shown ? 'none' : 'block';
+  });
+}
+
+function wireHideZeroToggles(){
+  document.querySelectorAll('[data-hidezero]').forEach(cb => {
+    cb.addEventListener('change', () => {
+      hideZeroState[cb.dataset.hidezero] = cb.checked;
+      renderAllTables();
+    });
+  });
+}
+
+function wireAllSorts(){
+  Object.keys(sortState).forEach(tableId => {
+    const table = document.getElementById(tableId);
+    const ths = table.querySelectorAll('th');
+    ths.forEach(th => {
+      if (!th.dataset.key) return;
+      th.addEventListener('click', () => {
+        const key = th.dataset.key;
+        const state = sortState[tableId];
+        state.dir = (state.key === key && state.dir === 'desc') ? 'asc' : 'desc';
+        state.key = key;
+        state.rows = sortRows(state.rows, key, state.dir);
+        ths.forEach(t => t.classList.remove('sorted', 'sorted-asc'));
+        th.classList.add(state.dir === 'desc' ? 'sorted' : 'sorted-asc');
+        renderAllTables();
+      });
+    });
+  });
+
+  document.querySelectorAll('[data-export]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tableId = btn.dataset.export;
+      const state = sortState[tableId];
+      const cols = state.type === 'installed' ? installedCols : opsCols;
+      const header = cols.join(',');
+      const body = state.rows.map(r => cols.map(c => `"${String(r[c]).replace(/"/g, '""')}"`).join(',')).join('\n');
+      const csv = header + '\n' + body;
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `${tableId}.csv`;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+  });
+}
+
+function renderFlagged(flagged){
+  const list = document.getElementById('flaggedList');
+  const empty = document.getElementById('flaggedEmpty');
+  list.innerHTML = '';
+  if (!flagged.length){ empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+  const details = document.createElement('details');
+  const summary = document.createElement('summary');
+  summary.textContent = `${flagged.length} line(s) had a credit trigger with no readable amount`;
+  details.appendChild(summary);
+  flagged.forEach(f => {
+    const div = document.createElement('div');
+    div.className = 'flag-line';
+    div.innerHTML = `<span class="reason">${f.reason}</span><br>${f.line}`;
+    details.appendChild(div);
+  });
+  list.appendChild(details);
+}
+
+function renderLineChart(ids, series, players, rounds, opts){
+  opts = opts || {};
+  const legend = document.getElementById(ids.legend);
+  const chartDiv = document.getElementById(ids.chart);
+  const tableWrap = ids.table ? document.getElementById(ids.table) : null;
+  legend.innerHTML = '';
+  chartDiv.innerHTML = '';
+  if (tableWrap) tableWrap.innerHTML = '';
+
+  if (!rounds){ chartDiv.innerHTML = '<div class="empty-note">No turns detected.</div>'; return; }
+
+  let maxVal = 1, minVal = 0;
+  players.forEach(p => {
+    const s = series[p];
+    if (s){ maxVal = Math.max(maxVal, ...s.slice(1)); minVal = Math.min(minVal, ...s.slice(1)); }
+  });
+  if (opts.yTicks) maxVal = Math.max(maxVal, ...opts.yTicks);
+  if (opts.referenceLines) maxVal = Math.max(maxVal, ...opts.referenceLines) * 1.05;
+  if (maxVal === minVal) maxVal = minVal + 1;
+
+  const W = 900, H = 240, padL = 40, padR = 20, padT = 16, padB = 30;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const xFor = t => padL + (rounds > 1 ? (t - 1) / (rounds - 1) * plotW : plotW / 2);
+  const yFor = v => padT + plotH - ((v - minVal) / (maxVal - minVal)) * plotH;
+
+  let svg = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;font-family:var(--mono);">`;
+  svg += `<line x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT+plotH}" stroke="var(--line)" />`;
+  svg += `<line x1="${padL}" y1="${padT+plotH}" x2="${padL+plotW}" y2="${padT+plotH}" stroke="var(--line)" />`;
+  svg += `<text x="${padL+plotW}" y="${padT-4}" font-size="10" fill="var(--dim)" text-anchor="end">Last turn: ${rounds}</text>`;
+
+  const tickVals = opts.yTicks || (() => {
+    const arr = [];
+    for (let i = 0; i <= 4; i++) arr.push(Math.round(minVal + ((maxVal - minVal) / 4) * i));
+    return arr;
+  })();
+  tickVals.forEach(v => {
+    const y = yFor(v);
+    svg += `<text x="${padL - 8}" y="${y + 3}" font-size="9" fill="var(--dim)" text-anchor="end">${v}</text>`;
+    svg += `<line x1="${padL}" y1="${y}" x2="${padL+plotW}" y2="${y}" stroke="var(--line)" stroke-dasharray="2,3" />`;
+  });
+
+  if (opts.referenceLines){
+    opts.referenceLines.forEach(v => {
+      const y = yFor(v);
+      svg += `<line x1="${padL}" y1="${y}" x2="${padL+plotW}" y2="${y}" stroke="var(--accent2)" stroke-dasharray="5,4" stroke-width="1.2" />`;
+      svg += `<text x="${padL+plotW}" y="${y - 3}" font-size="9" fill="var(--accent2)" text-anchor="end">${v}</text>`;
+    });
+  }
+
+  const xTickStep = Math.max(1, Math.ceil(rounds / 12));
+  for (let t = 1; t <= rounds; t += xTickStep){
+    svg += `<text x="${xFor(t)}" y="${padT+plotH+16}" font-size="9" fill="var(--dim)" text-anchor="middle">${t}</text>`;
+  }
+  if ((rounds - 1) % xTickStep !== 0){
+    svg += `<text x="${xFor(rounds)}" y="${padT+plotH+16}" font-size="9" fill="var(--accent)" text-anchor="middle">${rounds}</text>`;
+  }
+
+  players.forEach((p, idx) => {
+    const color = (opts.colors && opts.colors[idx]) || COLORS[idx % COLORS.length];
+    const s = series[p];
+    if (!s) return;
+    if (opts.style === 'bar'){
+      const barW = Math.max(2, (plotW / rounds) / (players.length + 1));
+      for (let t = 1; t <= rounds; t++){
+        const x = xFor(t) - barW * (players.length / 2) + barW * idx;
+        const y = yFor(Math.max(0, s[t]));
+        const y0 = yFor(0);
+        svg += `<rect x="${x}" y="${Math.min(y, y0)}" width="${barW}" height="${Math.abs(y0 - y)}" fill="${color}" />`;
+      }
+    } else {
+      let points = '';
+      for (let t = 1; t <= rounds; t++) points += `${xFor(t)},${yFor(s[t])} `;
+      svg += `<polyline points="${points.trim()}" fill="none" stroke="${color}" stroke-width="2" />`;
+    }
+  });
+
+  svg += `</svg>`;
+  chartDiv.innerHTML = svg;
+
+  players.forEach((p, idx) => {
+    const color = (opts.colors && opts.colors[idx]) || COLORS[idx % COLORS.length];
+    const div = document.createElement('div');
+    div.className = 'legend-item';
+    div.innerHTML = `<span class="legend-swatch" style="background:${color};"></span>${p}`;
+    legend.appendChild(div);
+  });
+
+  if (tableWrap){
+    let tbl = '<table><thead><tr><th>Turn</th>';
+    players.forEach(p => { tbl += `<th class="num">${p}</th>`; });
+    tbl += '</tr></thead><tbody>';
+    for (let t = 1; t <= rounds; t++){
+      tbl += `<tr><td class="num">${t}</td>`;
+      players.forEach(p => { tbl += `<td class="num">${series[p] ? series[p][t] : 0}</td>`; });
+      tbl += '</tr>';
+    }
+    tbl += '</tbody></table>';
+    tableWrap.innerHTML = tbl;
+  }
+}
+
+function renderAllCharts(data){
+  const colors = getChartColors(data);
+  renderLineChart(
+    { legend: 'agendaLegend', chart: 'agendaChart', table: 'agendaTableWrap' },
+    data.agendaSeries, data.players, data.rounds, { colors }
+  );
+  renderLineChart(
+    { legend: 'creditsGainedLegend', chart: 'creditsGainedChart', table: 'creditsGainedTableWrap' },
+    data.creditsGainedSeries, data.players, data.rounds, { style: 'bar', colors }
+  );
+  renderLineChart(
+    { legend: 'creditPoolLegend', chart: 'creditPoolChart', table: 'creditPoolTableWrap' },
+    data.creditPoolSeries, data.players, data.rounds, { yTicks: [0, 5, 10], colors }
+  );
+  renderLineChart(
+    { legend: 'handSizeLegend', chart: 'handSizeChart', table: 'handSizeTableWrap' },
+    data.handSizeSeries, data.players, data.rounds, { colors }
+  );
+  renderLineChart(
+    { legend: 'cardsDrawnLegend', chart: 'cardsDrawnChart', table: 'cardsDrawnTableWrap' },
+    data.cardsDrawnSeries, data.players, data.rounds, { referenceLines: [40, 45, 49], colors }
+  );
+}
+
+function renderGameStats(data){
+  const wrap = document.getElementById('gameStatsWrap');
+  const players = data.players;
+  if (players.length < 1){ wrap.innerHTML = ''; return; }
+
+  const rows = [];
+  rows.push(['Credits gained', p => fmt(data.totalGained[p] || 0)]);
+  rows.push(['Credits spent', p => fmt(data.totalSpent[p] || 0)]);
+  rows.push(['Credits by basic action', p => fmt((data.clickCredits[p] || {}).gained || 0)]);
+  rows.push(['Cards drawn', p => fmt(data.totalDraws[p] || 0)]);
+  rows.push(['Cards drawn by basic action', p => fmt(data.drawClicks[p] || 0)]);
+  rows.push(['Clicks gained from cards', p => fmt(data.clicksGained[p] || 0)]);
+  rows.push(['Cards rezzed', p => data.playerSide[p] === 'corp' ? fmt(data.cardsRezzed[p] || 0) : '—']);
+  rows.push(['Tags gained', p => data.playerSide[p] === 'runner' ? fmt(data.tagsGained[p] || 0) : '—']);
+  rows.push(['Runs made', p => data.playerSide[p] === 'runner' ? fmt(data.runsMade[p] || 0) : '—']);
+  rows.push(['Events played', p => data.playerSide[p] === 'runner' ? fmt(data.eventsPlayed[p] || 0) : '—']);
+  rows.push(['Cards accessed — HQ', p => data.playerSide[p] === 'runner' ? fmt((data.cardsAccessed[p] || {}).HQ || 0) : '—']);
+  rows.push(['Cards accessed — R&D', p => data.playerSide[p] === 'runner' ? fmt((data.cardsAccessed[p] || {}).RD || 0) : '—']);
+  rows.push(['Cards accessed — remote servers', p => data.playerSide[p] === 'runner' ? fmt((data.cardsAccessed[p] || {}).remote || 0) : '—']);
+  rows.push(['Times accessed HQ', p => data.playerSide[p] === 'runner' ? fmt((data.breachCounts[p] || {}).HQ || 0) : '—']);
+  rows.push(['Times accessed R&D', p => data.playerSide[p] === 'runner' ? fmt((data.breachCounts[p] || {}).RD || 0) : '—']);
+  rows.push(['Times accessed Archives', p => data.playerSide[p] === 'runner' ? fmt((data.breachCounts[p] || {}).Archives || 0) : '—']);
+
+  let tbl = '<table class="mini-table"><thead><tr><th>Stat</th>';
+  players.forEach(p => { tbl += `<th class="num">${p}</th>`; });
+  tbl += '</tr></thead><tbody>';
+  rows.forEach(([label, fn]) => {
+    tbl += `<tr><td class="card">${label}</td>`;
+    players.forEach(p => { tbl += `<td class="num">${fn(p)}</td>`; });
+    tbl += '</tr>';
+  });
+  tbl += '</tbody></table>';
+  wrap.innerHTML = tbl;
+}
+
+function runParse(){
+  const text = logInput.value;
+  if (!text.trim()){
+    statusMsg.textContent = 'Paste a log first.';
+    return;
+  }
+  currentData = parseLog(text);
+  renderSummary(currentData);
+  renderGameStats(currentData);
+  renderAllCharts(currentData);
+  buildPlayerSections(currentData);
+  renderFlagged(currentData.flagged);
+  results.style.display = 'block';
+  statusMsg.textContent = `Parsed ${text.trim().split(/\r?\n/).length} lines. Players: ${currentData.players.join(', ')}`;
+}
+
+document.addEventListener('click', (e) => {
+  const header = e.target.closest('.panel-header');
+  if (!header) return;
+  const panel = header.closest('.panel');
+  if (!panel) return;
+  panel.classList.toggle('collapsed');
+  const icon = header.querySelector('.collapse-icon');
+  if (icon) icon.textContent = panel.classList.contains('collapsed') ? '+' : '−';
+});
+
+document.getElementById('parseBtn').addEventListener('click', runParse);
+document.getElementById('example1Btn').addEventListener('click', () => {
+  logInput.value = EXAMPLE_LOG_1;
+  runParse();
+});
+document.getElementById('example2Btn').addEventListener('click', () => {
+  logInput.value = EXAMPLE_LOG_2;
+  runParse();
+});
+document.getElementById('clearBtn').addEventListener('click', () => {
+  logInput.value = '';
+  results.style.display = 'none';
+  statusMsg.textContent = '';
+});
+</script>
+</body>
+</html>
