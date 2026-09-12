@@ -326,7 +326,7 @@
 
   </div>
 
-  <footer>Parses locally in your browser — nothing is uploaded.<br>Build: 2026-09-12 23:27 UTC+2</footer>
+  <footer>Parses locally in your browser — nothing is uploaded.<br>Build: 2026-09-12 23:49 UTC+2</footer>
 </div>
 
 <script>
@@ -1668,6 +1668,13 @@ function parseLog(text){
   }
 
   const rotationIndex = {}; // player::name -> next index into the open-copies list
+  // player::name -> the instance that most recently received a credit/click trigger.
+  // A card that self-trashes on depletion (Daily Casts, Kati Jones, ...) always logs
+  // its own "uses X to gain N" line immediately before its "trashes X" line, so the
+  // instance that was JUST credited is a far better guess for who is being trashed
+  // than "whichever copy is oldest" — oldest is only right when nothing has singled
+  // one copy out yet.
+  const lastCreditedInstance = {};
 
   function findOpenInstance(player, name){
     const open = [];
@@ -1769,6 +1776,7 @@ function parseLog(text){
       if (inst){
         inst.events++;
         inst.triggerLog.push({ turn, kind: 'click', amount: clickAmt });
+        lastCreditedInstance[player + '::' + name] = inst;
       } else {
         bump(clicksGained, player, clickAmt);
       }
@@ -1780,6 +1788,7 @@ function parseLog(text){
         inst.events++;
         inst.credits += amount;
         inst.triggerLog.push({ turn, kind: 'credit', amount });
+        lastCreditedInstance[player + '::' + name] = inst;
       } else {
         inst.cost += amount;
       }
@@ -1907,7 +1916,9 @@ function parseLog(text){
       const serverRef = (line.match(trashServerRefRe) || [])[1] || null;
       m[1].split(/\s+and\s+/).forEach(raw => {
         const name = cleanCardName(raw);
+        const recent = lastCreditedInstance[player + '::' + name];
         const inst = findInstanceByServerAnyPlayer(name, serverRef)
+          || (recent && recent.player === player && recent.turnLeft === null ? recent : null)
           || findOldestOpenInstance(player, name)
           || findOldestOpenInstanceAnyPlayer(name);
         if (inst) inst.turnLeft = currentTurn[inst.player] || turn;
@@ -1916,7 +1927,9 @@ function parseLog(text){
 
     if ((m = line.match(selfTrashRe))){
       const name = cleanCardName(m[1]);
-      const inst = findOldestOpenInstance(player, name);
+      const recent = lastCreditedInstance[player + '::' + name];
+      const inst = (recent && recent.player === player && recent.turnLeft === null ? recent : null)
+        || findOldestOpenInstance(player, name);
       if (inst) inst.turnLeft = turn;
     }
 
