@@ -181,7 +181,13 @@
         <button class="secondary" id="example1Btn">Log example 1</button>
         <button class="secondary" id="example2Btn">Log example 2</button>
         <button class="secondary" id="clearBtn">Clear</button>
+        <button class="secondary" id="shareBtn">Share link</button>
         <span class="status" id="statusMsg"></span>
+      </div>
+      <div class="row" id="shareRow" style="display:none;">
+        <input id="shareUrlInput" type="text" readonly
+          style="flex:1;min-width:200px;background:var(--panel-2);color:var(--text);border:1px solid var(--line);border-radius:4px;font-family:var(--mono);font-size:11.5px;padding:8px;">
+        <button class="secondary" id="copyShareBtn">Copy</button>
       </div>
     </div>
   </div>
@@ -278,7 +284,7 @@
 
   </div>
 
-  <footer>Parses locally in your browser — nothing is uploaded.</footer>
+  <footer>Parses locally in your browser — nothing is uploaded.<br>Build: 2026-09-12 15:20 UTC+2</footer>
 </div>
 
 <script>
@@ -2662,6 +2668,112 @@ document.getElementById('clearBtn').addEventListener('click', () => {
   results.style.display = 'none';
   statusMsg.textContent = '';
 });
+
+// ---- Shareable link: gzip-compress the log, base64url-encode it into the URL hash
+// (never sent to any server) so a whole game log can be shared as a link with no
+// copy-paste on the recipient's end and no backend to store anything in.
+function bytesToBase64Url(bytes){
+  let binary = '';
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk){
+    binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+  }
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+function base64UrlToBytes(b64){
+  let padded = b64.replace(/-/g, '+').replace(/_/g, '/');
+  while (padded.length % 4) padded += '=';
+  const binary = atob(padded);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
+
+async function gzipBytes(bytes){
+  const cs = new CompressionStream('gzip');
+  const writer = cs.writable.getWriter();
+  writer.write(bytes);
+  writer.close();
+  return new Uint8Array(await new Response(cs.readable).arrayBuffer());
+}
+
+async function gunzipBytes(bytes){
+  const ds = new DecompressionStream('gzip');
+  const writer = ds.writable.getWriter();
+  writer.write(bytes);
+  writer.close();
+  return new Uint8Array(await new Response(ds.readable).arrayBuffer());
+}
+
+async function encodeLogForUrl(text){
+  const utf8 = new TextEncoder().encode(text);
+  if (window.CompressionStream){
+    const bytes = await gzipBytes(utf8);
+    return 'gz.' + bytesToBase64Url(bytes);
+  }
+  return 'raw.' + bytesToBase64Url(utf8);
+}
+
+async function decodeLogFromUrl(encoded){
+  const dot = encoded.indexOf('.');
+  const method = encoded.slice(0, dot);
+  const bytes = base64UrlToBytes(encoded.slice(dot + 1));
+  if (method === 'gz'){
+    if (!window.DecompressionStream){
+      throw new Error("This link uses compression your browser can't decode — try a recent Chrome, Edge, or Firefox.");
+    }
+    const outBytes = await gunzipBytes(bytes);
+    return new TextDecoder().decode(outBytes);
+  }
+  return new TextDecoder().decode(bytes);
+}
+
+document.getElementById('shareBtn').addEventListener('click', async () => {
+  const text = logInput.value;
+  const shareRow = document.getElementById('shareRow');
+  const shareInput = document.getElementById('shareUrlInput');
+  if (!text.trim()){
+    statusMsg.textContent = 'Paste a log first.';
+    return;
+  }
+  try {
+    const encoded = await encodeLogForUrl(text);
+    const url = location.origin + location.pathname + '#log=' + encoded;
+    shareInput.value = url;
+    shareRow.style.display = 'flex';
+    shareInput.select();
+    statusMsg.textContent = `Share link ready (${Math.round(url.length / 1024 * 10) / 10} KB). This only works once the file is hosted somewhere with a real URL — a local file won't be openable by others.`;
+  } catch (e) {
+    statusMsg.textContent = 'Could not build a share link: ' + e.message;
+  }
+});
+
+document.getElementById('copyShareBtn').addEventListener('click', () => {
+  const shareInput = document.getElementById('shareUrlInput');
+  shareInput.select();
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(shareInput.value);
+  } else {
+    document.execCommand('copy');
+  }
+  statusMsg.textContent = 'Link copied.';
+});
+
+(async function loadFromUrlHash(){
+  const hash = location.hash;
+  if (!hash.startsWith('#log=')) return;
+  const encoded = hash.slice(5);
+  try {
+    statusMsg.textContent = 'Decoding shared log…';
+    const text = await decodeLogFromUrl(decodeURIComponent(encoded));
+    logInput.value = text;
+    runParse();
+    statusMsg.textContent += ' Loaded from shared link.';
+  } catch (e) {
+    statusMsg.textContent = 'Could not load the log from this link: ' + e.message;
+  }
+})();
 </script>
 </body>
 </html>
