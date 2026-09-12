@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Netrunner Log Parser</title>
+<title>Jinteki.net Log Parser</title>
 <style>
   :root{
     --bg: #0d1210;
@@ -93,6 +93,17 @@
   }
   button.secondary:hover{ color: var(--text); border-color: var(--accent-dim); }
 
+  a.bookmarklet-link{
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: var(--mono); font-size: 13px; font-weight: 600;
+    cursor: grab; text-decoration: none;
+    background: var(--accent); color: #06120d;
+    padding: 10px 18px; border-radius: 4px;
+    transition: background 0.15s ease;
+  }
+  a.bookmarklet-link:active{ cursor: grabbing; }
+  a.bookmarklet-link:hover{ background: #6ee6bc; }
+
   .status{ font-family: var(--mono); font-size: 12.5px; color: var(--dim); }
 
   label.toggle{
@@ -168,9 +179,38 @@
 
   <header>
     <div class="kicker">jinteki.net / log analysis</div>
-    <h1>Netrunner Log Parser</h1>
-    <p>Paste a game log copied from the jinteki.net chat panel. This reads it for turn count, when each card entered and left play, each card's net credit contribution, and agenda points scored over time.</p>
+    <h1>Jinteki.net Log Parser</h1>
+    <p>Paste a game log copied from the jinteki.net chat panel or use browser bookmark to automate.</p>
   </header>
+
+  <div id="bookmarkSection" style="display:none;">
+
+    <div class="panel">
+      <div class="panel-header"><h2>Browser bookmark</h2><span class="collapse-icon">−</span></div>
+      <div class="panel-body">
+        <p style="color:var(--dim); font-size:13.5px; margin:0 0 14px;">Drag this into your bookmarks bar once. On any jinteki.net game, click it to open the log here, already parsed — no selecting, no pasting.</p>
+        <div class="row" style="margin-top:0;">
+          <a class="bookmarklet-link" id="bookmarkletBtn" onclick="return warnAgainstBookmarkletClick(event)"
+            href="javascript:!function()%7Bvar%20e%3Ddocument.querySelector(%22.log%20.messages%22)%7C%7Cdocument.querySelector(%22div.messages%22)%3Bif(e)%7Bvar%20t%3D%5B%5D%3BArray.prototype.forEach.call(e.children%2Cfunction(e)%7Bif(e.classList.contains(%22system%22))%7Bvar%20n%3De.textContent.trim()%3Bn%26%26t.push(n)%7Delse%20if(e.classList.contains(%22message%22))%7Bvar%20r%3De.querySelector(%22.content%22)%3Bif(!r)return%3Bvar%20a%3Dr.querySelector(%22.username%22)%2Co%3Da%3Fa.textContent.trim()%3A%22%22%2Ci%3Dr.querySelectorAll(%22%3Ascope%20%3E%20div%22)%2Cl%3Di.length%3Fi%5Bi.length-1%5D.textContent.trim()%3A%22%22%3Bo%26%26(t.push(o)%2Ct.push(o))%2Cl%26%26t.push(l)%7D%7D)%3Bvar%20n%3Dt.join(%22%5Cn%22)%3Bif(n)%7Bvar%20r%3Dwindow.open(%22%22%2C%22_blank%22)%3Br%26%26r.document.write(%22Preparing%20your%20Jnet%20Analyzer%20link...%22)%3Bvar%20a%3D(new%20TextEncoder).encode(n)%3Bif(window.CompressionStream)%7Bvar%20o%3Dnew%20CompressionStream(%22gzip%22)%2Ci%3Do.writable.getWriter()%3Bi.write(a)%2Ci.close()%2Cnew%20Response(o.readable).arrayBuffer().then(function(e)%7Bs(%22gz.%22%2Bl(new%20Uint8Array(e)))%7D).catch(function(e)%7Br%26%26r.close()%2Calert(%22Jnet%20Analyzer%3A%20could%20not%20compress%20the%20log%20(%22%2Be.message%2B%22).%22)%7D)%7Delse%20s(%22raw.%22%2Bl(a))%7Delse%20alert(%22Jnet%20Analyzer%3A%20the%20log%20panel%20is%20empty.%20Play%20or%20load%20a%20game%20first.%22)%7Delse%20alert(%22Jnet%20Analyzer%3A%20could%20not%20find%20a%20game%20log%20on%20this%20page.%20Open%20a%20finished%20jinteki.net%20game%20first.%22)%3Bfunction%20l(e)%7Bfor(var%20t%3D%22%22%2Cn%3D0%3Bn%3Ce.length%3Bn%2B%3D32768)t%2B%3DString.fromCharCode.apply(null%2Ce.subarray(n%2Cn%2B32768))%3Breturn%20btoa(t).replace(%2F%5C%2B%2Fg%2C%22-%22).replace(%2F%5C%2F%2Fg%2C%22_%22).replace(%2F%3D%2B%24%2F%2C%22%22)%7Dfunction%20s(e)%7Bvar%20t%3D%22https%3A%2F%2Fadamstradomski.github.io%2Fjinteki-analyzer%2F%23log%3D%22%2Be%3Br%3Fr.location.href%3Dt%3Awindow.open(t%2C%22_blank%22)%7D%7D()%3B">
+            Analyze this game ↗
+          </a>
+        </div>
+        <div class="status" style="display:block; margin-top:10px;">Drag the button above to your bookmarks bar — clicking it here won't do anything useful.</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header"><h2>How it works</h2><span class="collapse-icon">−</span></div>
+      <div class="panel-body">
+        <ol style="color:var(--dim); font-size:13.5px; padding-left:18px; margin:0;">
+          <li style="margin-bottom:8px;">Drag <strong style="color:var(--text);">Analyze this game</strong> into your bookmarks bar, once.</li>
+          <li style="margin-bottom:8px;">Open any game on jinteki.net — mid-game or finished, spectating or played.</li>
+          <li>Click the bookmark. A new tab opens here with the log already parsed.</li>
+        </ol>
+      </div>
+    </div>
+
+  </div>
 
   <div class="panel">
     <div class="panel-header"><h2>1. Paste log</h2><span class="collapse-icon">−</span></div>
@@ -182,6 +222,7 @@
         <button class="secondary" id="example2Btn">Log example 2</button>
         <button class="secondary" id="clearBtn">Clear</button>
         <button class="secondary" id="shareBtn">Share link</button>
+        <button class="secondary" id="skipCopyPasteBtn" type="button">How to skip copy-paste</button>
         <span class="status" id="statusMsg"></span>
       </div>
       <div class="row" id="shareRow" style="display:none;">
@@ -262,9 +303,10 @@
       </div>
     </div>
 
-    <div class="panel">
-      <div class="panel-header"><h2>How this is read</h2><span class="collapse-icon">−</span></div>
+    <div class="panel collapsed">
+      <div class="panel-header"><h2>How this works</h2><span class="collapse-icon">+</span></div>
       <div class="panel-body">
+        <p style="color:var(--dim); font-size:13.5px; margin:0 0 14px;">This reads it for turn count, when each card entered and left play, each card's net credit contribution, and agenda points scored over time.</p>
         <ul class="caveats">
           <li>Corp assets and ice are installed face-down, so the log doesn't reveal a name until they're rezzed. "In play from" for those cards is the turn they were rezzed, not the (unknown) turn they were actually installed.</li>
           <li>Credits are attributed to a card via its own "uses X to gain N" / "reveal ... and gain N" triggers, plus any "pays N from X" spend that draws from a card's hosted credits.</li>
@@ -2652,6 +2694,20 @@ document.addEventListener('click', (e) => {
   panel.classList.toggle('collapsed');
   const icon = header.querySelector('.collapse-icon');
   if (icon) icon.textContent = panel.classList.contains('collapsed') ? '+' : '−';
+});
+
+function warnAgainstBookmarkletClick(e){
+  e.preventDefault();
+  alert('Drag this button to your bookmarks bar instead of clicking it — clicking it here on this page won\'t find a jinteki.net game log.');
+  return false;
+}
+
+document.getElementById('skipCopyPasteBtn').addEventListener('click', () => {
+  const section = document.getElementById('bookmarkSection');
+  const btn = document.getElementById('skipCopyPasteBtn');
+  const showing = section.style.display !== 'none';
+  section.style.display = showing ? 'none' : 'block';
+  btn.textContent = showing ? 'How to skip copy-paste' : 'Hide Bookmark info';
 });
 
 document.getElementById('parseBtn').addEventListener('click', runParse);
