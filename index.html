@@ -191,7 +191,7 @@
         <p style="color:var(--dim); font-size:13.5px; margin:0 0 14px;">Drag this into your bookmarks bar once. On any jinteki.net game, click it to open the log here, already parsed — no selecting, no pasting.</p>
         <div class="row" style="margin-top:0;">
           <a class="bookmarklet-link" id="bookmarkletBtn" onclick="return warnAgainstBookmarkletClick(event)"
-            href="javascript:!function()%7Bvar%20e%3Ddocument.querySelector(%22.log%20.messages%22)%7C%7Cdocument.querySelector(%22div.messages%22)%3Bif(e)%7Bvar%20t%3D%5B%5D%3BArray.prototype.forEach.call(e.children%2Cfunction(e)%7Bif(e.classList.contains(%22system%22))%7Bvar%20n%3De.textContent.trim()%3Bn%26%26t.push(n)%7Delse%20if(e.classList.contains(%22message%22))%7Bvar%20r%3De.querySelector(%22.content%22)%3Bif(!r)return%3Bvar%20a%3Dr.querySelector(%22.username%22)%2Co%3Da%3Fa.textContent.trim()%3A%22%22%2Ci%3Dr.querySelectorAll(%22%3Ascope%20%3E%20div%22)%2Cl%3Di.length%3Fi%5Bi.length-1%5D.textContent.trim()%3A%22%22%3Bo%26%26(t.push(o)%2Ct.push(o))%2Cl%26%26t.push(l)%7D%7D)%3Bvar%20n%3Dt.join(%22%5Cn%22)%3Bif(n)%7Bvar%20r%3Dwindow.open(%22%22%2C%22_blank%22)%3Br%26%26r.document.write(%22Preparing%20your%20Jnet%20Analyzer%20link...%22)%3Bvar%20a%3D(new%20TextEncoder).encode(n)%3Bif(window.CompressionStream)%7Bvar%20o%3Dnew%20CompressionStream(%22gzip%22)%2Ci%3Do.writable.getWriter()%3Bi.write(a)%2Ci.close()%2Cnew%20Response(o.readable).arrayBuffer().then(function(e)%7Bs(%22gz.%22%2Bl(new%20Uint8Array(e)))%7D).catch(function(e)%7Br%26%26r.close()%2Calert(%22Jnet%20Analyzer%3A%20could%20not%20compress%20the%20log%20(%22%2Be.message%2B%22).%22)%7D)%7Delse%20s(%22raw.%22%2Bl(a))%7Delse%20alert(%22Jnet%20Analyzer%3A%20the%20log%20panel%20is%20empty.%20Play%20or%20load%20a%20game%20first.%22)%7Delse%20alert(%22Jnet%20Analyzer%3A%20could%20not%20find%20a%20game%20log%20on%20this%20page.%20Open%20a%20finished%20jinteki.net%20game%20first.%22)%3Bfunction%20l(e)%7Bfor(var%20t%3D%22%22%2Cn%3D0%3Bn%3Ce.length%3Bn%2B%3D32768)t%2B%3DString.fromCharCode.apply(null%2Ce.subarray(n%2Cn%2B32768))%3Breturn%20btoa(t).replace(%2F%5C%2B%2Fg%2C%22-%22).replace(%2F%5C%2F%2Fg%2C%22_%22).replace(%2F%3D%2B%24%2F%2C%22%22)%7Dfunction%20s(e)%7Bvar%20t%3D%22https%3A%2F%2Fadamstradomski.github.io%2Fjinteki-analyzer%2F%23log%3D%22%2Be%3Br%3Fr.location.href%3Dt%3Awindow.open(t%2C%22_blank%22)%7D%7D()%3B">
+            href="javascript:!function()%7Bvar%20e%3Ddocument.querySelector(%22.log%20.messages%22)%7C%7Cdocument.querySelector(%22div.messages%22)%3Bif(e)%7Bvar%20r%3D%5B%5D%3BArray.prototype.forEach.call(e.children%2Cfunction(e)%7Bif(e.classList.contains(%22system%22))%7Bvar%20t%3De.textContent.replace(%2F%5C%5B%5Cd%7B1%2C2%7D%3A%5Cd%7B2%7D%3A%5Cd%7B2%7D%5C%5D%2Fg%2C%22%22).replace(%2F%5Cs%2B%2Fg%2C%22%20%22).trim()%3Bt%26%26r.push(t)%7Delse%20if(e.classList.contains(%22message%22))%7Bvar%20n%3De.querySelector(%22.content%22)%3Bif(!n)return%3Bvar%20a%3Dn.querySelector(%22.username%22)%2Co%3Da%3Fa.textContent.replace(%2F%5C%5B%5Cd%7B1%2C2%7D%3A%5Cd%7B2%7D%3A%5Cd%7B2%7D%5C%5D%2Fg%2C%22%22).trim()%3A%22%22%2Cl%3Dn.querySelectorAll(%22%3Ascope%20%3E%20div%22)%2Ci%3Dl.length%3Fl%5Bl.length-1%5D.textContent.replace(%2F%5C%5B%5Cd%7B1%2C2%7D%3A%5Cd%7B2%7D%3A%5Cd%7B2%7D%5C%5D%2Fg%2C%22%22).trim()%3A%22%22%3Bo%26%26(r.push(o)%2Cr.push(o))%2Ci%26%26r.push(i)%7D%7D)%3Bvar%20t%3Dr.join(%22%5Cn%22)%3Bif(t)%7Bvar%20n%3Dwindow.open(%22%22%2C%22_blank%22)%3Bn%26%26n.document.write(%22Preparing%20your%20Jnet%20Analyzer%20link...%22)%3Bvar%20a%3D(new%20TextEncoder).encode(t)%3Bif(window.CompressionStream)%7Bvar%20o%3Dnew%20CompressionStream(%22gzip%22)%2Cl%3Do.writable.getWriter()%3Bl.write(a)%2Cl.close()%2Cnew%20Response(o.readable).arrayBuffer().then(function(e)%7Bs(%22gz.%22%2Bi(new%20Uint8Array(e)))%7D).catch(function(e)%7Bn%26%26n.close()%2Calert(%22Jnet%20Analyzer%3A%20could%20not%20compress%20the%20log%20(%22%2Be.message%2B%22).%22)%7D)%7Delse%20s(%22raw.%22%2Bi(a))%7Delse%20alert(%22Jnet%20Analyzer%3A%20the%20log%20panel%20is%20empty.%20Play%20or%20load%20a%20game%20first.%22)%7Delse%20alert(%22Jnet%20Analyzer%3A%20could%20not%20find%20a%20game%20log%20on%20this%20page.%20Open%20a%20finished%20jinteki.net%20game%20first.%22)%3Bfunction%20i(e)%7Bfor(var%20r%3D%22%22%2Ct%3D0%3Bt%3Ce.length%3Bt%2B%3D32768)r%2B%3DString.fromCharCode.apply(null%2Ce.subarray(t%2Ct%2B32768))%3Breturn%20btoa(r).replace(%2F%5C%2B%2Fg%2C%22-%22).replace(%2F%5C%2F%2Fg%2C%22_%22).replace(%2F%3D%2B%24%2F%2C%22%22)%7Dfunction%20s(e)%7Bvar%20r%3D%22https%3A%2F%2Fadamstradomski.github.io%2Fjinteki-analyzer%2F%23log%3D%22%2Be%3Bn%3Fn.location.href%3Dr%3Awindow.open(r%2C%22_blank%22)%7D%7D()%3B">
             Analyze this game ↗
           </a>
         </div>
@@ -326,7 +326,7 @@
 
   </div>
 
-  <footer>Parses locally in your browser — nothing is uploaded.<br>Build: 2026-09-12 15:20 UTC+2</footer>
+  <footer>Parses locally in your browser — nothing is uploaded.<br>Build: 2026-09-12 23:27 UTC+2</footer>
 </div>
 
 <script>
@@ -1498,6 +1498,22 @@ function extractChatBadges(lines){
   return badges;
 }
 
+// The "Analyze this game" bookmarklet reads the log straight out of the DOM with
+// textContent, which — unlike a manual click-and-drag copy — doesn't insert any
+// whitespace at element boundaries. jinteki.net's log panel renders each system
+// line's timestamp as its own element sitting right next to the actor's name, so
+// textContent glues them together with no space: "viljums[22:40:21] has created
+// the game." instead of "viljums has created the game.". Left alone, every verb
+// regex below (which anchors on "Name<space>verb") captures "viljums[22:40:21]"
+// as the player name, silently minting a new bogus player per timestamp. Strip
+// any "[H:MM:SS]"/"[HH:MM:SS]" that's glued directly onto a preceding non-space
+// character (a real standalone timestamp marker line, used by the manual-copy
+// format below, always has only whitespace or nothing before its bracket, so
+// this never touches those).
+function stripInlineTimestamps(text){
+  return text.replace(/(\S)\[\d{1,2}:\d{2}:\d{2}\]/g, '$1');
+}
+
 // Some paste sources (e.g. copying from the jinteki.net game log panel with
 // timestamps visible) split each log entry across multiple lines:
 //   PlayerName
@@ -1539,6 +1555,7 @@ function reconstructTimestampedLog(text){
 }
 
 function parseLog(text){
+  text = stripInlineTimestamps(text);
   text = reconstructTimestampedLog(text);
   const rawLines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
   const chatBadges = extractChatBadges(rawLines);
@@ -2013,6 +2030,16 @@ function parseLog(text){
   const rounds = Object.keys(maxTurn).length ? Math.max(...Object.values(maxTurn)) : 0;
   const players = Object.keys(maxTurn);
 
+  // Netrunner is always exactly corp vs runner. More than 2 distinct "players"
+  // means something upstream mis-parsed (e.g. a name got mangled and started
+  // being tracked as a separate actor) — surface that clearly instead of quietly
+  // rendering extra series the rest of the UI isn't built to handle.
+  let playerCountError = null;
+  if (players.length > 2){
+    playerCountError = `Detected ${players.length} distinct players (${players.join(', ')}), but Netrunner is always exactly 2 (corp vs runner). The log likely didn't parse cleanly — check the pasted text for stray or mangled lines.`;
+    flagged.unshift({ reason: playerCountError, line: '(see player list above)' });
+  }
+
   const installedRows = instances.map(inst => {
     const endTurn = inst.turnLeft !== null ? inst.turnLeft : (maxTurn[inst.player] || inst.turnInstalled);
     const turnsInPlay = Math.max(1, endTurn - inst.turnInstalled + 1);
@@ -2133,7 +2160,7 @@ function parseLog(text){
   }
 
   return {
-    installedRows, opsRows, flagged, maxTurn, rounds, winner, concededPlayer, players,
+    installedRows, opsRows, flagged, maxTurn, rounds, winner, concededPlayer, players, playerCountError,
     drawClicks, tagRemovals, trashResources, clickCredits, playerSide, chatBadges, agendaSeries,
     totalGained, totalSpent, totalDraws, cardsRezzed, tagsGained, runsMade, eventsPlayed,
     cardsAccessed, breachCounts, clicksGained,
@@ -2677,6 +2704,13 @@ function runParse(){
     return;
   }
   currentData = parseLog(text);
+  if (currentData.playerCountError){
+    results.style.display = 'none';
+    statusMsg.textContent = '⚠ ' + currentData.playerCountError;
+    statusMsg.style.color = 'var(--neg)';
+    return;
+  }
+  statusMsg.style.color = '';
   renderSummary(currentData);
   renderGameStats(currentData);
   renderAllCharts(currentData);
