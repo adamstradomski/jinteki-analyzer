@@ -315,10 +315,11 @@
 
         <h3>Net credits gained per turn</h3>
         <p style="font-size:12.5px;color:var(--dim);margin:-6px 0 12px;">
-          "Per turn" means each player's own last-started turn number, not a time window — so credits a player gains or
-          spends after their turn ends but before they start a new one (e.g. Corp rezzing ice, or triggering a rez
-          ability, during the Runner's turn) still count against that same turn number, since the log never gives them
-          a new one until they start their next turn. That can make a turn look net-negative even if it opened positive.
+          Unlike the "Net credits gained per turn" chart above (which buckets everything a player does by their own
+          last-started turn number, even actions taken during the opponent's turn — e.g. Corp rezzing ice mid-run),
+          this version buckets every credit gain/spend by whichever turn was actually active in the log at that
+          moment. So a rez paid for during the Runner's turn shows up in the Runner's slot here, not retroactively
+          dragging down Corp's already-finished turn.
         </p>
         <div class="legend" id="creditsGainedSeqLegend"></div>
         <div id="creditsGainedSeqChart"></div>
@@ -387,7 +388,7 @@
 
   </div>
 
-  <footer>Parses locally in your browser — nothing is uploaded.<br>Build: 2026-09-14 15:10 UTC+2</footer>
+  <footer>Parses locally in your browser — nothing is uploaded.<br>Build: 2026-09-14 16:05 UTC+2</footer>
 </div>
 
 <script>
@@ -1721,10 +1722,20 @@ function parseLog(text){
   // Shared turn-order timeline (see turnStartRe handling below): globalTurnSeq
   // increments once per "started turn N" line of either player, seqOfTurn maps
   // player+turn -> that shared index, turnSeqLog keeps the raw order for the
-  // alternative-view axis labels.
+  // alternative-view axis labels. currentGlobalSeq is "whichever turn is
+  // actually active in the log right now" (as opposed to currentTurn[player],
+  // which is "this player's own last-declared turn number") — used below to
+  // bucket gain/spend/draw/agenda events by when they really happened, not by
+  // the acting player's own turn counter. This is what makes Corp paying to rez
+  // ice mid-Runner's-turn land in the Runner's turn slot on the alternative
+  // chart, instead of retroactively worsening Corp's already-finished turn.
   let globalTurnSeq = 0;
+  let currentGlobalSeq = 0;
   const seqOfTurn = {};
   const turnSeqLog = [];
+  const creditsGainedBySeq = {};
+  const creditsSpentBySeq = {};
+  const drawsBySeq = {};
 
   function bump(obj, key, amt){ obj[key] = (obj[key] || 0) + amt; }
   function bumpTurn(obj, player, turn, amt){
@@ -1929,6 +1940,7 @@ function parseLog(text){
       // turns actually started in the log, one shared timeline both players'
       // per-turn data can be replotted against (see "Alternative: turn order" charts).
       globalTurnSeq += 1;
+      currentGlobalSeq = globalTurnSeq;
       if (!seqOfTurn[p]) seqOfTurn[p] = {};
       seqOfTurn[p][t] = globalTurnSeq;
       turnSeqLog.push({ player: p, turn: t, seq: globalTurnSeq });
@@ -2059,23 +2071,27 @@ function parseLog(text){
       const amt = +gm[1];
       bump(totalGained, player, amt);
       bumpTurn(creditsGainedByTurn, player, turn, amt);
+      bumpTurn(creditsGainedBySeq, player, currentGlobalSeq, amt);
     }
     let payMatch = line.match(genericPaysRe1) || line.match(genericPaysRe2);
     if (payMatch){
       const spentAmt = sumDigits(payMatch[1]);
       bump(totalSpent, player, spentAmt);
       bumpTurn(creditsSpentByTurn, player, turn, spentAmt);
+      bumpTurn(creditsSpentBySeq, player, currentGlobalSeq, spentAmt);
     }
 
     // draws
     if (mandatoryDrawRe.test(line)){
       bump(totalDraws, player, 1);
       bumpTurn(drawsByTurn, player, turn, 1);
+      bumpTurn(drawsBySeq, player, currentGlobalSeq, 1);
     }
     if ((m = line.match(anyDrawRe))){
       const n = +m[1];
       bump(totalDraws, player, n);
       bumpTurn(drawsByTurn, player, turn, n);
+      bumpTurn(drawsBySeq, player, currentGlobalSeq, n);
     }
 
     // tags
@@ -2111,16 +2127,16 @@ function parseLog(text){
     }
 
     if ((m = line.match(stealRe))){
-      agendaEvents.push({ player, turn, points: +m[1] });
+      agendaEvents.push({ player, turn, seq: currentGlobalSeq, points: +m[1] });
     }
     if ((m = line.match(scoreRe))){
-      agendaEvents.push({ player, turn, points: +m[1] });
+      agendaEvents.push({ player, turn, seq: currentGlobalSeq, points: +m[1] });
     }
     if ((m = line.match(revealToScoreAreaRe))){
       const revealedName = cleanCardName(m[1]);
       const pts = AGENDA_POINTS[revealedName.toLowerCase()];
       if (pts !== undefined){
-        agendaEvents.push({ player, turn, points: pts });
+        agendaEvents.push({ player, turn, seq: currentGlobalSeq, points: pts });
       } else {
         flagged.push({ reason: `${revealedName} (${player}) — added to score area by another card's effect, but its agenda point value isn't in the lookup table, so it's not counted in the agenda chart`, line });
       }
@@ -2272,6 +2288,15 @@ function parseLog(text){
   // actually started (globalTurnSeq / seqOfTurn, built while scanning lines
   // above) gives a second, arguably more honest, timeline to compare against
   // the per-own-turn charts above.
+  // ---- Alternative axis: shared turn-order sequence instead of each player's
+  // own turn number. Corp turn 3 and Runner turn 3 are not the same moment in
+  // the game, and both players can gain credits / draw cards on either player's
+  // turn — so this doesn't just relabel the per-own-turn data (that would still
+  // dump everything Corp does mid-Runner's-turn into "Corp turn 1"); the
+  // gain/spend/draw/agenda events were bucketed by currentGlobalSeq — the turn
+  // that was actually active in the log at that moment — as they were parsed
+  // (see creditsGainedBySeq etc. and the turnStartRe handler above), so e.g. a
+  // rez paid for mid-Runner's-turn lands in the Runner's slot here, not Corp's.
   const totalSeq = globalTurnSeq;
   function reindexByTurnToSeq(byTurn){
     const bySeq = {};
@@ -2286,21 +2311,24 @@ function parseLog(text){
     });
     return bySeq;
   }
-  const creditsGainedSeqSeries = buildDeltaSeries(reindexByTurnToSeq(creditsGainedByTurn), totalSeq);
-  const creditsSpentSeqSeries = buildDeltaSeries(reindexByTurnToSeq(creditsSpentByTurn), totalSeq);
+  const creditsGainedSeqSeries = buildDeltaSeries(creditsGainedBySeq, totalSeq);
+  const creditsSpentSeqSeries = buildDeltaSeries(creditsSpentBySeq, totalSeq);
   const creditsNetSeqSeries = {};
   players.forEach(p => {
     creditsNetSeqSeries[p] = creditsGainedSeqSeries[p].map((v, i) => v - (creditsSpentSeqSeries[p][i] || 0));
   });
+  // Credit pool / hand size are point-in-time snapshots taken exactly when a
+  // turn starts, so they're already pinned to a real moment — reindexing them
+  // by that same turn's seq (rather than re-bucketing by currentGlobalSeq) is
+  // correct as-is, unlike the delta series above.
   const creditPoolSeqSeries = buildSnapshotSeries(reindexByTurnToSeq(creditPoolByTurn), totalSeq);
   const handSizeSeqSeries = buildSnapshotSeries(reindexByTurnToSeq(handSizeByTurn), totalSeq);
-  const cardsDrawnSeqSeries = buildCumulativeSeries(reindexByTurnToSeq(drawsByTurn), totalSeq);
+  const cardsDrawnSeqSeries = buildCumulativeSeries(drawsBySeq, totalSeq);
   const agendaSeqSeries = {};
   players.forEach(p => { agendaSeqSeries[p] = new Array(totalSeq + 1).fill(0); });
   agendaEvents.forEach(e => {
     if (!agendaSeqSeries[e.player]) return;
-    const t = Math.max(1, Math.min(rounds, e.turn || 1));
-    const seq = (seqOfTurn[e.player] && seqOfTurn[e.player][t]) || totalSeq || 1;
+    const seq = e.seq || totalSeq || 1;
     agendaSeqSeries[e.player][seq] += e.points;
   });
   players.forEach(p => {
