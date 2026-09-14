@@ -303,6 +303,7 @@
           Corp turn N or Runner turn N, in play order), so the two players' lines line up in real time instead of by
           turn number. Compare both and keep whichever reads more clearly for a given log.
         </p>
+        <div class="stat" style="margin-bottom:16px;"><span class="num" id="seqTotalTurnsNum">0</span><span class="label">Total turns played (Corp + Runner combined)</span></div>
 
         <h3>Agenda points over time</h3>
         <div class="legend" id="agendaSeqLegend"></div>
@@ -313,6 +314,12 @@
         </details>
 
         <h3>Net credits gained per turn</h3>
+        <p style="font-size:12.5px;color:var(--dim);margin:-6px 0 12px;">
+          "Per turn" means each player's own last-started turn number, not a time window — so credits a player gains or
+          spends after their turn ends but before they start a new one (e.g. Corp rezzing ice, or triggering a rez
+          ability, during the Runner's turn) still count against that same turn number, since the log never gives them
+          a new one until they start their next turn. That can make a turn look net-negative even if it opened positive.
+        </p>
         <div class="legend" id="creditsGainedSeqLegend"></div>
         <div id="creditsGainedSeqChart"></div>
         <details style="margin-top:10px;">
@@ -380,7 +387,7 @@
 
   </div>
 
-  <footer>Parses locally in your browser — nothing is uploaded.<br>Build: 2026-09-14 14:35 UTC+2</footer>
+  <footer>Parses locally in your browser — nothing is uploaded.<br>Build: 2026-09-14 15:10 UTC+2</footer>
 </div>
 
 <script>
@@ -1538,16 +1545,28 @@ function extractChatBadges(lines){
   const GLHF_RE = /\b(glhf|gl\s*hf|good luck|have fun)\b/i;
   const GG_RE = /\bgg\b/i;
   const TY_RE = /\b(ty4tg|tftg|thank you for the game|thanks for the game|thank you)\b/i;
+  // System command lines look like "!<player> uses a command: /save-replay" —
+  // not a chat message, so it's matched against the raw line directly rather
+  // than through the username-repeat chat pattern below.
+  const SAVE_REPLAY_RE = /^!(.+?)\s+uses a command:\s*\/save-replay\b/i;
   const badges = {};
+  function ensureBadge(player){
+    if (!badges[player]) badges[player] = { glhf: false, gg: false, ty: false, savedReplay: false };
+    return badges[player];
+  }
   for (let i = 0; i < lines.length - 2; i++){
     if (lines[i] === lines[i+1] && /^[^\s.]+$/.test(lines[i]) && lines[i].length < 40){
       const player = lines[i];
       const text = lines[i+2];
-      if (!badges[player]) badges[player] = { glhf: false, gg: false, ty: false };
-      if (GLHF_RE.test(text)) badges[player].glhf = true;
-      if (GG_RE.test(text)) badges[player].gg = true;
-      if (TY_RE.test(text)) badges[player].ty = true;
+      const b = ensureBadge(player);
+      if (GLHF_RE.test(text)) b.glhf = true;
+      if (GG_RE.test(text)) b.gg = true;
+      if (TY_RE.test(text)) b.ty = true;
     }
+  }
+  for (const line of lines){
+    const sm = line.match(SAVE_REPLAY_RE);
+    if (sm) ensureBadge(sm[1].trim()).savedReplay = true;
   }
   return badges;
 }
@@ -2353,6 +2372,7 @@ function renderSummary(data){
     if (b.glhf) chips.push('<span class="badge">GLHF</span>');
     if (b.gg) chips.push('<span class="badge">GG</span>');
     if (b.ty) chips.push('<span class="badge">TY4TG</span>');
+    if (b.savedReplay) chips.push('<span class="badge" title="Saved a replay of this game">💾 SAVED</span>');
     if (data.concededPlayer === p) chips.push('<span class="badge" style="border-color:var(--neg);color:var(--neg);">CONCEDE</span>');
     const div = document.createElement('div');
     div.className = 'player-badges';
@@ -2804,6 +2824,8 @@ function renderLineChart(ids, series, players, rounds, opts){
 
 function renderAllCharts(data){
   const colors = getChartColors(data);
+  const totalTurnsEl = document.getElementById('seqTotalTurnsNum');
+  if (totalTurnsEl) totalTurnsEl.textContent = data.totalSeq || 0;
   renderLineChart(
     { legend: 'agendaLegend', chart: 'agendaChart', table: 'agendaTableWrap' },
     data.agendaSeries, data.players, data.rounds, { colors, yStep: 1, minMaxVal: 7 }
