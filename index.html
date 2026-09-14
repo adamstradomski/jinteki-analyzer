@@ -293,6 +293,60 @@
       </div>
     </div>
 
+    <div class="panel collapsed">
+      <div class="panel-header"><h2>Alternative: shared turn order</h2><span class="collapse-icon">+</span></div>
+      <div class="panel-body">
+        <p style="font-size:12.5px;color:var(--dim);margin:-6px 0 12px;">
+          The charts above plot each player against <em>their own</em> turn counter — but Corp's turn 3 and Runner's turn 3
+          aren't the same moment, and either player can gain credits or draw cards during the other's turn. These same
+          five stats are re-plotted here against the order turns actually started in the log (labels like C1/R1/C2/R2 —
+          Corp turn N or Runner turn N, in play order), so the two players' lines line up in real time instead of by
+          turn number. Compare both and keep whichever reads more clearly for a given log.
+        </p>
+
+        <h3>Agenda points over time</h3>
+        <div class="legend" id="agendaSeqLegend"></div>
+        <div id="agendaSeqChart"></div>
+        <details style="margin-top:10px;">
+          <summary>Turn-by-turn table</summary>
+          <div id="agendaSeqTableWrap"></div>
+        </details>
+
+        <h3>Net credits gained per turn</h3>
+        <div class="legend" id="creditsGainedSeqLegend"></div>
+        <div id="creditsGainedSeqChart"></div>
+        <details style="margin-top:10px;">
+          <summary>Turn-by-turn table</summary>
+          <div id="creditsGainedSeqTableWrap"></div>
+        </details>
+
+        <h3>Credits in pool over time</h3>
+        <div class="legend" id="creditPoolSeqLegend"></div>
+        <div id="creditPoolSeqChart"></div>
+        <details style="margin-top:10px;">
+          <summary>Turn-by-turn table</summary>
+          <div id="creditPoolSeqTableWrap"></div>
+        </details>
+
+        <h3>Cards in hand over time</h3>
+        <div class="legend" id="handSizeSeqLegend"></div>
+        <div id="handSizeSeqChart"></div>
+        <details style="margin-top:10px;">
+          <summary>Turn-by-turn table</summary>
+          <div id="handSizeSeqTableWrap"></div>
+        </details>
+
+        <h3>Cumulative cards drawn over time</h3>
+        <div class="legend" id="cardsDrawnSeqLegend"></div>
+        <div id="cardsDrawnSeqChart"></div>
+        <details style="margin-top:10px;">
+          <summary>Turn-by-turn table</summary>
+          <div id="cardsDrawnSeqTableWrap"></div>
+        </details>
+
+      </div>
+    </div>
+
     <div id="playerSections"></div>
 
     <div class="panel">
@@ -326,7 +380,7 @@
 
   </div>
 
-  <footer>Parses locally in your browser — nothing is uploaded.<br>Build: 2026-09-12 23:49 UTC+2</footer>
+  <footer>Parses locally in your browser — nothing is uploaded.<br>Build: 2026-09-14 14:35 UTC+2</footer>
 </div>
 
 <script>
@@ -1645,6 +1699,13 @@ function parseLog(text){
   const clicksGained = {};
   let winner = null;
   let concededPlayer = null;
+  // Shared turn-order timeline (see turnStartRe handling below): globalTurnSeq
+  // increments once per "started turn N" line of either player, seqOfTurn maps
+  // player+turn -> that shared index, turnSeqLog keeps the raw order for the
+  // alternative-view axis labels.
+  let globalTurnSeq = 0;
+  const seqOfTurn = {};
+  const turnSeqLog = [];
 
   function bump(obj, key, amt){ obj[key] = (obj[key] || 0) + amt; }
   function bumpTurn(obj, player, turn, amt){
@@ -1842,6 +1903,16 @@ function parseLog(text){
       creditPoolByTurn[p][t] = credits;
       handSizeByTurn[p] = handSizeByTurn[p] || {};
       handSizeByTurn[p][t] = hand;
+      // Corp and Runner each keep their own "turn 1, turn 2, ..." counter, but
+      // those numbers don't line up in real time — Corp's turn 3 and Runner's
+      // turn 3 aren't simultaneous, and each player can also gain credits/draw
+      // cards during the *other* player's turn. seqOfTurn records the order
+      // turns actually started in the log, one shared timeline both players'
+      // per-turn data can be replotted against (see "Alternative: turn order" charts).
+      globalTurnSeq += 1;
+      if (!seqOfTurn[p]) seqOfTurn[p] = {};
+      seqOfTurn[p][t] = globalTurnSeq;
+      turnSeqLog.push({ player: p, turn: t, seq: globalTurnSeq });
       continue;
     }
     if ((m = line.match(turnEndRe))){
@@ -2115,15 +2186,27 @@ function parseLog(text){
   });
   players.forEach(p => {
     let running = 0;
-    for (let t = 1; t <= rounds; t++){ running += agendaSeries[p][t]; agendaSeries[p][t] = running; }
+    // Start from turn 0 (0 agenda points at game start) for the same reason as
+    // buildSnapshotSeries/buildCumulativeSeries below: gives every chart a real
+    // baseline point so 1-turn games still draw a line, not a lone dot.
+    for (let t = 0; t <= rounds; t++){ running += agendaSeries[p][t]; agendaSeries[p][t] = running; }
   });
 
-  function buildSnapshotSeries(byTurn){
+  // All three builders now start at turn 0 = game start (5cr / 5 cards, nothing
+  // gained/spent/drawn yet), not turn 1. A 1-turn game therefore always has at
+  // least two plotted points (turn 0 baseline -> turn 1 result), so the line
+  // charts have something to draw instead of a single invisible dot.
+  // count defaults to `rounds` (each player's own turn-number axis). Passing
+  // `totalSeq` instead builds the same shape of series against the shared
+  // turn-order axis used by the "Alternative: turn order" charts further below.
+  function buildSnapshotSeries(byTurn, count){
+    if (count === undefined) count = rounds;
     const series = {};
     players.forEach(p => {
-      const arr = new Array(rounds + 1).fill(0);
+      const arr = new Array(count + 1).fill(0);
       let last = 5;
-      for (let t = 1; t <= rounds; t++){
+      arr[0] = last;
+      for (let t = 1; t <= count; t++){
         if (byTurn[p] && byTurn[p][t] !== undefined) last = byTurn[p][t];
         arr[t] = last;
       }
@@ -2131,21 +2214,23 @@ function parseLog(text){
     });
     return series;
   }
-  function buildDeltaSeries(byTurn){
+  function buildDeltaSeries(byTurn, count){
+    if (count === undefined) count = rounds;
     const series = {};
     players.forEach(p => {
-      const arr = new Array(rounds + 1).fill(0);
-      for (let t = 1; t <= rounds; t++) arr[t] = (byTurn[p] && byTurn[p][t]) || 0;
+      const arr = new Array(count + 1).fill(0);
+      for (let t = 0; t <= count; t++) arr[t] = (byTurn[p] && byTurn[p][t]) || 0;
       series[p] = arr;
     });
     return series;
   }
-  function buildCumulativeSeries(byTurn){
+  function buildCumulativeSeries(byTurn, count){
+    if (count === undefined) count = rounds;
     const series = {};
     players.forEach(p => {
-      const arr = new Array(rounds + 1).fill(0);
+      const arr = new Array(count + 1).fill(0);
       let running = 0;
-      for (let t = 1; t <= rounds; t++){ running += (byTurn[p] && byTurn[p][t]) || 0; arr[t] = running; }
+      for (let t = 0; t <= count; t++){ running += (byTurn[p] && byTurn[p][t]) || 0; arr[t] = running; }
       series[p] = arr;
     });
     return series;
@@ -2160,6 +2245,55 @@ function parseLog(text){
   const creditPoolSeries = buildSnapshotSeries(creditPoolByTurn);
   const handSizeSeries = buildSnapshotSeries(handSizeByTurn);
   const cardsDrawnSeries = buildCumulativeSeries(drawsByTurn);
+
+  // ---- Alternative axis: shared turn-order sequence instead of each player's
+  // own turn number. Corp turn 3 and Runner turn 3 are not the same moment in
+  // the game, and both players can gain credits / draw cards on either player's
+  // turn — so re-plotting the same underlying data against the order turns
+  // actually started (globalTurnSeq / seqOfTurn, built while scanning lines
+  // above) gives a second, arguably more honest, timeline to compare against
+  // the per-own-turn charts above.
+  const totalSeq = globalTurnSeq;
+  function reindexByTurnToSeq(byTurn){
+    const bySeq = {};
+    players.forEach(p => {
+      bySeq[p] = {};
+      const map = byTurn[p] || {};
+      Object.keys(map).forEach(tKey => {
+        const t = +tKey;
+        const seq = seqOfTurn[p] && seqOfTurn[p][t];
+        if (seq) bySeq[p][seq] = (bySeq[p][seq] || 0) + map[t];
+      });
+    });
+    return bySeq;
+  }
+  const creditsGainedSeqSeries = buildDeltaSeries(reindexByTurnToSeq(creditsGainedByTurn), totalSeq);
+  const creditsSpentSeqSeries = buildDeltaSeries(reindexByTurnToSeq(creditsSpentByTurn), totalSeq);
+  const creditsNetSeqSeries = {};
+  players.forEach(p => {
+    creditsNetSeqSeries[p] = creditsGainedSeqSeries[p].map((v, i) => v - (creditsSpentSeqSeries[p][i] || 0));
+  });
+  const creditPoolSeqSeries = buildSnapshotSeries(reindexByTurnToSeq(creditPoolByTurn), totalSeq);
+  const handSizeSeqSeries = buildSnapshotSeries(reindexByTurnToSeq(handSizeByTurn), totalSeq);
+  const cardsDrawnSeqSeries = buildCumulativeSeries(reindexByTurnToSeq(drawsByTurn), totalSeq);
+  const agendaSeqSeries = {};
+  players.forEach(p => { agendaSeqSeries[p] = new Array(totalSeq + 1).fill(0); });
+  agendaEvents.forEach(e => {
+    if (!agendaSeqSeries[e.player]) return;
+    const t = Math.max(1, Math.min(rounds, e.turn || 1));
+    const seq = (seqOfTurn[e.player] && seqOfTurn[e.player][t]) || totalSeq || 1;
+    agendaSeqSeries[e.player][seq] += e.points;
+  });
+  players.forEach(p => {
+    let running = 0;
+    for (let s = 0; s <= totalSeq; s++){ running += agendaSeqSeries[p][s]; agendaSeqSeries[p][s] = running; }
+  });
+  // Axis labels for the sequence charts: "C3" / "R2" style, i.e. which player's
+  // turn and their own turn-number that shared slot corresponds to.
+  const seqAxisLabels = new Array(totalSeq + 1).fill('');
+  turnSeqLog.forEach(({ player, turn, seq }) => {
+    seqAxisLabels[seq] = (playerSide[player] === 'corp' ? 'C' : playerSide[player] === 'runner' ? 'R' : player[0]) + turn;
+  });
 
   const runnerPlayer = players.find(p => playerSide[p] === 'runner');
   const tagsGained = {};
@@ -2177,7 +2311,9 @@ function parseLog(text){
     drawClicks, tagRemovals, trashResources, clickCredits, playerSide, chatBadges, agendaSeries,
     totalGained, totalSpent, totalDraws, cardsRezzed, tagsGained, runsMade, eventsPlayed,
     cardsAccessed, breachCounts, clicksGained,
-    creditsGainedSeries, creditsNetSeries, creditPoolSeries, handSizeSeries, cardsDrawnSeries
+    creditsGainedSeries, creditsNetSeries, creditPoolSeries, handSizeSeries, cardsDrawnSeries,
+    totalSeq, seqAxisLabels, agendaSeqSeries, creditsNetSeqSeries, creditPoolSeqSeries,
+    handSizeSeqSeries, cardsDrawnSeqSeries
   };
 }
 
@@ -2544,10 +2680,12 @@ function renderLineChart(ids, series, players, rounds, opts){
 
   if (!rounds){ chartDiv.innerHTML = '<div class="empty-note">No turns detected.</div>'; return; }
 
+  // Series now include an index-0 "game start" baseline (see buildSnapshotSeries
+  // etc.), so read the whole array, not just indices 1..rounds.
   let maxVal = 1, minVal = 0;
   players.forEach(p => {
     const s = series[p];
-    if (s){ maxVal = Math.max(maxVal, ...s.slice(1)); minVal = Math.min(minVal, ...s.slice(1)); }
+    if (s){ maxVal = Math.max(maxVal, ...s); minVal = Math.min(minVal, ...s); }
   });
   if (opts.yTicks) maxVal = Math.max(maxVal, ...opts.yTicks);
   if (opts.minMaxVal !== undefined) maxVal = Math.max(maxVal, opts.minMaxVal);
@@ -2556,7 +2694,9 @@ function renderLineChart(ids, series, players, rounds, opts){
 
   const W = 900, H = 240, padL = 40, padR = 20, padT = 16, padB = 30;
   const plotW = W - padL - padR, plotH = H - padT - padB;
-  const xFor = t => padL + (rounds > 1 ? (t - 1) / (rounds - 1) * plotW : plotW / 2);
+  // t now ranges 0..rounds (turn 0 = game start), so a single-turn game (rounds=1)
+  // still spans two x positions (0 and 1) instead of collapsing to one dead center point.
+  const xFor = t => padL + (rounds > 0 ? (t / rounds) * plotW : plotW / 2);
   const yFor = v => padT + plotH - ((v - minVal) / (maxVal - minVal)) * plotH;
 
   let svg = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;font-family:var(--mono);">`;
@@ -2599,12 +2739,16 @@ function renderLineChart(ids, series, players, rounds, opts){
     });
   }
 
+  // Turn 0 (game start) is always shown as its own tick so it's clear the chart
+  // begins at the baseline, not mid-game. opts.xLabels (e.g. "C1", "R1", "C2"...)
+  // overrides the plain turn number for the sequential/alternative-axis charts.
+  const xLabel = t => (opts.xLabels && opts.xLabels[t] !== undefined) ? (t === 0 ? 'Start' : opts.xLabels[t]) : (t === 0 ? '0' : t);
   const xTickStep = Math.max(1, Math.ceil(rounds / 12));
-  for (let t = 1; t <= rounds; t += xTickStep){
-    svg += `<text x="${xFor(t)}" y="${padT+plotH+16}" font-size="9" fill="var(--dim)" text-anchor="middle">${t}</text>`;
+  for (let t = 0; t <= rounds; t += xTickStep){
+    svg += `<text x="${xFor(t)}" y="${padT+plotH+16}" font-size="9" fill="var(--dim)" text-anchor="middle">${xLabel(t)}</text>`;
   }
-  if ((rounds - 1) % xTickStep !== 0){
-    svg += `<text x="${xFor(rounds)}" y="${padT+plotH+16}" font-size="9" fill="var(--accent)" text-anchor="middle">${rounds}</text>`;
+  if (rounds % xTickStep !== 0){
+    svg += `<text x="${xFor(rounds)}" y="${padT+plotH+16}" font-size="9" fill="var(--accent)" text-anchor="middle">${xLabel(rounds)}</text>`;
   }
 
   players.forEach((p, idx) => {
@@ -2612,7 +2756,7 @@ function renderLineChart(ids, series, players, rounds, opts){
     const s = series[p];
     if (!s) return;
     if (opts.style === 'bar'){
-      const barW = Math.max(2, (plotW / rounds) / (players.length + 1));
+      const barW = Math.max(2, (plotW / (rounds + 1)) / (players.length + 1));
       const y0 = yFor(0);
       for (let t = 1; t <= rounds; t++){
         const x = xFor(t) - barW * (players.length / 2) + barW * idx;
@@ -2621,8 +2765,15 @@ function renderLineChart(ids, series, players, rounds, opts){
       }
     } else {
       let points = '';
-      for (let t = 1; t <= rounds; t++) points += `${xFor(t)},${yFor(s[t])} `;
+      for (let t = 0; t <= rounds; t++) points += `${xFor(t)},${yFor(s[t])} `;
       svg += `<polyline points="${points.trim()}" fill="none" stroke="${color}" stroke-width="2" />`;
+      // Explicit dots on every point: without these, a chart with very few turns
+      // (esp. a 1-turn game, which is now a 2-point line from turn 0 to turn 1)
+      // can read as an empty/near-invisible sliver. Dots make each value legible
+      // regardless of how many turns there are.
+      for (let t = 0; t <= rounds; t++){
+        svg += `<circle cx="${xFor(t)}" cy="${yFor(s[t])}" r="2.5" fill="${color}" />`;
+      }
     }
   });
 
@@ -2641,8 +2792,8 @@ function renderLineChart(ids, series, players, rounds, opts){
     let tbl = '<table><thead><tr><th>Turn</th>';
     players.forEach(p => { tbl += `<th class="num">${p}</th>`; });
     tbl += '</tr></thead><tbody>';
-    for (let t = 1; t <= rounds; t++){
-      tbl += `<tr><td class="num">${t}</td>`;
+    for (let t = 0; t <= rounds; t++){
+      tbl += `<tr><td class="num">${xLabel(t)}</td>`;
       players.forEach(p => { tbl += `<td class="num">${series[p] ? series[p][t] : 0}</td>`; });
       tbl += '</tr>';
     }
@@ -2672,6 +2823,30 @@ function renderAllCharts(data){
   renderLineChart(
     { legend: 'cardsDrawnLegend', chart: 'cardsDrawnChart', table: 'cardsDrawnTableWrap' },
     data.cardsDrawnSeries, data.players, data.rounds, { colors, yStep: 10, referenceLines: [40, 45, 49] }
+  );
+
+  // Same five metrics, replotted against the shared turn-order axis (see the
+  // "Alternative: shared turn order" panel) instead of each player's own turn number.
+  const seqOpts = { colors, xLabels: data.seqAxisLabels };
+  renderLineChart(
+    { legend: 'agendaSeqLegend', chart: 'agendaSeqChart', table: 'agendaSeqTableWrap' },
+    data.agendaSeqSeries, data.players, data.totalSeq, Object.assign({}, seqOpts, { yStep: 1, minMaxVal: 7 })
+  );
+  renderLineChart(
+    { legend: 'creditsGainedSeqLegend', chart: 'creditsGainedSeqChart', table: 'creditsGainedSeqTableWrap' },
+    data.creditsNetSeqSeries, data.players, data.totalSeq, Object.assign({}, seqOpts, { style: 'bar', yStep: 5 })
+  );
+  renderLineChart(
+    { legend: 'creditPoolSeqLegend', chart: 'creditPoolSeqChart', table: 'creditPoolSeqTableWrap' },
+    data.creditPoolSeqSeries, data.players, data.totalSeq, Object.assign({}, seqOpts, { yStep: 5 })
+  );
+  renderLineChart(
+    { legend: 'handSizeSeqLegend', chart: 'handSizeSeqChart', table: 'handSizeSeqTableWrap' },
+    data.handSizeSeqSeries, data.players, data.totalSeq, Object.assign({}, seqOpts, { cappedTicks: [0, 1, 2, 3, 4, 5, 6] })
+  );
+  renderLineChart(
+    { legend: 'cardsDrawnSeqLegend', chart: 'cardsDrawnSeqChart', table: 'cardsDrawnSeqTableWrap' },
+    data.cardsDrawnSeqSeries, data.players, data.totalSeq, Object.assign({}, seqOpts, { yStep: 10, referenceLines: [40, 45, 49] })
   );
 }
 
