@@ -388,7 +388,7 @@
 
   </div>
 
-  <footer>Parses locally in your browser — nothing is uploaded.<br>Build: 2026-09-14 16:05 UTC+2</footer>
+  <footer>Parses locally in your browser — nothing is uploaded.<br>Build: 2026-09-14 17:20 UTC+2</footer>
 </div>
 
 <script>
@@ -1639,15 +1639,19 @@ function parseLog(text){
     'resolves','indicates','passes','discards','scores','wins','must','jacks','sets'];
   const playerRe = new RegExp('^(.+?)\\s+(?:' + VERBS.join('|') + ')\\b');
 
-  const gainDirectRe = /\buses?\s+(.+?)\s+to\s+gain\s*(\d+)?\b/;
-  const gainRevealRe = /\buses?\s+(.+?)\s+to\s+reveal\s+.+?\s+and\s+gain\s*(\d+)?\b/;
-  const gainAndThenRe = /\buses?\s+(.+?)\s+to\s+.+?\b(?:and|then)\s+gain\s*(\d+)?\b/;
+  // Jinteki's own generated log text is consistently lowercase ("to gain N"),
+  // but text pulled verbatim from a card's printed ability wording (e.g. Caveat
+  // Emptor: "...to Gain 10...") can carry its own capitalization. Case-insensitive
+  // so a capitalized "Gain" on a card's ability text isn't silently dropped.
+  const gainDirectRe = /\buses?\s+(.+?)\s+to\s+gain\s*(\d+)?\b/i;
+  const gainRevealRe = /\buses?\s+(.+?)\s+to\s+reveal\s+.+?\s+and\s+gain\s*(\d+)?\b/i;
+  const gainAndThenRe = /\buses?\s+(.+?)\s+to\s+.+?\b(?:and|then)\s+gain\s*(\d+)?\b/i;
   const payFromRe = /\bpays\s+(\d+)\s+from\s+(?:his|her|their|the)?\s*(.+?)(?=\s+and\s+|\s+to\s+|\.$|$)/g;
   const installRe = /\bto install (.+)$/;
   const installCostRe = /pays\s+(.+?)\s+to\s+install\b/;
   const rezRe = /\bto rez (.+?)\s+(?:in|protecting)\s+(.+?)(?:\s+at\s+position\s+\d+)?\.?$/;
   const rezCostRe = /pays\s+(.+?)\s+to\s+rez\b/;
-  const playCostRe = /pays\s+(.+?)\s+to\s+play\s+(.+?)\.?$/;
+  const playCostRe = /pays\s+([^,]+?)\s+to\s+play\s+(.+?)\.?$/;
   const useCostRe = /pays\s+(\d+)\s+to\s+use\s+(.+?)\s+to\s+/;
   const trashRe = /\btrash(?:es)?\s+(.+?)(?=\s+to\s+use\s+|\s+from\s+the\s+root|\s+from\s+(?:Server\s+\d+|HQ|R&D|Archives)\b|\s+in\s+Server\s+\d+\b|\s+due\s+to|\.$|$)/;
   const trashServerRefRe = /\b(?:from|in)\s+(Server\s+\d+|HQ|R&D|Archives)\b/i;
@@ -1667,9 +1671,15 @@ function parseLog(text){
   const anyDrawRe = /\bdraws?\s+(\d+)\s+cards?\b/i;
   const cardDrawRe = /\buses?\s+(.+?)\s+to\s+.*?\bdraws?\s+(\d+)\s+cards?\b/i;
   const mandatoryDrawRe = /\bmakes (?:his|her|their) mandatory start of turn draw\b/;
-  const genericPaysRe1 = /\bpays\s+(.+?)\s+to\s+\S+/;
+  // The captured cost segment is bounded to not cross a comma: a line like
+  // "pays 3 , and removes 1 tag to play End of the Line." has an unrelated
+  // number (the tag count) after the comma that a plain lazy ".+?" would
+  // happily sweep up into the credit total via sumDigits. Excluding commas
+  // makes this fall through to genericPaysRe2 below, which just grabs the
+  // single number straight after "pays" — correct for every real cost line.
+  const genericPaysRe1 = /\bpays\s+([^,]+?)\s+to\s+\S+/;
   const genericPaysRe2 = /\bpays\s+(\d+)\b/;
-  const genericGainRe = /\bgains?\s+(\d+)(?!\s*agenda)/g;
+  const genericGainRe = /\bgains?\s+(\d+)(?!\s*agenda)/gi;
   const giveTagRe = /\bgives?\s+the Runner (\d+) tags?/i;
   const takeTagRe = /\btakes?\s+(\d+)\s+tags?/i;
   const runRe = /\bmakes? a run on\b/i;
@@ -2069,9 +2079,25 @@ function parseLog(text){
     genericGainRe.lastIndex = 0;
     while ((gm = genericGainRe.exec(line))){
       const amt = +gm[1];
-      bump(totalGained, player, amt);
-      bumpTurn(creditsGainedByTurn, player, turn, amt);
-      bumpTurn(creditsGainedBySeq, player, currentGlobalSeq, amt);
+      // The line's grammatical actor isn't always who actually receives the
+      // credits: "Inermis2 uses X to let the Runner gain 2..." is Corp's line
+      // (Corp is `player`), but the 2cr belongs to the Runner. Check a short
+      // window of text right before the number for an explicit "Runner"/"Corp"
+      // that names the real recipient, and redirect the credit there instead.
+      const context = line.slice(Math.max(0, gm.index - 25), gm.index);
+      let recipient = player;
+      if (/\bRunner\b/i.test(context) && playerSide[player] !== 'runner'){
+        // `players` (the finalized list) isn't built until after this scan, so
+        // look the other side up directly via playerSide/maxTurn instead.
+        const runnerP = Object.keys(maxTurn).find(pl => playerSide[pl] === 'runner');
+        if (runnerP) recipient = runnerP;
+      } else if (/\bCorp\b/i.test(context) && playerSide[player] !== 'corp'){
+        const corpP = Object.keys(maxTurn).find(pl => playerSide[pl] === 'corp');
+        if (corpP) recipient = corpP;
+      }
+      bump(totalGained, recipient, amt);
+      bumpTurn(creditsGainedByTurn, recipient, currentTurn[recipient] || 0, amt);
+      bumpTurn(creditsGainedBySeq, recipient, currentGlobalSeq, amt);
     }
     let payMatch = line.match(genericPaysRe1) || line.match(genericPaysRe2);
     if (payMatch){
@@ -2284,13 +2310,6 @@ function parseLog(text){
   // ---- Alternative axis: shared turn-order sequence instead of each player's
   // own turn number. Corp turn 3 and Runner turn 3 are not the same moment in
   // the game, and both players can gain credits / draw cards on either player's
-  // turn — so re-plotting the same underlying data against the order turns
-  // actually started (globalTurnSeq / seqOfTurn, built while scanning lines
-  // above) gives a second, arguably more honest, timeline to compare against
-  // the per-own-turn charts above.
-  // ---- Alternative axis: shared turn-order sequence instead of each player's
-  // own turn number. Corp turn 3 and Runner turn 3 are not the same moment in
-  // the game, and both players can gain credits / draw cards on either player's
   // turn — so this doesn't just relabel the per-own-turn data (that would still
   // dump everything Corp does mid-Runner's-turn into "Corp turn 1"); the
   // gain/spend/draw/agenda events were bucketed by currentGlobalSeq — the turn
@@ -2317,11 +2336,30 @@ function parseLog(text){
   players.forEach(p => {
     creditsNetSeqSeries[p] = creditsGainedSeqSeries[p].map((v, i) => v - (creditsSpentSeqSeries[p][i] || 0));
   });
-  // Credit pool / hand size are point-in-time snapshots taken exactly when a
-  // turn starts, so they're already pinned to a real moment — reindexing them
-  // by that same turn's seq (rather than re-bucketing by currentGlobalSeq) is
-  // correct as-is, unlike the delta series above.
-  const creditPoolSeqSeries = buildSnapshotSeries(reindexByTurnToSeq(creditPoolByTurn), totalSeq);
+  // Credit pool here is DERIVED (running total of creditsGained/SpentSeqSeries,
+  // starting from the 5cr baseline) rather than reindexed from the "started
+  // turn N with Xcr" snapshot lines. Those snapshots are only printed at the
+  // start of a player's *own* turn, so reindexing them left a stale value
+  // sitting in every seq slot until that player's next turn began — e.g. Corp
+  // paying 4 to rez ice mid-Runner's-turn wouldn't show up until Corp's next
+  // turn started, several slots later. The derived series updates the moment
+  // the spend/gain actually happens, which is the whole point of this view.
+  const creditPoolSeqSeries = {};
+  players.forEach(p => {
+    const arr = new Array(totalSeq + 1).fill(0);
+    let running = 5;
+    arr[0] = running;
+    for (let s = 1; s <= totalSeq; s++){
+      running += (creditsGainedSeqSeries[p][s] || 0) - (creditsSpentSeqSeries[p][s] || 0);
+      arr[s] = running;
+    }
+    creditPoolSeqSeries[p] = arr;
+  });
+  // Hand size doesn't have an equivalent derivable series — cards leave a hand
+  // via installs, plays, discards and trashes as well as arrive via draws, and
+  // not all of those are tracked as discrete counted events — so this one is
+  // still the reindexed start-of-own-turn snapshot, with the same "can lag
+  // behind a mid-opponent's-turn change" caveat as credits used to have.
   const handSizeSeqSeries = buildSnapshotSeries(reindexByTurnToSeq(handSizeByTurn), totalSeq);
   const cardsDrawnSeqSeries = buildCumulativeSeries(drawsBySeq, totalSeq);
   const agendaSeqSeries = {};
