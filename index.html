@@ -390,7 +390,7 @@
 
   </div>
 
-  <footer>Parses locally in your browser — nothing is uploaded.<br>Build: 2026-09-15 12:00 UTC+2</footer>
+  <footer>Parses locally in your browser — nothing is uploaded.<br>Build: 2026-09-15 14:30 UTC+2</footer>
 </div>
 
 <script>
@@ -1540,6 +1540,13 @@ function cleanCardName(raw){
   let s = raw.replace(/\.$/, '').trim();
   s = s.replace(/\(paying\s*\d+\s*less\)/i, '').trim();
   s = s.replace(/\s+on\s+.+$/i, '').trim();
+  // Strip a trailing zone reference like "from the Grip" / "from HQ" / "from
+  // Archives" / "from R&D" / "from the root of Server 3" — this describes
+  // where the card came from, not part of its name. "from" alone isn't a
+  // safe universal stop-word for extractCardNamePrefix below (it's lowercase,
+  // but the zone name right after it is capitalized, so the lowercase-word
+  // boundary check never triggers), so it's handled here as its own scoped step.
+  s = s.replace(/\s+from\s+(?:the\s+)?(?:Grip|HQ|R&D|Archives|root(?:\s+of\s+.+)?)\b.*$/i, '').trim();
   s = extractCardNamePrefix(s);
   return s;
 }
@@ -1651,6 +1658,11 @@ function parseLog(text){
   const payFromRe = /\bpays\s+(\d+)\s+from\s+(?:his|her|their|the)?\s*(.+?)(?=\s+and\s+|\s+to\s+|\.$|$)/g;
   const installRe = /\bto install (.+)$/;
   const installCostRe = /pays\s+(.+?)\s+to\s+install\b/;
+  // "Uses <card> to install ..." / "pays N to use <card> to install ..." is an
+  // install granted by that card's own ability (e.g. Bahia Bands), not the
+  // Runner/Corp spending their own basic Install-a-card click — so it must not
+  // be counted toward the "Install 1 card from HQ/Grip" basic-action stat.
+  const abilityInstallRe = /\b(?:uses|to\s+use)\s+.+?\s+to\s+install\b/i;
   const rezRe = /\bto rez (.+?)\s+(?:in|protecting)\s+(.+?)(?:\s+at\s+position\s+\d+)?\.?$/;
   const rezCostRe = /pays\s+(.+?)\s+to\s+rez\b/;
   const playCostRe = /pays\s+([^,]+?)\s+to\s+play\s+(.+?)\.?$/;
@@ -1985,11 +1997,20 @@ function parseLog(text){
 
     if ((m = line.match(installRe))){
       const raw = m[1];
-      // Every install line costs a click, regardless of whether it also opens
-      // a tracked card instance below (a remote/ice install still counts as
-      // the "Install 1 card" basic action).
-      installClicks[player] = (installClicks[player] || 0) + 1;
-      if (!/^(a card in the root|ice protecting)/i.test(raw.trim())){
+      const isAbilityInstall = abilityInstallRe.test(line);
+      // Every *basic-action* install line costs a click. An install granted by
+      // a card's own ability (Bahia Bands etc.) doesn't spend the Install
+      // click, so it's excluded here — that click was already spent on the
+      // ability itself, tracked separately.
+      if (!isAbilityInstall){
+        installClicks[player] = (installClicks[player] || 0) + 1;
+      }
+      // Some install lines are just a generic placeholder ("a card in the root
+      // of Server 3", "a card from the grip", "a card from HQ") with the real
+      // card name revealed on a separate, more specific line right after (see
+      // the ability-install case above) — these placeholders are never a real
+      // card name and must not open a bogus instance.
+      if (!/^(a card (?:in|from)\b|ice protecting)/i.test(raw.trim())){
         const name = cleanCardName(raw);
         if (name){
           const inst = { name, player, turnInstalled: turn, turnLeft: null, credits: 0, cost: 0, events: 0, triggerLog: [], server: null };
