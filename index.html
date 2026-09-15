@@ -390,7 +390,7 @@
 
   </div>
 
-  <footer>Parses locally in your browser — nothing is uploaded.<br>Build: 2026-09-15 14:30 UTC+2</footer>
+  <footer>Parses locally in your browser — nothing is uploaded.<br>Build: 2026-09-15 16:45 UTC+2</footer>
 </div>
 
 <script>
@@ -1691,15 +1691,29 @@ function parseLog(text){
   const anyDrawRe = /\bdraws?\s+(\d+)\s+cards?\b/i;
   const cardDrawRe = /\buses?\s+(.+?)\s+to\s+.*?\bdraws?\s+(\d+)\s+cards?\b/i;
   const mandatoryDrawRe = /\bmakes (?:his|her|their) mandatory start of turn draw\b/;
-  // The captured cost segment is bounded to not cross a comma: a line like
-  // "pays 3 , and removes 1 tag to play End of the Line." has an unrelated
-  // number (the tag count) after the comma that a plain lazy ".+?" would
-  // happily sweep up into the credit total via sumDigits. Excluding commas
-  // makes this fall through to genericPaysRe2 below, which just grabs the
-  // single number straight after "pays" — correct for every real cost line.
-  const genericPaysRe1 = /\bpays\s+([^,]+?)\s+to\s+\S+/;
-  const genericPaysRe2 = /\bpays\s+(\d+)\b/;
   const genericGainRe = /\bgains?\s+(\d+)(?!\s*agenda)/gi;
+  // Forced credit loss — "Corp Player uses Artificial Cryptocrash to make the
+  // Runner lose 7." / "...force the Corp to lose 3, and then gain 6." — is a
+  // real reduction to that side's credit pool that nothing else in the parser
+  // catches, unlike a normal "pays"/"spends" cost. Left untracked, the derived
+  // running pool (used by the shared-turn-order chart) drifts upward forever
+  // since it never sees credits actually leaving. The target side is named
+  // explicitly in the text, so no recipient-guessing is needed the way
+  // genericGainRe needs it.
+  const genericLoseRe = /\b(?:force|forces|make|makes)\s+the\s+(Runner|Corp)\s+(?:to\s+)?lose\s+(\d+)\b/gi;
+  // "uses <card> to pay N" (bare infinitive "pay", not "pays"/"spends") is
+  // another real pool cost the "pays"-anchored scan above never sees, e.g.
+  // "Runner Player uses Fencer Fueno to pay 1." (the actor pays it) and
+  // "Corp Player uses Attini to force the runner to pay 2." (the named side
+  // pays it, which may not be the line's grammatical actor).
+  const forcedPayRe = /\bforce\s+the\s+(Runner|Corp)\s+to\s+pay\s+(\d+)\b/i;
+  const selfPayRe = /\bto\s+pay\s+(\d+)\b/i;
+  // "uses <card> to take N ." — e.g. "Runner Player uses Paladin Poemu to
+  // take 1 ." (moving a hosted credit onto the player's own pool). Anchored
+  // to the end of the line (optional trailing whitespace/period only) so it
+  // can't fire on "...to take 1 tag and force the Corp to lose 3..." (Transfer
+  // of Wealth), which has plenty of text after the number.
+  const takeCreditRe = /\buses?\s+.+?\s+to\s+take\s+(\d+)\s*\.?\s*$/i;
   const giveTagRe = /\bgives?\s+the Runner (\d+) tags?/i;
   const takeTagRe = /\btakes?\s+(\d+)\s+tags?/i;
   const runRe = /\bmakes? a run on\b/i;
@@ -1784,6 +1798,48 @@ function parseLog(text){
   function sumDigits(str){
     const nums = str.match(/\d+/g) || [];
     return nums.reduce((a, b) => a + +b, 0);
+  }
+
+  // Total credits a "pays ..." clause actually took out of the player's own
+  // credit pool. Handles three shapes:
+  //  - plain pool cost, e.g. "pays 2 to install X" -> 2
+  //  - a cost paid entirely from a card's own stash, e.g. "pays 2 from
+  //    Touchstone and spends 2 hosted power counters ... to increase..." -> 0
+  //    (never touches the pool; that spend is tracked per-card via payFromRe)
+  //  - a cost split across several sources under one shared "pays", e.g.
+  //    "pays 1 from Touchstone and 1 from his credit pool to trash X" -> 1
+  //    (only the credit-pool portion counts)
+  // A plain lazy sweep of every digit between "pays" and the next " to "
+  // (the old approach) is wrong for the last two cases: it either counts a
+  // non-pool spend, or picks up unrelated numbers from the same clause
+  // (hosted counter counts, subroutine counts, etc.).
+  function computePoolSpend(line){
+    const paysIdx = line.search(/\bpays\s+\d/);
+    if (paysIdx === -1) return null;
+    const afterPays = line.slice(paysIdx);
+    const toMatch = afterPays.match(/\s+to\s+\S+/);
+    const costSpan = toMatch ? afterPays.slice(0, toMatch.index) : afterPays;
+    // Only treat this as a from-sourced (possibly multi-source) cost if the
+    // number immediately after "pays" itself has its own "from <source>" —
+    // e.g. "pays 2 from Touchstone ...". A "from" appearing later in the span
+    // for an unrelated clause (e.g. "pays 2 and spends 2 hosted power
+    // counters from Revolver") doesn't change that the leading "pays 2" is a
+    // plain pool cost; that later "from" belongs to a different verb.
+    const leadMatch = costSpan.match(/^pays\s+\d+\s*(from)?/i);
+    if (!leadMatch || !leadMatch[1]){
+      // Plain pool cost: just the number right after "pays" — never sweep
+      // other digits later in the span (hosted counter counts, subroutine
+      // counts, an unrelated "from" clause's own number, etc.).
+      const bare = line.match(/\bpays\s+(\d+)\b/);
+      return bare ? +bare[1] : null;
+    }
+    let total = 0;
+    const clauseRe = /(\d+)\s+from\s+((?:his|her|their|the)?\s*credit pool|[^,]+?)(?=\s+and\s+\d|\.$|$|\s+to\s+)/gi;
+    let cm;
+    while ((cm = clauseRe.exec(costSpan))){
+      if (/credit pool/i.test(cm[2])) total += +cm[1];
+    }
+    return total;
   }
 
   function ensurePlayer(p){
@@ -2120,17 +2176,26 @@ function parseLog(text){
       purgeClicks[player] = (purgeClicks[player] || 0) + 1;
     }
 
+    // Subroutine/ability reminder text sometimes gets echoed back in quotes
+    // (e.g. `Corp Player resolves 3 unbroken subroutines on Attini (" Do 1
+    // net damage unless the Runner pays 2 " and ...)`). That's the card's
+    // printed wording being narrated, not anyone actually paying/gaining/
+    // losing credits on this line — strip it before the generic credit scans
+    // below so a quoted "pays N"/"gain N"/"lose N" can't be mistaken for a
+    // real event on the line's actual actor.
+    const creditScanLine = line.replace(/"[^"]*"/g, '');
+
     // total credits gained/spent (independent comprehensive scan)
     let gm;
     genericGainRe.lastIndex = 0;
-    while ((gm = genericGainRe.exec(line))){
+    while ((gm = genericGainRe.exec(creditScanLine))){
       const amt = +gm[1];
       // The line's grammatical actor isn't always who actually receives the
       // credits: "Inermis2 uses X to let the Runner gain 2..." is Corp's line
       // (Corp is `player`), but the 2cr belongs to the Runner. Check a short
       // window of text right before the number for an explicit "Runner"/"Corp"
       // that names the real recipient, and redirect the credit there instead.
-      const context = line.slice(Math.max(0, gm.index - 25), gm.index);
+      const context = creditScanLine.slice(Math.max(0, gm.index - 25), gm.index);
       let recipient = player;
       if (/\bRunner\b/i.test(context) && playerSide[player] !== 'runner'){
         // `players` (the finalized list) isn't built until after this scan, so
@@ -2145,12 +2210,57 @@ function parseLog(text){
       bumpTurn(creditsGainedByTurn, recipient, currentTurn[recipient] || 0, amt);
       bumpTurn(creditsGainedBySeq, recipient, currentGlobalSeq, amt);
     }
-    let payMatch = line.match(genericPaysRe1) || line.match(genericPaysRe2);
-    if (payMatch){
-      const spentAmt = sumDigits(payMatch[1]);
+    // "uses <card> to take N ." — a hosted credit moved onto the player's own
+    // pool; always self-directed (the line's actor is always the recipient),
+    // unlike genericGainRe's "let the Runner gain..." redirect cases.
+    const tkm = creditScanLine.match(takeCreditRe);
+    if (tkm){
+      const amt = +tkm[1];
+      bump(totalGained, player, amt);
+      bumpTurn(creditsGainedByTurn, player, turn, amt);
+      bumpTurn(creditsGainedBySeq, player, currentGlobalSeq, amt);
+    }
+    // total credits lost (forced, e.g. traces/taxes — the losing side is named
+    // explicitly in the text, so this reduces that side's pool the same way a
+    // spend does, whether or not that side is the line's grammatical actor).
+    let lm;
+    genericLoseRe.lastIndex = 0;
+    while ((lm = genericLoseRe.exec(creditScanLine))){
+      const side = lm[1].toLowerCase();
+      const amt = +lm[2];
+      const targetPlayer = Object.keys(maxTurn).find(pl => playerSide[pl] === side) || player;
+      bump(totalSpent, targetPlayer, amt);
+      bumpTurn(creditsSpentByTurn, targetPlayer, currentTurn[targetPlayer] || 0, amt);
+      bumpTurn(creditsSpentBySeq, targetPlayer, currentGlobalSeq, amt);
+    }
+    // Only the portion of a "pays ..." clause that actually came out of the
+    // player's credit pool counts here — see computePoolSpend above.
+    const spentAmt = computePoolSpend(creditScanLine);
+    if (spentAmt !== null){
       bump(totalSpent, player, spentAmt);
       bumpTurn(creditsSpentByTurn, player, turn, spentAmt);
       bumpTurn(creditsSpentBySeq, player, currentGlobalSeq, spentAmt);
+    }
+    // "uses <card> to pay N" / "force the Runner|Corp to pay N" — bare
+    // infinitive "pay" cost, never matched by the "pays"-anchored scan above
+    // (see forcedPayRe/selfPayRe declarations). Checked as its own line so it
+    // stacks with, rather than replaces, any "pays ..." cost already found.
+    const fpm = creditScanLine.match(forcedPayRe);
+    if (fpm){
+      const side = fpm[1].toLowerCase();
+      const targetPlayer = Object.keys(maxTurn).find(pl => playerSide[pl] === side) || player;
+      const amt = +fpm[2];
+      bump(totalSpent, targetPlayer, amt);
+      bumpTurn(creditsSpentByTurn, targetPlayer, currentTurn[targetPlayer] || 0, amt);
+      bumpTurn(creditsSpentBySeq, targetPlayer, currentGlobalSeq, amt);
+    } else {
+      const spm = creditScanLine.match(selfPayRe);
+      if (spm){
+        const amt = +spm[1];
+        bump(totalSpent, player, amt);
+        bumpTurn(creditsSpentByTurn, player, turn, amt);
+        bumpTurn(creditsSpentBySeq, player, currentGlobalSeq, amt);
+      }
     }
 
     // draws
@@ -2397,6 +2507,12 @@ function parseLog(text){
     arr[0] = running;
     for (let s = 1; s <= totalSeq; s++){
       running += (creditsGainedSeqSeries[p][s] || 0) - (creditsSpentSeqSeries[p][s] || 0);
+      // Credits can never go below 0 — the game itself caps a forced loss at
+      // whatever the player actually has (e.g. a card's printed "lose 7" only
+      // takes a player down to 0 if they only had 6). This is a safety-net
+      // floor for that case and for any remaining event-tracking imprecision,
+      // not a substitute for tracking the real amount lost.
+      if (running < 0) running = 0;
       arr[s] = running;
     }
     creditPoolSeqSeries[p] = arr;
