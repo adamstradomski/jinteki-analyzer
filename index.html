@@ -249,6 +249,8 @@
       <div class="panel-header"><h2>Charts</h2><span class="collapse-icon">−</span></div>
       <div class="panel-body">
 
+        <div class="stat" style="margin-bottom:16px;"><span class="num" id="mainTotalTurnsNum">0</span><span class="label">Total turns played (Corp + Runner combined)</span></div>
+
         <h3>Agenda points over time</h3>
         <div class="legend" id="agendaLegend"></div>
         <div id="agendaChart"></div>
@@ -388,7 +390,7 @@
 
   </div>
 
-  <footer>Parses locally in your browser — nothing is uploaded.<br>Build: 2026-09-14 17:20 UTC+2</footer>
+  <footer>Parses locally in your browser — nothing is uploaded.<br>Build: 2026-09-15 12:00 UTC+2</footer>
 </div>
 
 <script>
@@ -1664,6 +1666,12 @@ function parseLog(text){
   const drawClickRe = /to use (Corp|Runner) Basic Action Card to draw 1 card/;
   const tagRemovalRe = /pays\s+(\d+)\s+to use Runner Basic Action Card to remove 1 tag/;
   const trashResourceRe = /pays\s+(\d+)\s+to use Corp Basic Action Card to trash (?:a |an )?resource/i;
+  const advanceRe = /pays\s+(\d+)\s+to use Corp Basic Action Card to advance\b/i;
+  // Purge has no printed credit cost (just the click), so this doesn't capture
+  // an amount — inferred from the consistent "Basic Action Card to <verb>"
+  // phrasing used by the other basic-action lines above; adjust if a real
+  // logged purge line turns out to read differently.
+  const purgeRe = /\bto use Corp Basic Action Card to purge virus counters\b/i;
   const stealRe = /\bsteals\s+.+?\s+and\s+gains\s+(\d+)\s+agenda\s+points?/;
   const scoreRe = /\bscores\s+.+?\s+and\s+gains\s+(\d+)\s+agenda\s+points?/;
   const concedeRe = /^(.+?)\s+concedes?\b/i;
@@ -1710,6 +1718,9 @@ function parseLog(text){
   const tagRemovals = {};
   const trashResources = {};
   const clickCredits = {};
+  const installClicks = {};
+  const advanceClicks = {};
+  const purgeClicks = {};
   const playerSide = {};
   const agendaEvents = [];
   const totalGained = {};
@@ -1974,6 +1985,10 @@ function parseLog(text){
 
     if ((m = line.match(installRe))){
       const raw = m[1];
+      // Every install line costs a click, regardless of whether it also opens
+      // a tracked card instance below (a remote/ice install still counts as
+      // the "Install 1 card" basic action).
+      installClicks[player] = (installClicks[player] || 0) + 1;
       if (!/^(a card in the root|ice protecting)/i.test(raw.trim())){
         const name = cleanCardName(raw);
         if (name){
@@ -2072,6 +2087,16 @@ function parseLog(text){
       if (!trashResources[player]) trashResources[player] = { count: 0, cost: 0 };
       trashResources[player].count++;
       trashResources[player].cost += +m[1];
+    }
+    if ((m = line.match(advanceRe))){
+      playerSide[player] = 'corp';
+      if (!advanceClicks[player]) advanceClicks[player] = { count: 0, cost: 0 };
+      advanceClicks[player].count++;
+      advanceClicks[player].cost += +m[1];
+    }
+    if (purgeRe.test(line)){
+      playerSide[player] = 'corp';
+      purgeClicks[player] = (purgeClicks[player] || 0) + 1;
     }
 
     // total credits gained/spent (independent comprehensive scan)
@@ -2393,7 +2418,8 @@ function parseLog(text){
 
   return {
     installedRows, opsRows, flagged, maxTurn, rounds, winner, concededPlayer, players, playerCountError,
-    drawClicks, tagRemovals, trashResources, clickCredits, playerSide, chatBadges, agendaSeries,
+    drawClicks, tagRemovals, trashResources, clickCredits, installClicks, advanceClicks, purgeClicks,
+    playerSide, chatBadges, agendaSeries,
     totalGained, totalSpent, totalDraws, cardsRezzed, tagsGained, runsMade, eventsPlayed,
     cardsAccessed, breachCounts, clicksGained,
     creditsGainedSeries, creditsNetSeries, creditPoolSeries, handSizeSeries, cardsDrawnSeries,
@@ -2467,6 +2493,51 @@ const expandState = {};
 
 function benefitLabel(kind){
   return kind === 'credit' ? 'Credit' : (kind === 'click' ? 'Click' : 'Draw');
+}
+
+// The fixed set of Netrunner basic actions, one row per action, for a given
+// player/side. `credits` is null (rendered as "—") for actions with no
+// tracked credit value.
+function basicActionRows(data, player, side){
+  const credit = data.clickCredits[player] || { count: 0, gained: 0 };
+  const draws = data.drawClicks[player] || 0;
+  const installs = data.installClicks[player] || 0;
+  const plays = data.eventsPlayed[player] || 0;
+  if (side === 'corp'){
+    const advance = data.advanceClicks[player] || { count: 0, cost: 0 };
+    const trash = data.trashResources[player] || { count: 0, cost: 0 };
+    const purge = data.purgeClicks[player] || 0;
+    return [
+      { label: 'Gain 1 credit', count: credit.count, credits: credit.gained },
+      { label: 'Draw 1 card', count: draws, credits: null },
+      { label: 'Install 1 card from HQ', count: installs, credits: null },
+      { label: 'Play 1 operation from HQ', count: plays, credits: null },
+      { label: 'Advance 1 installed card', count: advance.count, credits: -advance.cost },
+      { label: 'Trash 1 resource', count: trash.count, credits: -trash.cost },
+      { label: 'Purge virus counters', count: purge, credits: null }
+    ];
+  }
+  const runs = data.runsMade[player] || 0;
+  const tag = data.tagRemovals[player] || { count: 0, cost: 0 };
+  return [
+    { label: 'Gain 1 credit', count: credit.count, credits: credit.gained },
+    { label: 'Draw 1 card', count: draws, credits: null },
+    { label: 'Install 1 card from Grip', count: installs, credits: null },
+    { label: 'Play 1 event from Grip', count: plays, credits: null },
+    { label: 'Make a run on any server', count: runs, credits: null },
+    { label: 'Remove 1 tag', count: tag.count, credits: -tag.cost }
+  ];
+}
+
+function wireBasicActionsToggles(){
+  document.querySelectorAll('[data-hideuntriggered]').forEach(cb => {
+    cb.addEventListener('change', () => {
+      const tableId = cb.dataset.hideuntriggered;
+      document.querySelectorAll(`#${tableId} tbody tr`).forEach(tr => {
+        tr.style.display = (cb.checked && +tr.dataset.count === 0) ? 'none' : '';
+      });
+    });
+  });
 }
 
 function renderInstalledTable(tableId, tbody, rows, hideZero){
@@ -2576,18 +2647,13 @@ function buildPlayerSections(data){
     const instTableId = `installed-${idx}`;
     const opsTableId = `ops-${idx}`;
 
-    const drawCount = data.drawClicks[player] || 0;
-    const tagInfo = data.tagRemovals[player] || { count: 0, cost: 0 };
-    const trashInfo = data.trashResources[player] || { count: 0, cost: 0 };
-    const clickCreditInfo = data.clickCredits[player] || { count: 0, gained: 0 };
     const side = data.playerSide[player];
-
-    let sideActionRow = '';
-    if (side === 'corp'){
-      sideActionRow = `<tr><td class="card">Trash resource</td><td class="num">${fmt(trashInfo.count)}</td>${netCell(-trashInfo.cost)}</tr>`;
-    } else if (side === 'runner'){
-      sideActionRow = `<tr><td class="card">Tags removed</td><td class="num">${fmt(tagInfo.count)}</td>${netCell(-tagInfo.cost)}</tr>`;
-    }
+    const basicActionsTableId = `basicactions-${idx}`;
+    const actionRowsHtml = basicActionRows(data, player, side).map(r => {
+      const creditCell = r.credits === null ? '<td class="num">—</td>' : netCell(r.credits);
+      const hiddenInitially = r.count === 0 ? ' style="display:none;"' : '';
+      return `<tr data-count="${r.count}"${hiddenInitially}><td class="card">${r.label}</td><td class="num">${fmt(r.count)}</td>${creditCell}</tr>`;
+    }).join('');
 
     const permTitle = side === 'corp' ? 'Rezzed cards' : (side === 'runner' ? 'Installed cards' : 'Installed &amp; rezzed cards');
     const opsTitle = side === 'corp' ? 'Operations' : (side === 'runner' ? 'Events' : 'Operations &amp; events');
@@ -2604,14 +2670,15 @@ function buildPlayerSections(data){
       </div>
       <div class="panel-body">
 
-      <h3>Click actions</h3>
-      <table class="mini-table">
+      <div class="table-actions">
+        <h3>Basic Actions</h3>
+        <div class="controls">
+          <label class="toggle"><input type="checkbox" data-hideuntriggered="${basicActionsTableId}" checked> Hide actions that not triggered</label>
+        </div>
+      </div>
+      <table class="mini-table" id="${basicActionsTableId}">
         <thead><tr><th>Action</th><th class="num">Times</th><th class="num">Credits</th></tr></thead>
-        <tbody>
-          <tr><td class="card">Click for credit</td><td class="num">${fmt(clickCreditInfo.count)}</td>${netCell(clickCreditInfo.gained)}</tr>
-          <tr><td class="card">Cards drawn</td><td class="num">${fmt(drawCount)}</td><td class="num">—</td></tr>
-          ${sideActionRow}
-        </tbody>
+        <tbody>${actionRowsHtml}</tbody>
       </table>
 
       <div class="table-actions">
@@ -2674,6 +2741,7 @@ function buildPlayerSections(data){
 
   wireAllSorts();
   wireHideZeroToggles();
+  wireBasicActionsToggles();
   renderAllTables();
 }
 
@@ -2829,12 +2897,26 @@ function renderLineChart(ids, series, players, rounds, opts){
   // begins at the baseline, not mid-game. opts.xLabels (e.g. "C1", "R1", "C2"...)
   // overrides the plain turn number for the sequential/alternative-axis charts.
   const xLabel = t => (opts.xLabels && opts.xLabels[t] !== undefined) ? (t === 0 ? 'Start' : opts.xLabels[t]) : (t === 0 ? '0' : t);
-  const xTickStep = Math.max(1, Math.ceil(rounds / 12));
+  // For the shared turn-order (xLabels) charts, labels alternate Corp/Runner
+  // (C1, R1, C2, R2, ...). An even tick step would land on the same parity
+  // every time and silently show only one side's letter across the whole
+  // axis, so force an odd step here to keep both sides represented.
+  let xTickStep = Math.max(1, Math.ceil(rounds / 12));
+  if (opts.xLabels && xTickStep % 2 === 0) xTickStep += 1;
   for (let t = 0; t <= rounds; t += xTickStep){
     svg += `<text x="${xFor(t)}" y="${padT+plotH+16}" font-size="9" fill="var(--dim)" text-anchor="middle">${xLabel(t)}</text>`;
   }
   if (rounds % xTickStep !== 0){
     svg += `<text x="${xFor(rounds)}" y="${padT+plotH+16}" font-size="9" fill="var(--accent)" text-anchor="middle">${xLabel(rounds)}</text>`;
+  }
+  // Always show the very first turn pair (C1/R1) on the shared-order axis,
+  // even if the step above would otherwise skip past it.
+  if (opts.xLabels){
+    [1, 2].forEach(t => {
+      if (t <= rounds && t % xTickStep !== 0){
+        svg += `<text x="${xFor(t)}" y="${padT+plotH+16}" font-size="9" fill="var(--dim)" text-anchor="middle">${xLabel(t)}</text>`;
+      }
+    });
   }
 
   players.forEach((p, idx) => {
@@ -2892,6 +2974,8 @@ function renderAllCharts(data){
   const colors = getChartColors(data);
   const totalTurnsEl = document.getElementById('seqTotalTurnsNum');
   if (totalTurnsEl) totalTurnsEl.textContent = data.totalSeq || 0;
+  const mainTotalTurnsEl = document.getElementById('mainTotalTurnsNum');
+  if (mainTotalTurnsEl) mainTotalTurnsEl.textContent = data.totalSeq || 0;
   renderLineChart(
     { legend: 'agendaLegend', chart: 'agendaChart', table: 'agendaTableWrap' },
     data.agendaSeries, data.players, data.rounds, { colors, yStep: 1, minMaxVal: 7 }
