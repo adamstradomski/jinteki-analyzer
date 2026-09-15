@@ -391,7 +391,7 @@
 
   </div>
 
-  <footer>Parses locally in your browser — nothing is uploaded, unless you use the optional "Shorten (TinyURL)" button, which sends the share link to tinyurl.com.<br>Build: 2026-09-15 21:00 UTC+2</footer>
+  <footer>Parses locally in your browser — nothing is uploaded, unless you use the optional "Shorten (TinyURL)" button, which sends the share link to tinyurl.com.<br>Build: 2026-09-15 21:14 UTC+2</footer>
 </div>
 
 <script>
@@ -1848,7 +1848,6 @@ function parseLog(text){
     if (!(p in currentTurn)) currentTurn[p] = 0;
   }
 
-  const rotationIndex = {}; // player::name -> next index into the open-copies list
   // player::name -> the instance that most recently received a credit/click trigger.
   // A card that self-trashes on depletion (Daily Casts, Kati Jones, ...) always logs
   // its own "uses X to gain N" line immediately before its "trashes X" line, so the
@@ -1866,12 +1865,22 @@ function parseLog(text){
     if (open.length === 0) return null;
     if (open.length === 1) return open[0];
     // Multiple simultaneous copies: the log gives no way to know which physical
-    // copy a given trigger belongs to, so rotate through the open copies in the
-    // order they entered play rather than always crediting the newest one.
-    const key = player + '::' + name;
-    const idx = (rotationIndex[key] || 0) % open.length;
-    rotationIndex[key] = idx + 1;
-    return open[idx];
+    // copy a given trigger belongs to. Credit whichever open copy has received
+    // the fewest triggers so far (ties broken by install order, i.e. the oldest
+    // untouched copy first). For ordinary duplicate cards this still alternates
+    // evenly turn over turn, same as a round-robin would. But it also handles
+    // cards like Coalescence, which hosts a fixed number of counters and keeps
+    // sitting in play — still "open" — after they're spent instead of logging
+    // a self-trash: a blind rotation eventually cycles back around to that
+    // already-exhausted copy and keeps piling extra uses onto it, starving
+    // the copies that still had capacity. Preferring the least-used copy never
+    // does that, because a spent copy's count stops being the minimum once any
+    // other copy has been used fewer times.
+    let best = open[0];
+    for (let i = 1; i < open.length; i++){
+      if (open[i].events < best.events) best = open[i];
+    }
+    return best;
   }
 
   function findOpenInstanceAnyPlayer(name){
