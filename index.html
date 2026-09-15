@@ -1653,9 +1653,20 @@ function parseLog(text){
   // but text pulled verbatim from a card's printed ability wording (e.g. Caveat
   // Emptor: "...to Gain 10...") can carry its own capitalization. Case-insensitive
   // so a capitalized "Gain" on a card's ability text isn't silently dropped.
-  const gainDirectRe = /\buses?\s+(.+?)\s+to\s+gain\s*(\d+)?\b/i;
-  const gainRevealRe = /\buses?\s+(.+?)\s+to\s+reveal\s+.+?\s+and\s+gain\s*(\d+)?\b/i;
-  const gainAndThenRe = /\buses?\s+(.+?)\s+to\s+.+?\b(?:and|then)\s+gain\s*(\d+)?\b/i;
+  // The name capture stops at the first " to " so a mid-ability clause between
+  // the card and its actual gain ("uses "Knickknack" O'Brian to trash
+  // Coalescence to gain 2 and draw a card.") can't be swallowed into the name
+  // — without this, the non-greedy capture runs all the way to whichever "to
+  // gain" appears first, pulling "to trash Coalescence" into the card name and
+  // leaving the credit unattributed to the actual card.
+  const gainDirectRe = /\buses?\s+((?:(?!\sto\s).)+)\s+to\s+gain\s*(\d+)?\b/i;
+  const gainRevealRe = /\buses?\s+((?:(?!\sto\s).)+)\s+to\s+reveal\s+.+?\s+and\s+gain\s*(\d+)?\b/i;
+  const gainAndThenRe = /\buses?\s+((?:(?!\sto\s).)+)\s+to\s+.+?\b(?:and|then)\s+gain\s*(\d+)?\b/i;
+  // "uses <card> to <verb> <target> to gain N" — a trash/discard-for-value
+  // ability where an intervening clause sits between the card and its "to
+  // gain", e.g. "Knickknack" O'Brian ("...to trash Coalescence to gain 2 and
+  // draw a card."). Same name-capture guard as gainDirectRe above.
+  const gainMidActionRe = /\buses?\s+((?:(?!\sto\s).)+)\s+to\s+.+?\bto\s+gain\s*(\d+)?\b/i;
   const payFromRe = /\bpays\s+(\d+)\s+from\s+(?:his|her|their|the)?\s*(.+?)(?=\s+and\s+|\s+to\s+|\.$|$)/g;
   const installRe = /\bto install (.+)$/;
   const installCostRe = /pays\s+(.+?)\s+to\s+install\b/;
@@ -1925,6 +1936,7 @@ function parseLog(text){
     let m = line.match(gainDirectRe); if (m) return m;
     m = line.match(gainRevealRe); if (m) return m;
     m = line.match(gainAndThenRe); if (m) return m;
+    m = line.match(gainMidActionRe); if (m) return m;
     return null;
   }
 
