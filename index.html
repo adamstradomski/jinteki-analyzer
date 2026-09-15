@@ -229,6 +229,7 @@
         <input id="shareUrlInput" type="text" readonly
           style="flex:1;min-width:200px;background:var(--panel-2);color:var(--text);border:1px solid var(--line);border-radius:4px;font-family:var(--mono);font-size:11.5px;padding:8px;">
         <button class="secondary" id="copyShareBtn">Copy</button>
+        <button class="secondary" id="shortenShareBtn" type="button" title="Sends this link to tinyurl.com to get a short version. Unlike the plain share link, the log data leaves your browser.">Shorten (TinyURL)</button>
       </div>
     </div>
   </div>
@@ -390,7 +391,7 @@
 
   </div>
 
-  <footer>Parses locally in your browser — nothing is uploaded.<br>Build: 2026-09-15 16:45 UTC+2</footer>
+  <footer>Parses locally in your browser — nothing is uploaded, unless you use the optional "Shorten (TinyURL)" button, which sends the share link to tinyurl.com.<br>Build: 2026-09-15 21:00 UTC+2</footer>
 </div>
 
 <script>
@@ -3259,6 +3260,19 @@ document.getElementById('clearBtn').addEventListener('click', () => {
 // ---- Shareable link: gzip-compress the log, base64url-encode it into the URL hash
 // (never sent to any server) so a whole game log can be shared as a link with no
 // copy-paste on the recipient's end and no backend to store anything in.
+//
+// DISCLAIMER: nothing is "shared" in the sense of a server storing it — the
+// entire encoded game log is embedded directly in the URL itself, after the
+// #. Anyone who receives this link can open it and see the full log content
+// (players' actions, card names, etc.), so treat the link exactly as you
+// would the log text: don't post it anywhere you wouldn't paste the log.
+//
+// The link always points at the real hosted GitHub Pages address, not
+// wherever this copy of the page happens to be running from (e.g. a local
+// file or a dev server) — otherwise a link built while testing locally
+// would be useless to anyone else.
+const GITHUB_PAGES_URL = 'https://adamstradomski.github.io/jinteki-analyzer/';
+
 function bytesToBase64Url(bytes){
   let binary = '';
   const chunk = 0x8000;
@@ -3326,11 +3340,11 @@ document.getElementById('shareBtn').addEventListener('click', async () => {
   }
   try {
     const encoded = await encodeLogForUrl(text);
-    const url = location.origin + location.pathname + '#log=' + encoded;
+    const url = GITHUB_PAGES_URL + '#log=' + encoded;
     shareInput.value = url;
     shareRow.style.display = 'flex';
     shareInput.select();
-    statusMsg.textContent = `Share link ready (${Math.round(url.length / 1024 * 10) / 10} KB). This only works once the file is hosted somewhere with a real URL — a local file won't be openable by others.`;
+    statusMsg.textContent = `Share link ready (${Math.round(url.length / 1024 * 10) / 10} KB). Note: the whole log is embedded in this link, not stored on a server — anyone with the link can read the full log content, so share it the same way you'd share the log itself.`;
   } catch (e) {
     statusMsg.textContent = 'Could not build a share link: ' + e.message;
   }
@@ -3345,6 +3359,52 @@ document.getElementById('copyShareBtn').addEventListener('click', () => {
     document.execCommand('copy');
   }
   statusMsg.textContent = 'Link copied.';
+});
+
+// ---- Optional: shorten the share link via TinyURL.
+// This is opt-in only (button click), because unlike the plain share link
+// above — which never leaves the browser — shortening means the full
+// share URL (and therefore the whole encoded game log) is sent to
+// tinyurl.com's server so it can hand back a short redirect. TinyURL may
+// also reject very long URLs (large logs can produce multi-KB share
+// links), so this can fail where the plain link still works fine.
+document.getElementById('shortenShareBtn').addEventListener('click', async () => {
+  const shareInput = document.getElementById('shareUrlInput');
+  const longUrl = shareInput.value;
+  if (!longUrl){
+    statusMsg.textContent = 'Build a share link first.';
+    return;
+  }
+  const shortenBtn = document.getElementById('shortenShareBtn');
+  shortenBtn.disabled = true;
+  const prevLabel = shortenBtn.textContent;
+  shortenBtn.textContent = 'Shortening…';
+  statusMsg.textContent = 'Asking TinyURL for a short link…';
+  try {
+    const apiUrl = 'https://tinyurl.com/api-create.php?url=' + encodeURIComponent(longUrl);
+    const resp = await fetch(apiUrl);
+    if (!resp.ok) throw new Error('TinyURL returned HTTP ' + resp.status);
+    const shortUrl = (await resp.text()).trim();
+    if (!shortUrl.startsWith('http')){
+      throw new Error(shortUrl || 'unexpected response');
+    }
+    shareInput.value = shortUrl;
+    shareInput.select();
+    statusMsg.textContent = 'Shortened with TinyURL. This link now depends on tinyurl.com staying up and redirects through their server.';
+  } catch (e) {
+    // Most likely cause: the browser blocked reading the response because
+    // tinyurl.com doesn't send CORS headers for this endpoint, or the log
+    // is too large for TinyURL to accept as a target URL. Either way, fall
+    // back to just opening TinyURL's own response in a new tab — that's a
+    // plain navigation, not a script fetch, so it isn't subject to CORS,
+    // and the user can read/copy the short link there themselves.
+    const apiUrl = 'https://tinyurl.com/api-create.php?url=' + encodeURIComponent(longUrl);
+    window.open(apiUrl, '_blank');
+    statusMsg.textContent = "Couldn't shorten it automatically (" + e.message + '). Opened tinyurl.com in a new tab instead — the short link should be shown there as plain text.';
+  } finally {
+    shortenBtn.disabled = false;
+    shortenBtn.textContent = prevLabel;
+  }
 });
 
 (async function loadFromUrlHash(){
