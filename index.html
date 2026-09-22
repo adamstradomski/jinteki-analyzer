@@ -395,7 +395,7 @@
 
   </div>
 
-  <footer>Parses locally in your browser — nothing is uploaded, unless you use the optional "Shorten (TinyURL)" button, which sends the share link to tinyurl.com.<br>If this tool's useful, <a href="https://ko-fi.com/inermis2020" target="_blank" rel="noopener">support it on Ko-fi</a>.<br>Build: 2026-09-22 22:38 UTC+2</footer>
+  <footer>Parses locally in your browser — nothing is uploaded, unless you use the optional "Shorten (TinyURL)" button, which sends the share link to tinyurl.com.<br>If this tool's useful, <a href="https://ko-fi.com/inermis2020" target="_blank" rel="noopener">support it on Ko-fi</a>.<br>Build: 2026-09-22 23:22 UTC+2</footer>
 </div>
 
 <script>
@@ -3453,10 +3453,15 @@ document.getElementById('shortenPermalinkBtn').addEventListener('click', async (
     shareInput.select();
     statusMsg.textContent = 'Shortened with TinyURL. This link now depends on tinyurl.com staying up and redirects through their server.';
   } catch (e) {
-    // Most likely cause: the browser blocked reading the response because
-    // tinyurl.com doesn't send CORS headers for this endpoint, or the log
-    // is too large for TinyURL to accept as a target URL.
-    statusMsg.textContent = "Couldn't shorten it automatically (" + e.message + '). The plain share link above still works.';
+    // TinyURL's endpoint sends a hardcoded Access-Control-Allow-Origin that
+    // doesn't match this site, so this fetch is always blocked by CORS —
+    // there's no server here to proxy around it. Falling back to opening
+    // TinyURL's own response in a new tab is a plain navigation, not a
+    // script fetch, so it isn't subject to CORS, and the user can read/copy
+    // the short link there themselves.
+    const apiUrl = 'https://tinyurl.com/api-create.php?url=' + encodeURIComponent(longUrl);
+    window.open(apiUrl, '_blank');
+    statusMsg.textContent = "Couldn't shorten it automatically (" + e.message + '). Opened tinyurl.com in a new tab instead — the short link should be shown there as plain text.';
   } finally {
     shortenBtn.disabled = false;
     shortenBtn.textContent = prevLabel;
