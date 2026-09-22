@@ -224,16 +224,16 @@
         <button class="secondary" id="example1Btn">Log example 1</button>
         <button class="secondary" id="example2Btn">Log example 2</button>
         <button class="secondary" id="clearBtn">Clear</button>
-        <button class="secondary" id="shareBtn">Share link</button>
+        <button class="secondary" id="permalinkBtn">Share link</button>
         <button class="secondary" id="reportBugBtn" type="button">Report a bug</button>
         <button class="secondary" id="skipCopyPasteBtn" type="button">How to skip copy-paste</button>
         <span class="status" id="statusMsg"></span>
       </div>
-      <div class="row" id="shareRow" style="display:none;">
-        <input id="shareUrlInput" type="text" readonly
+      <div class="row" id="permalinkRow" style="display:none;">
+        <input id="permalinkUrlInput" type="text" readonly
           style="flex:1;min-width:200px;background:var(--panel-2);color:var(--text);border:1px solid var(--line);border-radius:4px;font-family:var(--mono);font-size:11.5px;padding:8px;">
-        <button class="secondary" id="copyShareBtn">Copy</button>
-        <button class="secondary" id="shortenShareBtn" type="button" title="Sends this link to tinyurl.com to get a short version. Unlike the plain share link, the log data leaves your browser.">Shorten (TinyURL)</button>
+        <button class="secondary" id="copyPermalinkBtn">Copy</button>
+        <button class="secondary" id="shortenPermalinkBtn" type="button" title="Sends this link to tinyurl.com to get a short version. Unlike the plain share link, the log data leaves your browser.">Shorten (TinyURL)</button>
       </div>
     </div>
   </div>
@@ -395,7 +395,7 @@
 
   </div>
 
-  <footer>Parses locally in your browser — nothing is uploaded, unless you use the optional "Shorten (TinyURL)" button, which sends the share link to tinyurl.com.<br>If this tool's useful, <a href="https://ko-fi.com/inermis2020" target="_blank" rel="noopener">support it on Ko-fi</a>.<br>Build: 2026-09-22 22:26 UTC+2</footer>
+  <footer>Parses locally in your browser — nothing is uploaded, unless you use the optional "Shorten (TinyURL)" button, which sends the share link to tinyurl.com.<br>If this tool's useful, <a href="https://ko-fi.com/inermis2020" target="_blank" rel="noopener">support it on Ko-fi</a>.<br>Build: 2026-09-22 22:35 UTC+2</footer>
 </div>
 
 <script>
@@ -3355,10 +3355,10 @@ async function decodeLogFromUrl(encoded){
   return new TextDecoder().decode(bytes);
 }
 
-document.getElementById('shareBtn').addEventListener('click', async () => {
+document.getElementById('permalinkBtn').addEventListener('click', async () => {
   const text = logInput.value;
-  const shareRow = document.getElementById('shareRow');
-  const shareInput = document.getElementById('shareUrlInput');
+  const permalinkRow = document.getElementById('permalinkRow');
+  const shareInput = document.getElementById('permalinkUrlInput');
   if (!text.trim()){
     statusMsg.textContent = 'Paste a log first.';
     return;
@@ -3367,7 +3367,7 @@ document.getElementById('shareBtn').addEventListener('click', async () => {
     const encoded = await encodeLogForUrl(text);
     const url = HOSTED_SITE_URL + '#log=' + encoded;
     shareInput.value = url;
-    shareRow.style.display = 'flex';
+    permalinkRow.style.display = 'flex';
     shareInput.select();
     statusMsg.textContent = `Share link ready (${Math.round(url.length / 1024 * 10) / 10} KB). Note: the whole log is embedded in this link, not stored on a server — anyone with the link can read the full log content, so share it the same way you'd share the log itself.`;
   } catch (e) {
@@ -3411,8 +3411,8 @@ document.getElementById('reportBugBtn').addEventListener('click', async () => {
   }
 });
 
-document.getElementById('copyShareBtn').addEventListener('click', () => {
-  const shareInput = document.getElementById('shareUrlInput');
+document.getElementById('copyPermalinkBtn').addEventListener('click', () => {
+  const shareInput = document.getElementById('permalinkUrlInput');
   shareInput.select();
   if (navigator.clipboard && navigator.clipboard.writeText){
     navigator.clipboard.writeText(shareInput.value);
@@ -3429,14 +3429,14 @@ document.getElementById('copyShareBtn').addEventListener('click', () => {
 // tinyurl.com's server so it can hand back a short redirect. TinyURL may
 // also reject very long URLs (large logs can produce multi-KB share
 // links), so this can fail where the plain link still works fine.
-document.getElementById('shortenShareBtn').addEventListener('click', async () => {
-  const shareInput = document.getElementById('shareUrlInput');
+document.getElementById('shortenPermalinkBtn').addEventListener('click', async () => {
+  const shareInput = document.getElementById('permalinkUrlInput');
   const longUrl = shareInput.value;
   if (!longUrl){
     statusMsg.textContent = 'Build a share link first.';
     return;
   }
-  const shortenBtn = document.getElementById('shortenShareBtn');
+  const shortenBtn = document.getElementById('shortenPermalinkBtn');
   shortenBtn.disabled = true;
   const prevLabel = shortenBtn.textContent;
   shortenBtn.textContent = 'Shortening…';
