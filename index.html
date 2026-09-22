@@ -225,6 +225,7 @@
         <button class="secondary" id="example2Btn">Log example 2</button>
         <button class="secondary" id="clearBtn">Clear</button>
         <button class="secondary" id="shareBtn">Share link</button>
+        <button class="secondary" id="reportBugBtn" type="button">Report a bug</button>
         <button class="secondary" id="skipCopyPasteBtn" type="button">How to skip copy-paste</button>
         <span class="status" id="statusMsg"></span>
       </div>
@@ -394,7 +395,7 @@
 
   </div>
 
-  <footer>Parses locally in your browser — nothing is uploaded, unless you use the optional "Shorten (TinyURL)" button, which sends the share link to tinyurl.com.<br>If this tool's useful, <a href="https://ko-fi.com/inermis2020" target="_blank" rel="noopener">support it on Ko-fi</a>.<br>Build: 2026-09-22 22:23 UTC+2</footer>
+  <footer>Parses locally in your browser — nothing is uploaded, unless you use the optional "Shorten (TinyURL)" button, which sends the share link to tinyurl.com.<br>If this tool's useful, <a href="https://ko-fi.com/inermis2020" target="_blank" rel="noopener">support it on Ko-fi</a>.<br>Build: 2026-09-22 22:26 UTC+2</footer>
 </div>
 
 <script>
@@ -3371,6 +3372,42 @@ document.getElementById('shareBtn').addEventListener('click', async () => {
     statusMsg.textContent = `Share link ready (${Math.round(url.length / 1024 * 10) / 10} KB). Note: the whole log is embedded in this link, not stored on a server — anyone with the link can read the full log content, so share it the same way you'd share the log itself.`;
   } catch (e) {
     statusMsg.textContent = 'Could not build a share link: ' + e.message;
+  }
+});
+
+// ---- Report a bug: opens a prefilled GitHub issue. The log link is built
+// the same way the plain "Share link" button does (compressed + embedded in
+// the URL fragment, never sent anywhere) and dropped into the issue body —
+// but that means a big log can make the resulting GitHub URL too long for
+// the browser/GitHub to accept as a prefill, so past a size threshold this
+// falls back to copying the template (share link included) to the
+// clipboard and opening a blank issue for the user to paste it into.
+const BUG_REPORT_TEMPLATE = (logLine) => `**What is the problem:**\n\n\n**How it is now:**\n\n\n**How it is expected to be:**\n\n\n**Link to the log:** ${logLine}\n`;
+const NEW_ISSUE_URL = 'https://github.com/adamstradomski/jinteki-analyzer/issues/new';
+
+document.getElementById('reportBugBtn').addEventListener('click', async () => {
+  const text = logInput.value;
+  let logLine = '(no log pasted — paste your log first so a share link can be included automatically)';
+  if (text.trim()){
+    try {
+      const encoded = await encodeLogForUrl(text);
+      logLine = HOSTED_SITE_URL + '#log=' + encoded;
+    } catch (e) {
+      logLine = '(could not build a share link: ' + e.message + ')';
+    }
+  }
+  const body = BUG_REPORT_TEMPLATE(logLine);
+  const prefillUrl = NEW_ISSUE_URL + '?title=' + encodeURIComponent('Bug report') + '&body=' + encodeURIComponent(body);
+  if (prefillUrl.length > 8000){
+    window.open(NEW_ISSUE_URL, '_blank');
+    try {
+      await navigator.clipboard.writeText(body);
+      statusMsg.textContent = 'The log is too large to prefill via link — opened a blank issue instead and copied the bug report template (with share link) to your clipboard. Paste it in.';
+    } catch (e) {
+      statusMsg.textContent = "The log is too large to prefill via link, and the template couldn't be copied automatically (" + e.message + '). Opened a blank issue — copy the share link from the "Share link" button above and paste it in manually.';
+    }
+  } else {
+    window.open(prefillUrl, '_blank');
   }
 });
 
