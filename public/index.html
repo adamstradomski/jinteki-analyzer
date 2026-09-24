@@ -154,6 +154,18 @@
 
   .mini-table{ margin-bottom: 4px; }
 
+  /* Wide tables scroll sideways inside their own box instead of stretching the page. */
+  .table-scroll{ overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; margin-bottom: 6px; }
+  .table-scroll > table{ margin-bottom: 0; }
+
+  @media (max-width: 640px){
+    body{ padding: 24px 10px 60px; }
+    .panel{ padding: 14px 12px; }
+    table{ font-size: 12.5px; }
+    th, td{ padding: 6px 7px; }
+    .table-actions .controls{ flex-wrap: wrap; }
+  }
+
   details{ margin-top: 4px; }
   summary{
     font-family: var(--mono); font-size: 12.5px; color: var(--dim);
@@ -2839,10 +2851,10 @@ function buildPlayerSections(data){
           <label class="toggle"><input type="checkbox" data-hideuntriggered="${basicActionsTableId}" checked> Hide actions that not triggered</label>
         </div>
       </div>
-      <table class="mini-table" id="${basicActionsTableId}">
+      <div class="table-scroll"><table class="mini-table" id="${basicActionsTableId}">
         <thead><tr><th>Action</th><th class="num">Times</th><th class="num">Credits</th></tr></thead>
         <tbody>${actionRowsHtml}</tbody>
-      </table>
+      </table></div>
 
       <div class="table-actions">
         <h3>${permTitle}</h3>
@@ -2851,7 +2863,7 @@ function buildPlayerSections(data){
           <button class="secondary" data-export="${instTableId}">Export CSV</button>
         </div>
       </div>
-      <table id="${instTableId}">
+      <div class="table-scroll"><table id="${instTableId}">
         <thead>
           <tr>
             <th data-key="name">Card</th>
@@ -2866,7 +2878,7 @@ function buildPlayerSections(data){
           </tr>
         </thead>
         <tbody></tbody>
-      </table>
+      </table></div>
       <div class="empty-note" data-empty="${instTableId}" style="display:none;">${permEmptyNote}</div>
 
       <div class="table-actions">
@@ -2876,7 +2888,7 @@ function buildPlayerSections(data){
           <button class="secondary" data-export="${opsTableId}">Export CSV</button>
         </div>
       </div>
-      <table id="${opsTableId}">
+      <div class="table-scroll"><table id="${opsTableId}">
         <thead>
           <tr>
             <th data-key="name">Card</th>
@@ -2889,7 +2901,7 @@ function buildPlayerSections(data){
           </tr>
         </thead>
         <tbody></tbody>
-      </table>
+      </table></div>
       <div class="empty-note" data-empty="${opsTableId}" style="display:none;">${opsEmptyNote}</div>
 
       </div>
@@ -3120,7 +3132,7 @@ function renderLineChart(ids, series, players, rounds, opts){
   });
 
   if (tableWrap){
-    let tbl = '<table><thead><tr><th>Turn</th>';
+    let tbl = '<div class="table-scroll"><table><thead><tr><th>Turn</th>';
     players.forEach(p => { tbl += `<th class="num">${p}</th>`; });
     tbl += '</tr></thead><tbody>';
     for (let t = 0; t <= rounds; t++){
@@ -3128,7 +3140,7 @@ function renderLineChart(ids, series, players, rounds, opts){
       players.forEach(p => { tbl += `<td class="num">${series[p] ? series[p][t] : 0}</td>`; });
       tbl += '</tr>';
     }
-    tbl += '</tbody></table>';
+    tbl += '</tbody></table></div>';
     tableWrap.innerHTML = tbl;
   }
 }
@@ -3208,7 +3220,7 @@ function renderGameStats(data){
   rows.push(['Times accessed R&D', p => data.playerSide[p] === 'runner' ? fmt((data.breachCounts[p] || {}).RD || 0) : '—']);
   rows.push(['Times accessed Archives', p => data.playerSide[p] === 'runner' ? fmt((data.breachCounts[p] || {}).Archives || 0) : '—']);
 
-  let tbl = '<table class="mini-table"><thead><tr><th>Stat</th>';
+  let tbl = '<div class="table-scroll"><table class="mini-table"><thead><tr><th>Stat</th>';
   players.forEach(p => { tbl += `<th class="num">${p}</th>`; });
   tbl += '</tr></thead><tbody>';
   rows.forEach(([label, fn]) => {
@@ -3216,7 +3228,7 @@ function renderGameStats(data){
     players.forEach(p => { tbl += `<td class="num">${fn(p)}</td>`; });
     tbl += '</tr>';
   });
-  tbl += '</tbody></table>';
+  tbl += '</tbody></table></div>';
   wrap.innerHTML = tbl;
 }
 
