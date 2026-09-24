@@ -764,6 +764,7 @@ Runner Player approaches Starlit Knight protecting HQ at position 0.
 Corp Player has no further action.
 Runner Player encounters Starlit Knight protecting HQ at position 0.
 Runner Player pays 2  from Debbie "Downtown" Moreira to increase the strength of Revolver to 4.
+[!] Runner uses the undo-click command
 Runner Player spends  to make a run on Archives.
 Corp Player uses Tiered Subscription to gain 1 .
 Corp Player uses Tiered Subscription to gain 1 .
@@ -1708,11 +1709,51 @@ function reconstructTimestampedLog(text){
 // src/clj/game/core/say.clj. Every regex that matches a pronoun is built from this.
 const PRONOUN = '(?:his|her|their|its|faer|nir|vis|eir|hir|zir|xyr|xir)';
 
+// jinteki.net's /undo-click resets the game to the state saved just before
+// the active player's last click action (it keeps the last 4 such states per
+// turn, cleared when a turn starts), but the log keeps everything that
+// happened since. Those lines describe credits, draws, tags etc. that were
+// taken back, so they're dropped here, before parsing: from the undone
+// action's own line up to the "[!] Runner uses the undo-click command"
+// notice (only printed when the undo actually happened).
+function removeUndoneClicks(lines){
+  const turnStartRe = new RegExp('^(.+?)\\s+started ' + PRONOUN + ' turn \\d+ with\\b');
+  const undoClickRe = /^\[?!\]?\s*(?:Corp|Runner) uses the undo-click command\b/i;
+  // A click action's first line: "X spends to ...", "X spends and pays N
+  // to ...", "X spends and spends 1 hosted ..." (the click icon itself is
+  // lost when the log is copied). A bare "spends 1 hosted counter" is a
+  // paid ability, not a click action.
+  const clickActionRe = /^\s+spends\s+(?:to|and)\b/;
+  const kept = [];
+  const undone = [];
+  let active = null;
+  let clickStarts = [];
+  for (const line of lines){
+    let m;
+    if ((m = line.match(turnStartRe))){
+      active = m[1].trim();
+      clickStarts = [];
+    } else if (undoClickRe.test(line)){
+      if (clickStarts.length){
+        const from = clickStarts.pop();
+        undone.push({ line, removed: kept.splice(from) });
+      }
+      continue;
+    } else if (active && line.startsWith(active + ' ') && clickActionRe.test(line.slice(active.length))){
+      clickStarts.push(kept.length);
+      if (clickStarts.length > 4) clickStarts.shift();
+    }
+    kept.push(line);
+  }
+  return { lines: kept, undone };
+}
+
 function parseLog(text){
   text = stripInlineTimestamps(text);
   text = reconstructTimestampedLog(text);
-  const rawLines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-  const chatBadges = extractChatBadges(rawLines);
+  const allLines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  const chatBadges = extractChatBadges(allLines);
+  const { lines: rawLines, undone } = removeUndoneClicks(allLines);
 
   const VERBS = ['spends','pays','uses','installs','approaches','encounters','breaches',
     'accesses','steals','trashes','is','started','makes','declines','has','will',
@@ -1847,6 +1888,9 @@ function parseLog(text){
   const instances = [];
   const operations = new Map();
   const flagged = [];
+  undone.forEach(u => {
+    flagged.push({ reason: `Undo-click — ignored ${u.removed.length} line${u.removed.length === 1 ? '' : 's'} that the undo took back, starting with: ${u.removed[0]}`, line: u.line });
+  });
   const drawClicks = {};
   const tagRemovals = {};
   const trashResources = {};
