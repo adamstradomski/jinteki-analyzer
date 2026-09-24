@@ -1676,43 +1676,130 @@ function reconstructTimestampedLog(text){
   return merged.join('\n');
 }
 
-// jinteki.net's /undo-click resets the game to the state saved just before
-// the active player's last click action (it keeps the last 4 such states per
-// turn, cleared when a turn starts), but the log keeps everything that
-// happened since. Those lines describe credits, draws, tags etc. that were
-// taken back, so they're dropped here, before parsing: from the undone
-// action's own line up to the "[!] Runner uses the undo-click command"
-// notice (only printed when the undo actually happened).
-function removeUndoneClicks(lines){
-  const turnStartRe = /^(.+?)\s+started \S+ turn \d+ with\b/;
-  const undoClickRe = /^\[?!\]?\s*(?:Corp|Runner) uses the undo-click command\b/i;
+// ---- Undo commands ----
+// jinteki.net's /undo-click and /undo-paid-ability reset the game to a saved
+// state, but the log keeps everything printed since. The lines describing
+// what was taken back (credits, draws, tags, or a whole run with its rezzes,
+// subroutines and credits) would otherwise all be counted. Where the undo
+// went back to isn't always visible, though: the undone action or ability
+// may have been cancelled mid-resolution, before it printed anything, and
+// then removing the previous logged action would be wrong. So every undo is
+// resolved by trying each reading of it (nothing taken back, or everything
+// from a candidate starting line), re-parsing, and keeping the reading whose
+// derived credit pools match the exact values printed at the next turn
+// boundary for both players. When the totals can't tell readings apart the
+// likeliest one is kept. Either way every undo is flagged.
+const UNDO_CLICK_RE = /^\[?!\]?\s*(Corp|Runner) uses the undo-click command\b/i;
+const UNDO_PAID_RE = /^\[?!\]?\s*(Corp|Runner) uses the undo-paid-ability command\b/i;
+
+// Applies one reading per undo and returns the remaining lines plus what
+// each undo did. decisions[i] is -1 for "nothing taken back" or the index of
+// the starting line among that undo's candidates (likeliest first).
+function applyUndos(lines, decisions){
+  const turnStartRe = /^(.+?)\s+started \S+ turn (\d+) with\b/;
+  const turnEndRe = /^(.+?)\s+is ending \S+ turn \d+ with\b/;
   // A click action's first line: "X spends to ...", "X spends and pays N
   // to ...", "X spends and spends 1 hosted ..." (the click icon itself is
   // lost when the log is copied). A bare "spends 1 hosted counter" is a
-  // paid ability, not a click action.
+  // paid ability, not a click action. A run started by a click begins here
+  // too, so undoing that click takes back the whole run.
   const clickActionRe = /^\s+spends\s+(?:to|and)\b/;
+  const players = new Set();
+  lines.forEach(l => { const m = l.match(turnStartRe); if (m) players.add(m[1].trim()); });
+  const byPlayer = l => [...players].some(p => l.startsWith(p + ' '));
   const kept = [];
-  const undone = [];
+  const undos = [];
   let active = null;
-  let clickStarts = [];
-  for (const line of lines){
+  let turn = 0;
+  let clickStarts = [];  // kept indices of this turn's click actions (the engine keeps the last 4)
+  let abilityFloor = 0;  // an ability undo can't reach back past the last action or turn boundary
+  for (let i = 0; i < lines.length; i++){
+    const line = lines[i];
     let m;
+    const cm = line.match(UNDO_CLICK_RE);
+    const pm = cm ? null : line.match(UNDO_PAID_RE);
+    if (cm || pm){
+      const kind = cm ? 'click' : 'paid';
+      let candidates;
+      if (kind === 'click'){
+        candidates = clickStarts.length ? [clickStarts[clickStarts.length - 1]] : [];
+      } else {
+        // Any player line since the last action, nearest first; but if the
+        // player's next line repeats one of them (redoing that ability
+        // properly), that one is the likeliest start.
+        candidates = [];
+        for (let k = kept.length - 1; k >= abilityFloor && candidates.length < 8; k--){
+          if (byPlayer(kept[k])) candidates.push(k);
+        }
+        const redo = lines.slice(i + 1).find(byPlayer);
+        const r = candidates.findIndex(k => kept[k] === redo);
+        if (r > 0) candidates.unshift(candidates.splice(r, 1)[0]);
+      }
+      const d = decisions[undos.length] === undefined ? 0 : decisions[undos.length];
+      const from = d >= 0 && d < candidates.length ? candidates[d] : null;
+      const removed = from === null ? [] : kept.splice(from);
+      if (from !== null){
+        if (kind === 'click') clickStarts.pop();
+        clickStarts = clickStarts.filter(k => k < kept.length);
+        abilityFloor = Math.min(abilityFloor, kept.length);
+      }
+      undos.push({ kind, side: (cm || pm)[1], line, active, turn, at: kept.length,
+        candidates: candidates.length, decision: from === null ? -1 : d, removed });
+      continue;
+    }
     if ((m = line.match(turnStartRe))){
       active = m[1].trim();
+      turn = +m[2];
       clickStarts = [];
-    } else if (undoClickRe.test(line)){
-      if (clickStarts.length){
-        const from = clickStarts.pop();
-        undone.push({ line, removed: kept.splice(from) });
-      }
-      continue;
+      abilityFloor = kept.length + 1;
+    } else if (turnEndRe.test(line)){
+      abilityFloor = kept.length + 1;
     } else if (active && line.startsWith(active + ' ') && clickActionRe.test(line.slice(active.length))){
       clickStarts.push(kept.length);
       if (clickStarts.length > 4) clickStarts.shift();
+      abilityFloor = kept.length + 1;
     }
     kept.push(line);
   }
-  return { lines: kept, undone };
+  return { lines: kept, undos };
+}
+
+// How well one reading of undo #i fits: the number of credit-pool stretches
+// spanning the undo (either player's, between the turn boundaries around it)
+// whose derived total misses the printed one. checked is false when no such
+// stretch closes before the game ends.
+function scoreUndoReading(applied, i){
+  const data = parseLines(applied.lines, {}, []);
+  const at = applied.undos[i].at;
+  let bad = 0, checked = false;
+  Object.values(data.poolSegments).forEach(segs => segs.forEach(seg => {
+    if (seg.startLine < at && (seg.endLine === null || at <= seg.endLine) && seg.ok !== null){
+      checked = true;
+      if (!seg.ok) bad++;
+    }
+  }));
+  return { bad, checked };
+}
+
+function resolveUndos(lines){
+  const decisions = applyUndos(lines, []).undos.map(() => 0);
+  const verdicts = decisions.map((_, i) => {
+    const count = applyUndos(lines, decisions).undos[i].candidates;
+    const options = [...Array(count).keys(), -1];
+    const scored = options.map(opt => {
+      decisions[i] = opt;
+      return Object.assign({ opt }, scoreUndoReading(applyUndos(lines, decisions), i));
+    });
+    const best = scored.reduce((a, b) => (b.bad < a.bad ? b : a));
+    decisions[i] = best.opt;
+    if (!best.checked) return 'unverifiable';
+    if (best.bad > 0) return 'unresolved';
+    const rivals = scored.filter(s => s.bad === best.bad && (s.opt === -1) !== (best.opt === -1));
+    return rivals.length ? 'ambiguous' : 'confirmed';
+  });
+  const result = applyUndos(lines, decisions);
+  result.undos.forEach((u, i) => { u.verdict = verdicts[i]; });
+  return result;
 }
 
 function parseLog(text){
@@ -1720,8 +1807,11 @@ function parseLog(text){
   text = reconstructTimestampedLog(text);
   const allLines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
   const chatBadges = extractChatBadges(allLines);
-  const { lines: rawLines, undone } = removeUndoneClicks(allLines);
+  const { lines, undos } = resolveUndos(allLines);
+  return parseLines(lines, chatBadges, undos);
+}
 
+function parseLines(rawLines, chatBadges, undos){
   const VERBS = ['spends','pays','uses','installs','approaches','encounters','breaches',
     'accesses','steals','trashes','is','started','makes','declines','has','will',
     'resolves','indicates','passes','discards','scores','wins','must','jacks','sets'];
@@ -1830,8 +1920,23 @@ function parseLog(text){
   const instances = [];
   const operations = new Map();
   const flagged = [];
-  undone.forEach(u => {
-    flagged.push({ reason: `Undo-click — ignored ${u.removed.length} line${u.removed.length === 1 ? '' : 's'} that the undo took back, starting with: ${u.removed[0]}`, line: u.line });
+  if (undos.length){
+    const clicks = undos.filter(u => u.kind === 'click').length;
+    flagged.push({ reason: `This game has ${undos.length} undo command${undos.length === 1 ? '' : 's'} (${clicks} undo-click, ${undos.length - clicks} undo-paid-ability). The log keeps what was undone, so each one is resolved as listed below; stats around them can be off.`, line: '(see the undo lines below)' });
+  }
+  const UNDO_VERDICTS = {
+    confirmed: 'Confirmed by the credit totals at the next turn boundary.',
+    ambiguous: 'The credit totals at the next turn boundary fit either reading, so this is a best guess; draws, runs and tags around it may be off.',
+    unresolved: 'No reading matches the credit totals at the next turn boundary; credits and other stats around it may be off.',
+    unverifiable: 'The game ended before the next turn boundary, so this could not be checked; stats after it may be off.'
+  };
+  undos.forEach(u => {
+    const name = u.kind === 'click' ? 'Undo-click' : 'Undo-paid-ability';
+    const when = u.active ? ` (${u.side}, during ${u.active}'s turn ${u.turn})` : ` (${u.side})`;
+    const what = u.removed.length
+      ? `ignored ${u.removed.length} line${u.removed.length === 1 ? '' : 's'} it took back, starting with “${u.removed[0].replace(/\.$/, '')}”`
+      : `nothing ignored; the undone ${u.kind === 'click' ? 'action' : 'ability'} seems to have been cancelled before it was logged`;
+    flagged.push({ reason: `${name}${when} — ${what}. ${UNDO_VERDICTS[u.verdict] || ''}`, line: u.line });
   });
   const drawClicks = {};
   const tagRemovals = {};
@@ -1910,6 +2015,7 @@ function parseLog(text){
     const segs = poolSegments[p] || (poolSegments[p] = []);
     const open = segs[segs.length - 1];
     if (open && open.end === null){
+      open.endLine = lineNo;
       open.end = creditPool[p];
       open.expected = credits;
       open.ok = open.end === credits;
@@ -1917,7 +2023,7 @@ function parseLog(text){
         flagged.push({ reason: `Credit tracking (${p}) — log shows ${credits} at the ${kind} of turn ${turnNum}, but the parsed credit events since the previous turn boundary add up to ${open.end}; some gain/spend in between wasn't read correctly`, line });
       }
     }
-    segs.push({ fromTurn: turnNum, fromKind: kind, start: credits, values: [], end: null, expected: null, ok: null });
+    segs.push({ fromTurn: turnNum, fromKind: kind, start: credits, values: [], end: null, expected: null, ok: null, startLine: lineNo, endLine: null });
     creditPool[p] = credits;
     if (!poolBySeq[p]) poolBySeq[p] = {};
     poolBySeq[p][currentGlobalSeq] = credits;
@@ -2164,7 +2270,9 @@ function parseLog(text){
     return inst;
   }
 
+  let lineNo = -1; // index into rawLines of the line being parsed (see poolSegments)
   for (const line of rawLines){
+    lineNo++;
     let m;
     lineInstanceCache = {};
 
@@ -2694,7 +2802,7 @@ function parseLog(text){
     cardsAccessed, breachCounts, clicksGained,
     creditsGainedSeries, creditsNetSeries, creditPoolSeries, handSizeSeries, cardsDrawnSeries,
     totalSeq, seqAxisLabels, agendaSeqSeries, creditsNetSeqSeries, creditPoolSeqSeries,
-    poolSegments, finalCreditPool: creditPool,
+    poolSegments, finalCreditPool: creditPool, undos,
     handSizeSeqSeries, cardsDrawnSeqSeries
   };
 }
@@ -2717,6 +2825,7 @@ function renderSummary(data){
     { label: 'Winner', num: data.winner || '—' },
     { label: 'Rounds', num: data.rounds || 0 }
   ];
+  if (data.undos.length) stats.push({ label: 'Undo commands (see flagged lines)', num: data.undos.length });
   data.players.forEach(p => {
     stats.push({ label: `${p} — turns taken`, num: data.maxTurn[p] || 0 });
   });
@@ -3083,7 +3192,7 @@ function renderFlagged(flagged){
   empty.style.display = 'none';
   const details = document.createElement('details');
   const summary = document.createElement('summary');
-  summary.textContent = `${flagged.length} line(s) had a credit trigger with no readable amount`;
+  summary.textContent = `${flagged.length} flagged line(s): parsing gaps, credit-tracking mismatches and undo commands`;
   details.appendChild(summary);
   flagged.forEach(f => {
     const div = document.createElement('div');
