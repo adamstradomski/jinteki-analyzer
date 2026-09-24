@@ -1703,6 +1703,11 @@ function reconstructTimestampedLog(text){
   return merged.join('\n');
 }
 
+// jinteki.net substitutes each player's chosen pronoun into its generated log
+// text ("X started <pronoun> turn 1 ...") — see select-pronoun in mtgred/netrunner
+// src/clj/game/core/say.clj. Every regex that matches a pronoun is built from this.
+const PRONOUN = '(?:his|her|their|its|faer|nir|vis|eir|hir|zir|xyr|xir)';
+
 function parseLog(text){
   text = stripInlineTimestamps(text);
   text = reconstructTimestampedLog(text);
@@ -1733,7 +1738,7 @@ function parseLog(text){
   // gain", e.g. "Knickknack" O'Brian ("...to trash Coalescence to gain 2 and
   // draw a card."). Same name-capture guard as gainDirectRe above.
   const gainMidActionRe = /\buses?\s+((?:(?!\sto\s).)+)\s+to\s+.+?\bto\s+gain\s*(\d+)?\b/i;
-  const payFromRe = /\bpays\s+(\d+)\s+from\s+(?:his|her|their|the)?\s*(.+?)(?=\s+and\s+|\s+to\s+|\.$|$)/g;
+  const payFromRe = new RegExp(String.raw`\bpays\s+(\d+)\s+from\s+(?:${PRONOUN}|the)?\s*(.+?)(?=\s+and\s+|\s+to\s+|\.$|$)`, 'g');
   const installRe = /\bto install (.+)$/;
   const installCostRe = /pays\s+(.+?)\s+to\s+install\b/;
   // "Uses <card> to install ..." / "pays N to use <card> to install ..." is an
@@ -1750,8 +1755,8 @@ function parseLog(text){
   const leftPlayRe = /^(.+?)\s+has left play/;
   const shuffleRemoveRe = /\buses?\s+(.+?)\s+to\s+shuffle\b/i;
   const selfTrashRe = /\buses?\s+(.+?)\s+to\s+.*?\btrash(?:es)?\s+itself\b/i;
-  const turnStartRe = /^(.+?)\s+started (?:his|her|their) turn (\d+) with (\d+)\s+and (\d+) cards? in/;
-  const turnEndRe = /^(.+?)\s+is ending (?:his|her|their) turn (\d+) with (\d+)\s+and (\d+) cards? in/;
+  const turnStartRe = new RegExp(String.raw`^(.+?)\s+started ${PRONOUN} turn (\d+) with (\d+)\s+and (\d+) cards? in`);
+  const turnEndRe = new RegExp(String.raw`^(.+?)\s+is ending ${PRONOUN} turn (\d+) with (\d+)\s+and (\d+) cards? in`);
   const winRe = /^(.+?)\s+wins the game\.?/;
   const drawClickRe = /to use (Corp|Runner) Basic Action Card to draw 1 card/;
   const tagRemovalRe = /pays\s+(\d+)\s+to use Runner Basic Action Card to remove 1 tag/;
@@ -1789,10 +1794,10 @@ function parseLog(text){
   // additional cards from HQ") doesn't count.
   const trashFromCorpZoneRe = /^\s+(?:from|in)\s+(?:the\s+root\s+of\s+)?(?:Server\s+\d+|HQ|R&D|Archives)\b/i;
   const concedeRe = /^(.+?)\s+concedes?\b/i;
-  const revealToScoreAreaRe = /\buses?\s+.+?\s+to\s+reveal\s+(.+?)\s+(?:from\s+.+?\s+)?and\s+add\s+it\s+to\s+(?:their|his|her)\s+score\s+area/i;
+  const revealToScoreAreaRe = new RegExp(String.raw`\buses?\s+.+?\s+to\s+reveal\s+(.+?)\s+(?:from\s+.+?\s+)?and\s+add\s+it\s+to\s+${PRONOUN}\s+score\s+area`, 'i');
   const anyDrawRe = /\bdraws?\s+(\d+)\s+cards?\b/i;
   const cardDrawRe = /\buses?\s+(.+?)\s+to\s+.*?\bdraws?\s+(\d+)\s+cards?\b/i;
-  const mandatoryDrawRe = /\bmakes (?:his|her|their) mandatory start of turn draw\b/;
+  const mandatoryDrawRe = new RegExp(String.raw`\bmakes ${PRONOUN} mandatory start of turn draw\b`);
   const genericGainRe = /\bgains?\s+(\d+)(?!\s*agenda)/gi;
   // Forced credit loss — "Corp Player uses Artificial Cryptocrash to make the
   // Runner lose 7." / "...force the Corp to lose 3, and then gain 6." — is a
@@ -1995,7 +2000,7 @@ function parseLog(text){
       return bare ? +bare[1] : null;
     }
     let total = 0;
-    const clauseRe = /(\d+)\s+from\s+((?:his|her|their|the)?\s*credit pool|[^,]+?)(?=\s+and\s+\d|\.$|$|\s+to\s+)/gi;
+    const clauseRe = new RegExp(String.raw`(\d+)\s+from\s+((?:${PRONOUN}|the)?\s*credit pool|[^,]+?)(?=\s+and\s+\d|\.$|$|\s+to\s+)`, 'gi');
     let cm;
     while ((cm = clauseRe.exec(costSpan))){
       if (/credit pool/i.test(cm[2])) total += +cm[1];
