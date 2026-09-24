@@ -35,7 +35,7 @@ The site runs on one Cloudflare Worker per environment, built from this repo wit
 
 Production (`jinteki-analyzer`, from `main`) serves jinteki.win; the test Worker (`jinteki-analyzer-test`) is an identical copy with its own database on its workers.dev URL.
 
-The repo is public, so account details aren't committed. `wrangler.toml` is generated at build time from `wrangler.template.toml` by `scripts/render-config.mjs`, using each Worker's build variables (Settings → Build → Variables and secrets). The build fails if any are missing.
+The repo is public, so account details aren't committed. `wrangler.toml` is generated at build time from `wrangler.template.toml` by `scripts/render-config.mjs`, using each Worker's build variables (Settings → Build → Variables and secrets). The build fails if any are missing. The same build step stamps the footer's build time and commit (`scripts/stamp-build.mjs`); the committed page just says `Build: dev`.
 
 | Variable | Meaning |
 |---|---|

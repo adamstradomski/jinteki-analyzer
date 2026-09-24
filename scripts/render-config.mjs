@@ -1,4 +1,5 @@
-// Builds wrangler.toml from wrangler.template.toml using build variables,
+// Build step: renders wrangler.toml from wrangler.template.toml using build
+// variables and stamps the footer build number (scripts/stamp-build.mjs),
 // so database IDs, Worker names and URLs stay out of the public repo.
 // Fails the build if anything is missing, so a half-configured Worker is
 // never deployed.
@@ -30,3 +31,7 @@ if (missing.length || invalid.length) {
 
 writeFileSync(new URL('wrangler.toml', dir), rendered);
 console.log('wrangler.toml rendered for Worker "' + process.env.WORKER_NAME + '"');
+
+// Same build step also stamps the footer build number, so the dashboard
+// build command stays a single script.
+await import('./stamp-build.mjs');

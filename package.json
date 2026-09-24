@@ -1,6 +1,7 @@
 {
   "name": "jinteki-analyzer",
   "private": true,
+  "type": "module",
   "description": "jinteki.net Netrunner log analyzer and its link shortener Worker",
   "scripts": {
     "build": "node scripts/render-config.mjs"
