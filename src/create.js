@@ -7,10 +7,10 @@ const json = (body, status = 200) =>
     headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
   });
 
-// POST /api/shorten  body: {"payload": "gz.xxxx"}  ->  {"url": "https://jinteki.win/s/Ab3xK9pQ"}
+// POST /api/shorten  body: {"payload": "gz.xxxx"}  ->  {"url": "<origin>/s/Ab3xK9pQ"}
 export async function handleCreate(request, env) {
   if (request.method !== 'POST') return json({ error: 'method not allowed' }, 405);
-  if (!isAllowedOrigin(request, env)) return json({ error: 'forbidden origin' }, 403);
+  if (!isAllowedOrigin(request)) return json({ error: 'forbidden origin' }, 403);
 
   const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
   const { success } = await env.CREATE_LIMITER.limit({ key: 'create:' + ip });
@@ -31,7 +31,7 @@ export async function handleCreate(request, env) {
   }
 
   const hash = await sha256Hex(payload);
-  const base = env.SITE_URL.replace(/\/$/, '');
+  const base = new URL(request.url).origin;
 
   // Same log -> same ID, so repeated submits never grow storage.
   const existing = await env.DB.prepare('SELECT id FROM links WHERE hash = ?').bind(hash).first();

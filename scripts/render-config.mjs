@@ -4,7 +4,7 @@
 // never deployed.
 import { readFileSync, writeFileSync } from 'node:fs';
 
-const dir = new URL('..', import.meta.url);
+const dir = new URL('..', import.meta.url); // repo root
 const template = readFileSync(new URL('wrangler.template.toml', dir), 'utf8');
 
 // Values inserted as raw TOML rather than inside a string.

@@ -395,7 +395,7 @@
 
   </div>
 
-  <footer>Parses locally in your browser — nothing is uploaded, unless you use the optional "Shorten link" button, which stores the encoded log on jinteki.win so the short link can be opened later.<br>If this tool's useful, <a href="https://ko-fi.com/inermis2020" target="_blank" rel="noopener">support it on Ko-fi</a>.<br>Build: 2026-09-24 13:55 UTC+2</footer>
+  <footer>Parses locally in your browser — nothing is uploaded, unless you use the optional "Shorten link" button, which stores the encoded log on jinteki.win so the short link can be opened later.<br>If this tool's useful, <a href="https://ko-fi.com/inermis2020" target="_blank" rel="noopener">support it on Ko-fi</a>.<br>Build: 2026-09-24 14:24 UTC+2</footer>
 </div>
 
 <script>
@@ -3423,16 +3423,15 @@ document.getElementById('copyPermalinkBtn').addEventListener('click', () => {
 });
 
 // ---- Optional: shorten the share link via jinteki.win's own shortener
-// (a Cloudflare Worker, see shortener/ in the repo). This is opt-in only
+// (src/ in the repo, run by the same Cloudflare Worker that serves this page). This is opt-in only
 // (button click), because unlike the plain share link above — which never
 // leaves the browser — shortening stores the encoded log on the server so
 // jinteki.win/s/<id> can redirect back to it. If the shortener is
 // unavailable (rate limit, free-tier quota, or the page isn't served from
 // jinteki.win), the long link keeps working and stays in the box.
-// Filled in at build time by scripts/inject-config.mjs (production and
-// preview builds point at different shortener instances). Copies deployed
-// without that step fall back to the production shortener.
-const SHORTEN_API_URL = (u => u.startsWith('__') ? HOSTED_SITE_URL + 'api/shorten' : u)('__SHORTEN_API_URL__');
+// Same Worker serves the page and the API, so production and test
+// instances each talk to their own shortener and database.
+const SHORTEN_API_URL = '/api/shorten';
 document.getElementById('shortenPermalinkBtn').addEventListener('click', async () => {
   const shareInput = document.getElementById('permalinkUrlInput');
   const longUrl = shareInput.value;

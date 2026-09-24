@@ -7,9 +7,14 @@ compatibility_date = "2026-09-01"
 workers_dev = ${WORKERS_DEV}
 routes = ${ROUTES}
 
+# The site itself: served straight from public/ without running the Worker
+# (static asset requests are free). Only the shortener paths run code.
+[assets]
+directory = "./public"
+binding = "ASSETS"
+run_worker_first = ["/s/*", "/api/*"]
+
 [vars]
-SITE_URL = "${SITE_URL}"
-ALLOWED_ORIGINS = "${ALLOWED_ORIGINS}"
 RETENTION_DAYS = "${RETENTION_DAYS}"
 
 [[d1_databases]]

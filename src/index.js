@@ -8,7 +8,8 @@ export default {
       if (pathname === '/api/shorten') return await handleCreate(request, env);
       const m = pathname.match(/^\/s\/([^/]+)\/?$/);
       if (m) return await handleResolve(request, env, ctx, m[1]);
-      return new Response('Not found', { status: 404 });
+      // Anything else routed here falls back to the static site.
+      return env.ASSETS.fetch(request);
     } catch (e) {
       // Typically a free-tier limit being hit; the site falls back to the long link.
       console.error(e);

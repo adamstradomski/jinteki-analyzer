@@ -7,10 +7,11 @@ const LOG_MARKER = /started their turn/i;
 
 export class ValidationError extends Error {}
 
-export function isAllowedOrigin(request, env) {
+// The page and the API are served by the same Worker, so only same-origin
+// requests (the site's own Shorten button) may create links.
+export function isAllowedOrigin(request) {
   const origin = request.headers.get('Origin');
-  const allowed = (env.ALLOWED_ORIGINS || '').split(',').map((s) => s.trim()).filter(Boolean);
-  return !!origin && allowed.includes(origin);
+  return !!origin && origin === new URL(request.url).origin;
 }
 
 function base64UrlToBytes(s) {

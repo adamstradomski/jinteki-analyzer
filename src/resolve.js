@@ -14,7 +14,7 @@ async function notFound(request, env) {
   });
 }
 
-// GET /s/:id -> 302 to https://jinteki.win/#log=<payload>
+// GET /s/:id -> 302 to <same origin>/#log=<payload>
 export async function handleResolve(request, env, ctx, id) {
   if (request.method !== 'GET' && request.method !== 'HEAD') {
     return new Response('Method not allowed', { status: 405 });
@@ -33,7 +33,7 @@ export async function handleResolve(request, env, ctx, id) {
   const res = new Response(null, {
     status: 302,
     headers: {
-      Location: `${env.SITE_URL}#log=${row.payload}`,
+      Location: `${url.origin}/#log=${row.payload}`,
       'Cache-Control': `public, max-age=${CACHE_SECONDS}`,
       'Referrer-Policy': 'no-referrer',
     },

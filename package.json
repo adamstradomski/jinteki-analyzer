@@ -1,0 +1,11 @@
+{
+  "name": "jinteki-analyzer",
+  "private": true,
+  "description": "jinteki.net Netrunner log analyzer and its link shortener Worker",
+  "scripts": {
+    "build": "node scripts/render-config.mjs"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}
