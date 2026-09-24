@@ -9,6 +9,7 @@ A single-page, client-side log analyzer for [jinteki.net](https://jinteki.net) N
 - **Log parsing** — paste the log text from the jinteki.net chat panel and parse it into structured turn-by-turn data.
 - **Browser bookmarklet** — drag a bookmarklet into your bookmarks bar; on any finished jinteki.net game, one click extracts the log and opens it here already parsed, no copy/paste.
 - **Game summary & stats** — turns played, credits, draws, runs, installs, and other per-player totals.
+- **Achievements** — per-player Corp/Runner achievements for the game (e.g. won without clicking for credits, flatline and mill wins, comebacks from 0–6), defined in one `ACHIEVEMENTS` list in `index.html`.
 - **Charts** — agenda points, net credits gained per turn, credit pool over time, cards in hand, and cumulative cards drawn, plotted both by each player's own turn number and on a shared/interleaved turn-order axis.
 - **Per-card tables** — credits gained/spent and net value attributed to each installed card, plus operations/events, with a flagged-lines list for anything the parser couldn't confidently resolve.
 - **Share link** — compresses the pasted log and encodes it into a URL fragment (`#log=...`) so a whole game can be shared as a link. The log never touches a server; only whoever has the link can decode it in their own browser.

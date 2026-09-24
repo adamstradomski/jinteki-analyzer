@@ -17,6 +17,8 @@
     --accent2: #d6a84f;
     --warn: #d6a84f;
     --neg: #d97878;
+    --corp: #5b93d9;
+    --runner: #e2585f;
     --mono: "IBM Plex Mono", "SF Mono", Menlo, Consolas, monospace;
     --serif: "Source Serif 4", Georgia, serif;
   }
@@ -139,6 +141,25 @@
     border: 1px solid var(--accent-dim); color: var(--accent); border-radius: 3px;
     padding: 2px 7px; letter-spacing: 0.03em;
   }
+
+  .achievements-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); gap: 18px; }
+  .achievement-player{ font-family: var(--mono); font-size: 12.5px; margin-bottom: 10px; }
+  .achievement-side{
+    font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.04em;
+    border: 1px solid currentColor; border-radius: 3px; padding: 1px 6px; margin-left: 6px;
+  }
+  .achievement-side.corp{ color: var(--corp); }
+  .achievement-side.runner{ color: var(--runner); }
+  .achievement{
+    border-left: 3px solid var(--line); background: var(--panel-2);
+    border-radius: 0 4px 4px 0; padding: 8px 12px; margin-bottom: 8px;
+  }
+  .achievement.corp{ border-left-color: var(--corp); }
+  .achievement.runner{ border-left-color: var(--runner); }
+  .achievement-name{ display:block; font-weight: 600; }
+  .achievement.corp .achievement-name{ color: var(--corp); }
+  .achievement.runner .achievement-name{ color: var(--runner); }
+  .achievement-desc{ display:block; font-family: var(--mono); font-size: 11.5px; color: var(--dim); }
 
   table{ width:100%; border-collapse: collapse; font-size: 13.5px; margin-bottom: 6px; }
   th, td{ text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); }
@@ -268,6 +289,13 @@
         <div class="badges-row" id="badgesRow"></div>
         <h3>Game stats</h3>
         <div id="gameStatsWrap"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header"><h2>Achievements</h2><span class="collapse-icon">−</span></div>
+      <div class="panel-body">
+        <div class="achievements-grid" id="achievementsWrap"></div>
       </div>
     </div>
 
@@ -1683,7 +1711,8 @@ function parseLog(text){
 
   const VERBS = ['spends','pays','uses','installs','approaches','encounters','breaches',
     'accesses','steals','trashes','is','started','makes','declines','has','will',
-    'resolves','indicates','passes','discards','scores','wins','must','jacks','sets'];
+    'resolves','indicates','passes','discards','scores','wins','must','jacks','sets',
+    'forfeits','takes'];
   const playerRe = new RegExp('^(.+?)\\s+(?:' + VERBS.join('|') + ')\\b');
 
   // Jinteki's own generated log text is consistently lowercase ("to gain N"),
@@ -1733,8 +1762,32 @@ function parseLog(text){
   // phrasing used by the other basic-action lines above; adjust if a real
   // logged purge line turns out to read differently.
   const purgeRe = /\bto use Corp Basic Action Card to purge virus counters\b/i;
-  const stealRe = /\bsteals\s+.+?\s+and\s+gains\s+(\d+)\s+agenda\s+points?/;
-  const scoreRe = /\bscores\s+.+?\s+and\s+gains\s+(\d+)\s+agenda\s+points?/;
+  const stealRe = /\bsteals\s+(.+?)\s+and\s+gains\s+(-?\d+)\s+agenda\s+points?/;
+  const scoreRe = /\bscores\s+(.+?)\s+and\s+gains\s+(-?\d+)\s+agenda\s+points?/;
+  // A card that turns itself into an agenda in its player's score area, e.g.
+  // "Plukind uses Myōshu to add itself to their score area as an Agenda worth
+  // 2 points." (an operation, so it never shows up as a "scores" line).
+  const selfToScoreAreaRe = /\buses?\s+(.+?)\s+to\s+add\s+itself\s+to\s+\S+\s+score\s+area\s+as\s+an\s+agenda\s+worth\s+(-?\d+)(?:\s+agenda)?\s+points?/i;
+  // "forfeits <agenda>" — as a cost or an effect; takes that agenda's points
+  // back out of the forfeiting player's score.
+  const forfeitRe = /\bforfeits\s+(?:\d+\s+agendas?\s+\()?(.+?)\)?(?=\s+to\s+|\.?$)/i;
+  // Game-end and pre-game system lines (wording from jinteki.net's own
+  // message strings: "<player> is flatlined.", "<player> is decked.",
+  // "<player> takes a mulligan.").
+  const flatlinedRe = /^(.+?)\s+is flatlined\.?$/;
+  const deckedRe = /^(.+?)\s+is decked\.?$/;
+  const mulliganRe = /^(.+?)\s+takes a mulligan\.?$/;
+  // Cards discarded from the grip by damage: one line per damage event,
+  // listing every card lost ("trashes Curupira and Pennyshaver due to net
+  // damage"; the list is empty when the grip already was).
+  const damageDiscardRe = /\btrashes\s*(.*?)\s*due\s+to\s+(?:net|meat|core|brain)\s+damage\b/i;
+  // Tested on the text right after trashRe's card name: a Runner trashing a
+  // card that sits in a Corp server or central ("pays 4 to trash La Costa
+  // Grid from Server 1", "...from the root of R&D", "...from HQ") — always a
+  // Corp card, even if it was never rezzed. Anchored so a later, unrelated
+  // "from HQ" ("trashes Cupellation to use Cupellation to access 2
+  // additional cards from HQ") doesn't count.
+  const trashFromCorpZoneRe = /^\s+(?:from|in)\s+(?:the\s+root\s+of\s+)?(?:Server\s+\d+|HQ|R&D|Archives)\b/i;
   const concedeRe = /^(.+?)\s+concedes?\b/i;
   const revealToScoreAreaRe = /\buses?\s+.+?\s+to\s+reveal\s+(.+?)\s+(?:from\s+.+?\s+)?and\s+add\s+it\s+to\s+(?:their|his|her)\s+score\s+area/i;
   const anyDrawRe = /\bdraws?\s+(\d+)\s+cards?\b/i;
@@ -1815,6 +1868,13 @@ function parseLog(text){
   const clicksGained = {};
   let winner = null;
   let concededPlayer = null;
+  let flatlinedPlayer = null;
+  let deckedPlayer = null;
+  const mulligans = new Set();
+  const damageTaken = {};       // player -> cards lost to damage
+  const opposingTrashes = {};   // player -> opponent's cards they trashed
+  const installedBy = {};       // card name -> Set of players who installed/rezzed it
+  const agendaTitlePoints = {}; // player::agenda -> points it was scored/stolen for
   // Shared turn-order timeline (see turnStartRe handling below): globalTurnSeq
   // increments once per "started turn N" line of either player, seqOfTurn maps
   // player+turn -> that shared index, turnSeqLog keeps the raw order for the
@@ -2127,6 +2187,10 @@ function parseLog(text){
     if ((m = line.match(turnStartRe))){
       const p = m[1].trim(), t = +m[2], credits = +m[3], hand = +m[4];
       ensurePlayer(p);
+      // Fallback side detection for players who never use a basic action
+      // (which is what normally sets playerSide): the Corp's hand is HQ, the
+      // Runner's is the Grip.
+      if (!playerSide[p]) playerSide[p] = /\bcards? in HQ\b/.test(line) ? 'corp' : 'runner';
       currentTurn[p] = t;
       maxTurn[p] = Math.max(maxTurn[p] || 0, t);
       creditPoolByTurn[p] = creditPoolByTurn[p] || {};
@@ -2158,6 +2222,11 @@ function parseLog(text){
       winner = m[1].trim();
       continue;
     }
+    if ((m = line.match(flatlinedRe))){ flatlinedPlayer = m[1].trim(); continue; }
+    if ((m = line.match(deckedRe))){ deckedPlayer = m[1].trim(); continue; }
+    // Mulligans happen before either player's first turn line, so before
+    // the "known player" check below.
+    if ((m = line.match(mulliganRe))){ mulligans.add(m[1].trim()); continue; }
 
     const pm = line.match(playerRe);
     const player = pm ? pm[1].trim() : null;
@@ -2183,6 +2252,7 @@ function parseLog(text){
         const name = cleanCardName(raw);
         if (name){
           const inst = { name, player, turnInstalled: turn, turnLeft: null, credits: 0, cost: 0, events: 0, triggerLog: [], server: null };
+          (installedBy[name] || (installedBy[name] = new Set())).add(player);
           const cm = line.match(installCostRe);
           if (cm) inst.cost = sumDigits(cm[1]);
           instances.push(inst);
@@ -2194,6 +2264,7 @@ function parseLog(text){
       const name = cleanCardName(m[1]);
       const server = m[2] ? m[2].trim() : null;
       bump(cardsRezzed, player, 1);
+      (installedBy[name] || (installedBy[name] = new Set())).add(player);
       // Each rez is a distinct physical copy — always open a new instance,
       // even if another copy of the same card is already in play unrezzed/rezzed elsewhere.
       const inst = { name, player, turnInstalled: turn, turnLeft: null, credits: 0, cost: 0, events: 0, triggerLog: [], server };
@@ -2231,8 +2302,19 @@ function parseLog(text){
     const isDamageDiscard = /\bdue\s+to\s+(?:net|meat|core)\s+damage\b/i.test(line);
     if (!isDamageDiscard && (m = line.match(trashRe))){
       const serverRef = (line.match(trashServerRefRe) || [])[1] || null;
+      const fromCorpZone = playerSide[player] === 'runner'
+        && trashFromCorpZoneRe.test(line.slice(m.index + m[0].length));
       m[1].split(/\s+and\s+/).forEach(raw => {
         const name = cleanCardName(raw);
+        // Count cards trashed that belong to the opponent: known either from
+        // where the card was (a Runner trashing from a Corp server/central),
+        // or from who installed/rezzed a card of that name earlier. Generic
+        // placeholders ("a card from HQ", "itself") never count.
+        if (name && !/^(?:a card|an? (?:installed|facedown|hosted)|hosted|itself|the top|all)\b/i.test(name)){
+          const owners = installedBy[name];
+          const opponentOwned = owners && !owners.has(player) && owners.size > 0;
+          if (fromCorpZone || opponentOwned) bump(opposingTrashes, player, 1);
+        }
         const recent = lastCreditedInstance[player + '::' + name];
         const inst = findInstanceByServerAnyPlayer(name, serverRef)
           || (recent && recent.player === player && recent.turnLeft === null ? recent : null)
@@ -2370,11 +2452,23 @@ function parseLog(text){
       bumpTurn(drawsBySeq, player, currentGlobalSeq, n);
     }
 
-    // tags
-    if ((m = line.match(giveTagRe))){
+    // damage (always the Runner's grip, whichever side's line it is)
+    if ((m = line.match(damageDiscardRe))){
+      const runnerP = Object.keys(maxTurn).find(pl => playerSide[pl] === 'runner');
+      const listed = m[1].trim();
+      // An empty list is damage taken with an empty grip (the flatline hit).
+      const n = listed ? listed.split(/\s*,\s*(?:and\s+)?|\s+and\s+/).filter(Boolean).length : 1;
+      if (runnerP) bump(damageTaken, runnerP, n);
+    }
+
+    // tags — scanned on the quote-stripped text, so subroutine text echoed
+    // in quotes (`resolves 2 unbroken subroutines on Starlit Knight (" Give
+    // the Runner 1 tag" ...)`) isn't counted as another tag on top of the
+    // real "uses Starlit Knight to give the Runner 1 tag" lines.
+    if ((m = creditScanLine.match(giveTagRe))){
       rawTagEvents.push({ kind: 'give', amount: +m[1] });
     }
-    if ((m = line.match(takeTagRe))){
+    if ((m = creditScanLine.match(takeTagRe))){
       rawTagEvents.push({ kind: 'take', actor: player, amount: +m[1] });
     }
 
@@ -2402,17 +2496,30 @@ function parseLog(text){
       }
     }
 
-    if ((m = line.match(stealRe))){
-      agendaEvents.push({ player, turn, seq: currentGlobalSeq, points: +m[1] });
+    if ((m = line.match(stealRe)) || (m = line.match(scoreRe)) || (m = line.match(selfToScoreAreaRe))){
+      const title = cleanCardName(m[1]);
+      agendaEvents.push({ player, turn, seq: currentGlobalSeq, points: +m[2] });
+      agendaTitlePoints[player + '::' + title.toLowerCase()] = +m[2];
     }
-    if ((m = line.match(scoreRe))){
-      agendaEvents.push({ player, turn, seq: currentGlobalSeq, points: +m[1] });
+    if ((m = line.match(forfeitRe))){
+      m[1].split(/\s*,\s*(?:and\s+)?|\s+and\s+/).filter(Boolean).forEach(raw => {
+        const title = cleanCardName(raw);
+        const key = player + '::' + title.toLowerCase();
+        const pts = key in agendaTitlePoints ? agendaTitlePoints[key] : AGENDA_POINTS[title.toLowerCase()];
+        if (pts !== undefined){
+          agendaEvents.push({ player, turn, seq: currentGlobalSeq, points: -pts });
+          delete agendaTitlePoints[key];
+        } else {
+          flagged.push({ reason: `${title} (${player}) — forfeited, but its agenda point value isn't known, so the score isn't reduced`, line });
+        }
+      });
     }
     if ((m = line.match(revealToScoreAreaRe))){
       const revealedName = cleanCardName(m[1]);
       const pts = AGENDA_POINTS[revealedName.toLowerCase()];
       if (pts !== undefined){
         agendaEvents.push({ player, turn, seq: currentGlobalSeq, points: pts });
+        agendaTitlePoints[player + '::' + revealedName.toLowerCase()] = pts;
       } else {
         flagged.push({ reason: `${revealedName} (${player}) — added to score area by another card's effect, but its agenda point value isn't in the lookup table, so it's not counted in the agenda chart`, line });
       }
@@ -2641,6 +2748,24 @@ function parseLog(text){
     });
     tagsGained[runnerPlayer] = total;
   }
+  const corpPlayer = players.find(p => playerSide[p] === 'corp');
+  const tagsGiven = {};
+  if (corpPlayer){
+    tagsGiven[corpPlayer] = rawTagEvents.filter(e => e.kind === 'give').reduce((a, e) => a + e.amount, 0);
+  }
+
+  // Final score per player, in log order (includes forfeits and negative
+  // agendas), used to tell an agenda win from anything else.
+  const finalScore = {};
+  players.forEach(p => { finalScore[p] = 0; });
+  agendaEvents.forEach(e => { if (e.player in finalScore) finalScore[e.player] += e.points; });
+  let winReason = null;
+  if (winner){
+    if (flatlinedPlayer && flatlinedPlayer !== winner) winReason = 'flatline';
+    else if (deckedPlayer && deckedPlayer !== winner) winReason = 'decked';
+    else if (concededPlayer && concededPlayer !== winner) winReason = 'concede';
+    else if ((finalScore[winner] || 0) >= 7) winReason = 'agenda';
+  }
 
   return {
     installedRows, opsRows, flagged, maxTurn, rounds, winner, concededPlayer, players, playerCountError,
@@ -2651,8 +2776,154 @@ function parseLog(text){
     creditsGainedSeries, creditsNetSeries, creditPoolSeries, handSizeSeries, cardsDrawnSeries,
     totalSeq, seqAxisLabels, agendaSeqSeries, creditsNetSeqSeries, creditPoolSeqSeries,
     poolSegments, finalCreditPool: creditPool,
+    agendaEvents, finalScore, winReason, flatlinedPlayer, deckedPlayer,
+    mulligans: players.filter(p => mulligans.has(p)),
+    damageTaken, opposingTrashes, tagsGiven,
     handSizeSeqSeries, cardsDrawnSeqSeries
   };
+}
+
+// ---- Achievements ----
+// Each entry is evaluated per player, only for the side it belongs to. A
+// check gets the context built by achievementContext() below and returns
+// true when earned. To add one, append an entry here — nothing else needs
+// changing.
+const ACHIEVEMENTS = [
+  { id: 'no-click-credit', side: 'corp', name: 'Off the Books',
+    description: 'Won without ever clicking for a credit.',
+    check: c => c.won && c.clickCreditCount === 0 },
+  { id: 'no-click-credit', side: 'runner', name: 'No Day Job',
+    description: 'Won without ever clicking for a credit.',
+    check: c => c.won && c.clickCreditCount === 0 },
+  { id: 'no-click-draw', side: 'corp', name: 'Mandatory Minimum',
+    description: 'Won without ever clicking to draw.',
+    check: c => c.won && c.clickDrawCount === 0 },
+  { id: 'no-click-draw', side: 'runner', name: 'A Diesel a Day',
+    description: 'Won without ever clicking to draw.',
+    check: c => c.won && c.clickDrawCount === 0 },
+  { id: 'rich', side: 'corp', name: 'Too Big to Fail',
+    description: 'Had 30 or more credits in the pool at once.',
+    check: c => c.peakPool >= 30 },
+  { id: 'rich', side: 'runner', name: 'Savvy Investor',
+    description: 'Had 30 or more credits in the pool at once.',
+    check: c => c.peakPool >= 30 },
+  { id: 'broke-win', side: 'corp', name: 'Unhedged',
+    description: 'Won with 0 credits in the pool at the end of the game.',
+    check: c => c.won && c.finalPool === 0 },
+  { id: 'broke-win', side: 'runner', name: 'Sure Gamble',
+    description: 'Won with 0 credits in the pool at the end of the game.',
+    check: c => c.won && c.finalPool === 0 },
+  { id: 'flatline-win', side: 'corp', name: 'Boom!',
+    description: 'Won by flatlining the Runner.',
+    check: c => c.won && c.winReason === 'flatline' },
+  { id: 'flatlined-at-six', side: 'runner', name: 'One Step From Freedom',
+    description: 'Got flatlined while sitting on 6 agenda points.',
+    check: c => c.data.flatlinedPlayer === c.player && c.finalScore === 6 },
+  { id: 'mill-win', side: 'runner', name: 'Keyhole',
+    description: 'Won by milling the Corp: they had to draw from an empty R&D.',
+    check: c => c.won && c.winReason === 'decked' },
+  { id: 'mill-win-no-points', side: 'runner', name: 'Apocalypse',
+    description: 'Won by mill with 0 or fewer agenda points.',
+    check: c => c.won && c.winReason === 'decked' && c.finalScore <= 0 },
+  { id: 'shutout', side: 'corp', name: 'Government Takeover',
+    description: 'Won on agenda points while the Runner stole none.',
+    check: c => c.won && c.winReason === 'agenda' && c.oppPointsGained === 0 },
+  { id: 'shutout', side: 'runner', name: 'Inside Job',
+    description: 'Won on agenda points while the Corp scored none.',
+    check: c => c.won && c.winReason === 'agenda' && c.oppPointsGained === 0 },
+  { id: 'comeback', side: 'corp', name: 'Crisis Management',
+    description: 'Won after trailing 0–6 on agenda points.',
+    check: c => c.won && c.trailedZeroSix },
+  { id: 'comeback', side: 'runner', name: 'Out of the Ashes',
+    description: 'Won after trailing 0–6 on agenda points.',
+    check: c => c.won && c.trailedZeroSix },
+  { id: 'fast-win', side: 'corp', name: 'Fast Advance',
+    description: 'Won on agenda points by the end of turn 6.',
+    check: c => c.won && c.winReason === 'agenda' && c.data.rounds <= 6 },
+  { id: 'fast-win', side: 'runner', name: 'Early Bird',
+    description: 'Won on agenda points by the end of turn 6.',
+    check: c => c.won && c.winReason === 'agenda' && c.data.rounds <= 6 },
+  { id: 'tags', side: 'corp', name: 'Public Enemy Made',
+    description: 'Gave the Runner 10 or more tags over the game.',
+    check: c => (c.data.tagsGiven[c.player] || 0) >= 10 },
+  { id: 'tags', side: 'runner', name: 'Most Wanted',
+    description: 'Took 10 or more tags over the game.',
+    check: c => (c.data.tagsGained[c.player] || 0) >= 10 },
+  { id: 'trasher', side: 'corp', name: 'Asset Seizure',
+    description: 'Trashed 5 or more of the Runner’s cards.',
+    check: c => (c.data.opposingTrashes[c.player] || 0) >= 5 },
+  { id: 'trasher', side: 'runner', name: 'Demolition Run',
+    description: 'Trashed 5 or more of the Corp’s cards.',
+    check: c => (c.data.opposingTrashes[c.player] || 0) >= 5 },
+  { id: 'attrition-win', side: 'corp', name: 'Acceptable Losses',
+    description: 'Won after the Runner trashed 5 or more of your cards.',
+    check: c => c.won && (c.data.opposingTrashes[c.opp] || 0) >= 5 },
+  { id: 'attrition-win', side: 'runner', name: 'Scar Tissue',
+    description: 'Won after taking 5 or more damage.',
+    check: c => c.won && (c.data.damageTaken[c.player] || 0) >= 5 },
+  { id: 'mulligan-win', side: 'corp', name: 'Board Restructure',
+    description: 'Won after taking a mulligan.',
+    check: c => c.won && c.data.mulligans.includes(c.player) },
+  { id: 'mulligan-win', side: 'runner', name: 'Fresh Identity',
+    description: 'Won after taking a mulligan.',
+    check: c => c.won && c.data.mulligans.includes(c.player) }
+];
+
+// Highest credit pool a player held at any moment, from the line-by-line
+// pool tracked during parsing. Values printed on turn start/end lines are
+// exact. Values in between are derived; where a stretch between two turn
+// lines didn't add up to the printed value at its end (see poolSegments),
+// they're corrected downward by the overshoot, so a misread gain can't
+// award the achievement on its own.
+function peakCreditPool(data, player){
+  let peak = 0;
+  (data.poolSegments[player] || []).forEach(seg => {
+    peak = Math.max(peak, seg.start);
+    if (seg.expected !== null) peak = Math.max(peak, seg.expected);
+    const correction = seg.ok === false ? Math.min(0, seg.expected - seg.end) : 0;
+    seg.values.forEach(v => { peak = Math.max(peak, v + correction); });
+  });
+  return peak;
+}
+
+function achievementContext(data, player){
+  const opp = data.players.find(p => p !== player) || null;
+  // Replay agenda events in log order to see whether the player was ever
+  // behind 0–6 (current score, so forfeits and negative agendas count).
+  const score = {};
+  data.players.forEach(p => { score[p] = 0; });
+  let trailedZeroSix = false;
+  let oppPointsGained = 0;
+  data.agendaEvents.forEach(e => {
+    if (!(e.player in score)) return;
+    score[e.player] += e.points;
+    if (e.player === opp && e.points > 0) oppPointsGained += e.points;
+    if (opp && score[player] <= 0 && score[opp] >= 6) trailedZeroSix = true;
+  });
+  const finalPool = data.finalCreditPool[player];
+  return {
+    data, player, opp,
+    side: data.playerSide[player],
+    won: data.winner === player,
+    winReason: data.winReason,
+    finalScore: data.finalScore[player] || 0,
+    oppPointsGained,
+    trailedZeroSix,
+    clickCreditCount: (data.clickCredits[player] || { count: 0 }).count,
+    clickDrawCount: data.drawClicks[player] || 0,
+    peakPool: peakCreditPool(data, player),
+    finalPool: finalPool === undefined ? null : finalPool
+  };
+}
+
+function evaluateAchievements(data){
+  const earned = {};
+  data.players.forEach(p => {
+    const side = data.playerSide[p];
+    const ctx = achievementContext(data, p);
+    earned[p] = ACHIEVEMENTS.filter(a => a.side === side && a.check(ctx));
+  });
+  return earned;
 }
 
 // ---- UI wiring ----
@@ -3348,6 +3619,23 @@ function renderGameStats(data){
   wrap.innerHTML = tbl;
 }
 
+function renderAchievements(data){
+  const wrap = document.getElementById('achievementsWrap');
+  const earned = evaluateAchievements(data);
+  wrap.innerHTML = data.players.map(p => {
+    const side = data.playerSide[p] || '';
+    const items = earned[p].map(a => `
+      <div class="achievement ${a.side}">
+        <span class="achievement-name">${a.name}</span>
+        <span class="achievement-desc">${a.description}</span>
+      </div>`).join('');
+    return `<div class="achievement-col">
+      <div class="achievement-player"><strong>${p}</strong>${side ? ` <span class="achievement-side ${side}">${side}</span>` : ''}</div>
+      ${items || '<div class="empty-note">No achievements this game.</div>'}
+    </div>`;
+  }).join('');
+}
+
 function runParse(){
   const text = logInput.value;
   if (!text.trim()){
@@ -3364,6 +3652,7 @@ function runParse(){
   statusMsg.style.color = '';
   renderSummary(currentData);
   renderGameStats(currentData);
+  renderAchievements(currentData);
   renderAllCharts(currentData);
   buildPlayerSections(currentData);
   renderFlagged(currentData.flagged);
