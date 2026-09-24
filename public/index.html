@@ -57,6 +57,15 @@
     width: 22px; height: 22px; display:flex; align-items:center; justify-content:center;
     flex-shrink: 0; line-height: 1;
   }
+  .header-controls{ display:flex; align-items:center; gap: 8px; flex-shrink: 0; }
+  .value-labels-toggle{
+    font-family: var(--mono); font-size: 11px; color: var(--dim); background: transparent;
+    border: 1px solid var(--line); border-radius: 4px; height: 22px; padding: 0 8px;
+    cursor: pointer; white-space: nowrap; line-height: 1; font-weight: 400;
+  }
+  .value-labels-toggle:hover{ background: transparent; color: var(--text); border-color: var(--accent-dim); }
+  .value-labels-toggle[data-mode="changes"], .value-labels-toggle[data-mode="all"]{ color: var(--accent); border-color: var(--accent-dim); }
+  .panel.collapsed .value-labels-toggle{ display: none; }
   .panel.collapsed .panel-body{ display: none; }
   .panel.collapsed .panel-header{ margin-bottom: 0; }
   .panel h3{
@@ -263,7 +272,7 @@
     </div>
 
     <div class="panel">
-      <div class="panel-header"><h2>Charts</h2><span class="collapse-icon">−</span></div>
+      <div class="panel-header"><h2>Charts</h2><div class="header-controls"><button type="button" class="value-labels-toggle" data-mode="none" title="Show values on charts: none / changes only / all">values: none</button><span class="collapse-icon">−</span></div></div>
       <div class="panel-body">
 
         <div class="stat" style="margin-bottom:16px;"><span class="num" id="mainTotalTurnsNum">0</span><span class="label">Total turns played (Corp + Runner combined)</span></div>
@@ -313,7 +322,7 @@
     </div>
 
     <div class="panel collapsed">
-      <div class="panel-header"><h2>Alternative: shared turn order</h2><span class="collapse-icon">+</span></div>
+      <div class="panel-header"><h2>Alternative: shared turn order</h2><div class="header-controls"><button type="button" class="value-labels-toggle" data-mode="none" title="Show values on charts: none / changes only / all">values: none</button><span class="collapse-icon">+</span></div></div>
       <div class="panel-body">
         <p style="font-size:12.5px;color:var(--dim);margin:-6px 0 12px;">
           The charts above plot each player against <em>their own</em> turn counter — but Corp's turn 3 and Runner's turn 3
@@ -1510,6 +1519,18 @@ const AGENDA_POINTS = {
 };
 const COLORS = ['#4fd6a8', '#d6a84f', '#d97878', '#7fb0d6'];
 const NETRUNNER_COLORS = { corp: '#5b93d9', runner: '#e2585f' };
+
+// Neutral colour for a value label shared by both players (same value, same point).
+const VALUE_LABEL_SHARED_COLOR = '#a3a3a3';
+
+// Value labels above chart points: 'none', 'changes' (only where a player's value
+// differs from their previous turn) or 'all'. One setting shared by every chart.
+const VALUE_LABEL_MODES = ['none', 'changes', 'all'];
+let valueLabelMode = 'none';
+try {
+  const saved = localStorage.getItem('valueLabelMode');
+  if (VALUE_LABEL_MODES.includes(saved)) valueLabelMode = saved;
+} catch (e) {}
 
 function getChartColors(data){
   return data.players.map((p, idx) => NETRUNNER_COLORS[data.playerSide[p]] || COLORS[idx % COLORS.length]);
@@ -3021,8 +3042,13 @@ function renderLineChart(ids, series, players, rounds, opts){
   if (opts.referenceLines) maxVal = Math.max(maxVal, ...opts.referenceLines) * 1.05;
   if (maxVal === minVal) maxVal = minVal + 1;
 
-  const W = 900, H = 240, padL = 40, padR = 20, padT = 16, padB = 30;
+  // Value labels need room above the top point and below the lowest one, so the
+  // plot keeps its height and the canvas grows around it when they're shown.
+  const labelsOn = valueLabelMode !== 'none';
+  const W = 900, padL = 40, padR = 20, padT = labelsOn ? 30 : 16, padB = labelsOn ? 42 : 30;
+  const H = 194 + padT + padB;
   const plotW = W - padL - padR, plotH = H - padT - padB;
+  const tickY = padT + plotH + (labelsOn ? 28 : 16);
   // t now ranges 0..rounds (turn 0 = game start), so a single-turn game (rounds=1)
   // still spans two x positions (0 and 1) instead of collapsing to one dead center point.
   const xFor = t => padL + (rounds > 0 ? (t / rounds) * plotW : plotW / 2);
@@ -3031,7 +3057,7 @@ function renderLineChart(ids, series, players, rounds, opts){
   let svg = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;font-family:var(--mono);">`;
   svg += `<line x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT+plotH}" stroke="var(--line)" />`;
   svg += `<line x1="${padL}" y1="${padT+plotH}" x2="${padL+plotW}" y2="${padT+plotH}" stroke="var(--line)" />`;
-  svg += `<text x="${padL+plotW}" y="${padT-4}" font-size="10" fill="var(--dim)" text-anchor="end">Last turn: ${rounds}</text>`;
+  svg += `<text x="${padL+plotW}" y="${labelsOn ? 12 : padT-4}" font-size="10" fill="var(--dim)" text-anchor="end">Last turn: ${rounds}</text>`;
 
   let tickVals;
   if (opts.cappedTicks){
@@ -3049,6 +3075,9 @@ function renderLineChart(ids, series, players, rounds, opts){
     tickVals = [];
     for (let i = 0; i <= 4; i++) tickVals.push(Math.round(minVal + ((maxVal - minVal) / 4) * i));
   }
+  // yStep rounds the first tick down (e.g. -5 when the lowest value is -3),
+  // which would land below the plot area; skip ticks outside the plotted range.
+  tickVals = tickVals.filter(v => v >= minVal);
   tickVals.forEach(v => {
     const y = yFor(v);
     svg += `<text x="${padL - 8}" y="${y + 3}" font-size="9" fill="var(--dim)" text-anchor="end">${v}</text>`;
@@ -3079,17 +3108,17 @@ function renderLineChart(ids, series, players, rounds, opts){
   let xTickStep = Math.max(1, Math.ceil(rounds / 12));
   if (opts.xLabels && xTickStep % 2 === 0) xTickStep += 1;
   for (let t = 0; t <= rounds; t += xTickStep){
-    svg += `<text x="${xFor(t)}" y="${padT+plotH+16}" font-size="9" fill="var(--dim)" text-anchor="middle">${xLabel(t)}</text>`;
+    svg += `<text x="${xFor(t)}" y="${tickY}" font-size="9" fill="var(--dim)" text-anchor="middle">${xLabel(t)}</text>`;
   }
   if (rounds % xTickStep !== 0){
-    svg += `<text x="${xFor(rounds)}" y="${padT+plotH+16}" font-size="9" fill="var(--accent)" text-anchor="middle">${xLabel(rounds)}</text>`;
+    svg += `<text x="${xFor(rounds)}" y="${tickY}" font-size="9" fill="var(--accent)" text-anchor="middle">${xLabel(rounds)}</text>`;
   }
   // Always show the very first turn pair (C1/R1) on the shared-order axis,
   // even if the step above would otherwise skip past it.
   if (opts.xLabels){
     [1, 2].forEach(t => {
       if (t <= rounds && t % xTickStep !== 0){
-        svg += `<text x="${xFor(t)}" y="${padT+plotH+16}" font-size="9" fill="var(--dim)" text-anchor="middle">${xLabel(t)}</text>`;
+        svg += `<text x="${xFor(t)}" y="${tickY}" font-size="9" fill="var(--dim)" text-anchor="middle">${xLabel(t)}</text>`;
       }
     });
   }
@@ -3120,6 +3149,8 @@ function renderLineChart(ids, series, players, rounds, opts){
     }
   });
 
+  svg += renderValueLabels(series, players, rounds, opts, xFor, yFor, plotW);
+
   svg += `</svg>`;
   chartDiv.innerHTML = svg;
 
@@ -3143,6 +3174,60 @@ function renderLineChart(ids, series, players, rounds, opts){
     tbl += '</tbody></table></div>';
     tableWrap.innerHTML = tbl;
   }
+}
+
+// Small value numbers above each point, per valueLabelMode. Uses each player's
+// chart colour; when both players sit on the same point (line charts, same value)
+// a single grey label is drawn instead of two overlapping ones.
+function renderValueLabels(series, players, rounds, opts, xFor, yFor, plotW){
+  if (valueLabelMode === 'none') return '';
+  const colorOf = idx => (opts.colors && opts.colors[idx]) || COLORS[idx % COLORS.length];
+  const isBar = opts.style === 'bar';
+  const startT = isBar ? 1 : 0;
+  const shows = (s, t) => valueLabelMode === 'all' || t === startT || s[t] !== s[t - 1];
+  const label = (x, y, v, color) =>
+    `<text x="${x}" y="${y}" font-size="9" fill="${color}" text-anchor="middle" ` +
+    `stroke="var(--panel)" stroke-width="3" paint-order="stroke" stroke-linejoin="round">${v}</text>`;
+  let out = '';
+  for (let t = startT; t <= rounds; t++){
+    const pts = [];
+    players.forEach((p, idx) => {
+      const s = series[p];
+      if (s && s[t] !== undefined) pts.push({ idx, v: s[t], show: shows(s, t) });
+    });
+    if (!pts.some(pt => pt.show)) continue;
+    if (isBar){
+      const barW = Math.max(2, (plotW / (rounds + 1)) / (players.length + 1));
+      pts.forEach(pt => {
+        if (!pt.show) return;
+        const x = xFor(t) - barW * (players.length / 2) + barW * pt.idx + barW / 2;
+        const y = pt.v < 0 ? yFor(pt.v) + 10 : yFor(pt.v) - 4;
+        out += label(x, y, pt.v, colorOf(pt.idx));
+      });
+      continue;
+    }
+    const x = xFor(t);
+    if (pts.length > 1 && pts.every(pt => pt.v === pts[0].v)){
+      out += label(x, yFor(pts[0].v) - 6, pts[0].v, VALUE_LABEL_SHARED_COLOR);
+      continue;
+    }
+    // Different values at the same turn: the highest goes above its dot, the
+    // others below theirs, so close values don't print on top of each other.
+    const maxV = Math.max(...pts.map(pt => pt.v));
+    pts.forEach(pt => {
+      if (!pt.show) return;
+      const above = pts.length === 1 || pt.v === maxV;
+      out += label(x, above ? yFor(pt.v) - 6 : yFor(pt.v) + 13, pt.v, colorOf(pt.idx));
+    });
+  }
+  return out;
+}
+
+function syncValueLabelToggles(){
+  document.querySelectorAll('.value-labels-toggle').forEach(btn => {
+    btn.dataset.mode = valueLabelMode;
+    btn.textContent = 'values: ' + valueLabelMode;
+  });
 }
 
 function renderAllCharts(data){
@@ -3256,6 +3341,13 @@ function runParse(){
 }
 
 document.addEventListener('click', (e) => {
+  if (e.target.closest('.value-labels-toggle')){
+    valueLabelMode = VALUE_LABEL_MODES[(VALUE_LABEL_MODES.indexOf(valueLabelMode) + 1) % VALUE_LABEL_MODES.length];
+    try { localStorage.setItem('valueLabelMode', valueLabelMode); } catch (err) {}
+    syncValueLabelToggles();
+    if (currentData && !currentData.playerCountError) renderAllCharts(currentData);
+    return;
+  }
   const header = e.target.closest('.panel-header');
   if (!header) return;
   const panel = header.closest('.panel');
@@ -3278,6 +3370,8 @@ document.getElementById('skipCopyPasteBtn').addEventListener('click', () => {
   section.style.display = showing ? 'none' : 'block';
   btn.textContent = showing ? 'How to skip copy-paste' : 'Hide Bookmark info';
 });
+
+syncValueLabelToggles();
 
 document.getElementById('parseBtn').addEventListener('click', runParse);
 document.getElementById('example1Btn').addEventListener('click', () => {
