@@ -24,7 +24,7 @@ Everything runs client-side. Nothing about a pasted log is uploaded anywhere unl
 
 This is a single static file — `index.html` — with no build step, no dependencies, and no package manager. To work on it locally, just open `index.html` in a browser, or serve the directory with any static file server.
 
-To test a change, paste one of the two built-in example logs (via the "Log example 1/2" buttons) and confirm the parsed output looks right, or use `/code-review` / `/simplify` if you're using Claude Code against this repo.
+Real and synthetic game logs with their expected results are in `test/` (see `test/README.md`). To test a change, paste one of those or one of the two built-in example logs (via the "Log example 1/2" buttons) and confirm the parsed output looks right, or use `/code-review` / `/simplify` if you're using Claude Code against this repo.
 
 ## Deployment
 
