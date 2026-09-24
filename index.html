@@ -233,7 +233,7 @@
         <input id="permalinkUrlInput" type="text" readonly
           style="flex:1;min-width:200px;background:var(--panel-2);color:var(--text);border:1px solid var(--line);border-radius:4px;font-family:var(--mono);font-size:11.5px;padding:8px;">
         <button class="secondary" id="copyPermalinkBtn">Copy</button>
-        <button class="secondary" id="shortenPermalinkBtn" type="button" title="Sends this link to tinyurl.com to get a short version. Unlike the plain share link, the log data leaves your browser.">Shorten (TinyURL)</button>
+        <button class="secondary" id="shortenPermalinkBtn" type="button" title="Stores this log on jinteki.win to get a short link. Unlike the plain share link, the log data leaves your browser.">Shorten link</button>
       </div>
     </div>
   </div>
@@ -395,7 +395,7 @@
 
   </div>
 
-  <footer>Parses locally in your browser — nothing is uploaded, unless you use the optional "Shorten (TinyURL)" button, which sends the share link to tinyurl.com.<br>If this tool's useful, <a href="https://ko-fi.com/inermis2020" target="_blank" rel="noopener">support it on Ko-fi</a>.<br>Build: 2026-09-22 23:22 UTC+2</footer>
+  <footer>Parses locally in your browser — nothing is uploaded, unless you use the optional "Shorten link" button, which stores the encoded log on jinteki.win so the short link can be opened later.<br>If this tool's useful, <a href="https://ko-fi.com/inermis2020" target="_blank" rel="noopener">support it on Ko-fi</a>.<br>Build: 2026-09-24 13:55 UTC+2</footer>
 </div>
 
 <script>
@@ -3422,17 +3422,22 @@ document.getElementById('copyPermalinkBtn').addEventListener('click', () => {
   statusMsg.textContent = 'Link copied.';
 });
 
-// ---- Optional: shorten the share link via TinyURL.
-// This is opt-in only (button click), because unlike the plain share link
-// above — which never leaves the browser — shortening means the full
-// share URL (and therefore the whole encoded game log) is sent to
-// tinyurl.com's server so it can hand back a short redirect. TinyURL may
-// also reject very long URLs (large logs can produce multi-KB share
-// links), so this can fail where the plain link still works fine.
+// ---- Optional: shorten the share link via jinteki.win's own shortener
+// (a Cloudflare Worker, see shortener/ in the repo). This is opt-in only
+// (button click), because unlike the plain share link above — which never
+// leaves the browser — shortening stores the encoded log on the server so
+// jinteki.win/s/<id> can redirect back to it. If the shortener is
+// unavailable (rate limit, free-tier quota, or the page isn't served from
+// jinteki.win), the long link keeps working and stays in the box.
+// Filled in at build time by scripts/inject-config.mjs (production and
+// preview builds point at different shortener instances). Copies deployed
+// without that step fall back to the production shortener.
+const SHORTEN_API_URL = (u => u.startsWith('__') ? HOSTED_SITE_URL + 'api/shorten' : u)('__SHORTEN_API_URL__');
 document.getElementById('shortenPermalinkBtn').addEventListener('click', async () => {
   const shareInput = document.getElementById('permalinkUrlInput');
   const longUrl = shareInput.value;
-  if (!longUrl){
+  const marker = longUrl.indexOf('#log=');
+  if (!longUrl || marker === -1){
     statusMsg.textContent = 'Build a share link first.';
     return;
   }
@@ -3440,28 +3445,22 @@ document.getElementById('shortenPermalinkBtn').addEventListener('click', async (
   shortenBtn.disabled = true;
   const prevLabel = shortenBtn.textContent;
   shortenBtn.textContent = 'Shortening…';
-  statusMsg.textContent = 'Asking TinyURL for a short link…';
+  statusMsg.textContent = 'Creating a short link…';
   try {
-    const apiUrl = 'https://tinyurl.com/api-create.php?url=' + encodeURIComponent(longUrl);
-    const resp = await fetch(apiUrl);
-    if (!resp.ok) throw new Error('TinyURL returned HTTP ' + resp.status);
-    const shortUrl = (await resp.text()).trim();
-    if (!shortUrl.startsWith('http')){
-      throw new Error(shortUrl || 'unexpected response');
-    }
-    shareInput.value = shortUrl;
+    const resp = await fetch(SHORTEN_API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ payload: longUrl.slice(marker + 5) }),
+    });
+    let data = {};
+    try { data = await resp.json(); } catch (_) {}
+    if (resp.status === 429) throw new Error('too many requests, try again in a minute');
+    if (!resp.ok || !data.url) throw new Error(data.error || ('HTTP ' + resp.status));
+    shareInput.value = data.url;
     shareInput.select();
-    statusMsg.textContent = 'Shortened with TinyURL. This link now depends on tinyurl.com staying up and redirects through their server.';
+    statusMsg.textContent = 'Short link ready. The log is stored on jinteki.win, so anyone with this link can open it.';
   } catch (e) {
-    // TinyURL's endpoint sends a hardcoded Access-Control-Allow-Origin that
-    // doesn't match this site, so this fetch is always blocked by CORS —
-    // there's no server here to proxy around it. Falling back to opening
-    // TinyURL's own response in a new tab is a plain navigation, not a
-    // script fetch, so it isn't subject to CORS, and the user can read/copy
-    // the short link there themselves.
-    const apiUrl = 'https://tinyurl.com/api-create.php?url=' + encodeURIComponent(longUrl);
-    window.open(apiUrl, '_blank');
-    statusMsg.textContent = "Couldn't shorten it automatically (" + e.message + '). Opened tinyurl.com in a new tab instead — the short link should be shown there as plain text.';
+    statusMsg.textContent = "Couldn't shorten it (" + e.message + '). The long share link above still works.';
   } finally {
     shortenBtn.disabled = false;
     shortenBtn.textContent = prevLabel;

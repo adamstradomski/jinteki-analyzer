@@ -13,11 +13,11 @@ A single-page, client-side log analyzer for [jinteki.net](https://jinteki.net) N
 - **Per-card tables** — credits gained/spent and net value attributed to each installed card, plus operations/events, with a flagged-lines list for anything the parser couldn't confidently resolve.
 - **Share link** — compresses the pasted log and encodes it into a URL fragment (`#log=...`) so a whole game can be shared as a link. The log never touches a server; only whoever has the link can decode it in their own browser.
 - **Report a bug** — opens a prefilled GitHub issue, including an auto-generated share link to the log that triggered the problem.
-- **Optional TinyURL shortening** — opt-in only; unlike the plain share link, this sends the encoded log to tinyurl.com to get a short redirect.
+- **Optional short links** — opt-in only; unlike the plain share link, this stores the encoded log on jinteki.win's own shortener (`shortener/`, a Cloudflare Worker) and returns a `jinteki.win/s/<id>` link.
 
 ## Privacy
 
-Everything runs client-side. Nothing about a pasted log is uploaded anywhere unless you explicitly click "Shorten (TinyURL)", which is called out in the UI and in the page footer.
+Everything runs client-side. Nothing about a pasted log is uploaded anywhere unless you explicitly click "Shorten link", which is called out in the UI and in the page footer.
 
 ## Development
 
@@ -26,6 +26,11 @@ This is a single static file — `index.html` — with no build step, no depende
 To test a change, paste one of the two built-in example logs (via the "Log example 1/2" buttons) and confirm the parsed output looks right, or use `/code-review` / `/simplify` if you're using Claude Code against this repo.
 
 ## Deployment
+
+The short-link backend lives in `shortener/` and deploys separately as a Cloudflare Worker; see `shortener/README.md`.
+
+The site build runs `node scripts/inject-config.mjs`, which fills the `SHORTEN_API_URL` build variable into `index.html`, so production and preview builds use different shortener instances without committing their URLs.
+
 
 The site is hosted on Cloudflare Pages at [jinteki.win](https://jinteki.win/). Pushing `index.html` changes to `main` doesn't automatically redeploy unless Cloudflare Pages' Git integration is connected to this repo — otherwise the live site needs a manual redeploy after each push.
 

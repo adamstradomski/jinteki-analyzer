@@ -1,0 +1,32 @@
+# Rendered into wrangler.toml at build time by scripts/render-config.mjs.
+# Real values live in each Worker's build variables in the Cloudflare
+# dashboard, so no account details are committed. See README.md.
+name = "${WORKER_NAME}"
+main = "src/index.js"
+compatibility_date = "2026-09-01"
+workers_dev = ${WORKERS_DEV}
+routes = ${ROUTES}
+
+[vars]
+SITE_URL = "${SITE_URL}"
+ALLOWED_ORIGINS = "${ALLOWED_ORIGINS}"
+RETENTION_DAYS = "${RETENTION_DAYS}"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "${D1_NAME}"
+database_id = "${D1_ID}"
+
+# Per-IP limits. Period must be 10 or 60 seconds.
+[[ratelimits]]
+name = "CREATE_LIMITER"
+namespace_id = "${RL_CREATE_NS}"
+simple = { limit = 10, period = 60 }
+
+[[ratelimits]]
+name = "MISS_LIMITER"
+namespace_id = "${RL_MISS_NS}"
+simple = { limit = 30, period = 60 }
+
+[triggers]
+crons = ["17 3 * * *"]
