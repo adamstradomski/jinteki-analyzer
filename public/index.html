@@ -1844,6 +1844,58 @@ function parseLog(text){
     obj[player][zone] = (obj[player][zone] || 0) + amt;
   }
 
+  // Live credit pool per player, updated line by line as credits are gained,
+  // spent or lost, and re-anchored to the exact value printed on every
+  // "started/ending turn N with X" line. Anchoring means a missed or misread
+  // credit event can only skew the pool until the next turn boundary, never
+  // for the rest of the game (the old derived chart series accumulated every
+  // such error forever). poolSegments keeps, per player, each stretch between
+  // two anchors: the derived values in between and whether the derived value
+  // at the closing anchor matched the printed one — a mismatch means some
+  // credit event in that stretch wasn't parsed correctly, and is flagged.
+  const creditPool = {};    // player -> current derived pool (absent until first anchor)
+  const poolBySeq = {};     // player -> {seq: pool after the last change in that slot}
+  const poolSegments = {};  // player -> [{fromTurn, fromKind, start, values, end, expected, ok}]
+  function recordPool(p){
+    if (!poolBySeq[p]) poolBySeq[p] = {};
+    poolBySeq[p][currentGlobalSeq] = creditPool[p];
+    const segs = poolSegments[p];
+    if (segs && segs.length) segs[segs.length - 1].values.push(creditPool[p]);
+  }
+  function anchorPool(p, credits, kind, turnNum, line){
+    const segs = poolSegments[p] || (poolSegments[p] = []);
+    const open = segs[segs.length - 1];
+    if (open && open.end === null){
+      open.end = creditPool[p];
+      open.expected = credits;
+      open.ok = open.end === credits;
+      if (!open.ok){
+        flagged.push({ reason: `Credit tracking (${p}) — log shows ${credits} at the ${kind} of turn ${turnNum}, but the parsed credit events since the previous turn boundary add up to ${open.end}; some gain/spend in between wasn't read correctly`, line });
+      }
+    }
+    segs.push({ fromTurn: turnNum, fromKind: kind, start: credits, values: [], end: null, expected: null, ok: null });
+    creditPool[p] = credits;
+    if (!poolBySeq[p]) poolBySeq[p] = {};
+    poolBySeq[p][currentGlobalSeq] = credits;
+  }
+  function gainCredits(p, amt){
+    bump(totalGained, p, amt);
+    bumpTurn(creditsGainedByTurn, p, currentTurn[p] || 0, amt);
+    bumpTurn(creditsGainedBySeq, p, currentGlobalSeq, amt);
+    if (p in creditPool){ creditPool[p] += amt; recordPool(p); }
+  }
+  // `forced`: a loss imposed by the opponent ("make the Runner lose 7"). The
+  // game caps it at whatever the player actually has, so only that much is
+  // really lost — a voluntary payment can never exceed the pool in the first
+  // place, so it isn't capped (if it would go negative, a gain was missed).
+  function spendCredits(p, amt, forced){
+    if (forced && p in creditPool) amt = Math.min(amt, Math.max(0, creditPool[p]));
+    bump(totalSpent, p, amt);
+    bumpTurn(creditsSpentByTurn, p, currentTurn[p] || 0, amt);
+    bumpTurn(creditsSpentBySeq, p, currentGlobalSeq, amt);
+    if (p in creditPool){ creditPool[p] -= amt; recordPool(p); }
+  }
+
   function sumDigits(str){
     const nums = str.match(/\d+/g) || [];
     return nums.reduce((a, b) => a + +b, 0);
@@ -2092,12 +2144,14 @@ function parseLog(text){
       if (!seqOfTurn[p]) seqOfTurn[p] = {};
       seqOfTurn[p][t] = globalTurnSeq;
       turnSeqLog.push({ player: p, turn: t, seq: globalTurnSeq });
+      anchorPool(p, credits, 'start', t, line);
       continue;
     }
     if ((m = line.match(turnEndRe))){
       const p = m[1].trim(), t = +m[2];
       ensurePlayer(p);
       maxTurn[p] = Math.max(maxTurn[p] || 0, t);
+      anchorPool(p, +m[3], 'end', t, line);
       continue;
     }
     if ((m = line.match(winRe))){
@@ -2265,19 +2319,14 @@ function parseLog(text){
         const corpP = Object.keys(maxTurn).find(pl => playerSide[pl] === 'corp');
         if (corpP) recipient = corpP;
       }
-      bump(totalGained, recipient, amt);
-      bumpTurn(creditsGainedByTurn, recipient, currentTurn[recipient] || 0, amt);
-      bumpTurn(creditsGainedBySeq, recipient, currentGlobalSeq, amt);
+      gainCredits(recipient, amt);
     }
     // "uses <card> to take N ." — a hosted credit moved onto the player's own
     // pool; always self-directed (the line's actor is always the recipient),
     // unlike genericGainRe's "let the Runner gain..." redirect cases.
     const tkm = creditScanLine.match(takeCreditRe);
     if (tkm){
-      const amt = +tkm[1];
-      bump(totalGained, player, amt);
-      bumpTurn(creditsGainedByTurn, player, turn, amt);
-      bumpTurn(creditsGainedBySeq, player, currentGlobalSeq, amt);
+      gainCredits(player, +tkm[1]);
     }
     // total credits lost (forced, e.g. traces/taxes — the losing side is named
     // explicitly in the text, so this reduces that side's pool the same way a
@@ -2288,18 +2337,12 @@ function parseLog(text){
       const side = lm[1].toLowerCase();
       const amt = +lm[2];
       const targetPlayer = Object.keys(maxTurn).find(pl => playerSide[pl] === side) || player;
-      bump(totalSpent, targetPlayer, amt);
-      bumpTurn(creditsSpentByTurn, targetPlayer, currentTurn[targetPlayer] || 0, amt);
-      bumpTurn(creditsSpentBySeq, targetPlayer, currentGlobalSeq, amt);
+      spendCredits(targetPlayer, amt, true);
     }
     // Only the portion of a "pays ..." clause that actually came out of the
     // player's credit pool counts here — see computePoolSpend above.
     const spentAmt = computePoolSpend(creditScanLine);
-    if (spentAmt !== null){
-      bump(totalSpent, player, spentAmt);
-      bumpTurn(creditsSpentByTurn, player, turn, spentAmt);
-      bumpTurn(creditsSpentBySeq, player, currentGlobalSeq, spentAmt);
-    }
+    if (spentAmt !== null) spendCredits(player, spentAmt, false);
     // "uses <card> to pay N" / "force the Runner|Corp to pay N" — bare
     // infinitive "pay" cost, never matched by the "pays"-anchored scan above
     // (see forcedPayRe/selfPayRe declarations). Checked as its own line so it
@@ -2308,18 +2351,10 @@ function parseLog(text){
     if (fpm){
       const side = fpm[1].toLowerCase();
       const targetPlayer = Object.keys(maxTurn).find(pl => playerSide[pl] === side) || player;
-      const amt = +fpm[2];
-      bump(totalSpent, targetPlayer, amt);
-      bumpTurn(creditsSpentByTurn, targetPlayer, currentTurn[targetPlayer] || 0, amt);
-      bumpTurn(creditsSpentBySeq, targetPlayer, currentGlobalSeq, amt);
+      spendCredits(targetPlayer, +fpm[2], false);
     } else {
       const spm = creditScanLine.match(selfPayRe);
-      if (spm){
-        const amt = +spm[1];
-        bump(totalSpent, player, amt);
-        bumpTurn(creditsSpentByTurn, player, turn, amt);
-        bumpTurn(creditsSpentBySeq, player, currentGlobalSeq, amt);
-      }
+      if (spm) spendCredits(player, +spm[1], false);
     }
 
     // draws
@@ -2551,28 +2586,23 @@ function parseLog(text){
   players.forEach(p => {
     creditsNetSeqSeries[p] = creditsGainedSeqSeries[p].map((v, i) => v - (creditsSpentSeqSeries[p][i] || 0));
   });
-  // Credit pool here is DERIVED (running total of creditsGained/SpentSeqSeries,
-  // starting from the 5cr baseline) rather than reindexed from the "started
-  // turn N with Xcr" snapshot lines. Those snapshots are only printed at the
-  // start of a player's *own* turn, so reindexing them left a stale value
-  // sitting in every seq slot until that player's next turn began — e.g. Corp
-  // paying 4 to rez ice mid-Runner's-turn wouldn't show up until Corp's next
-  // turn started, several slots later. The derived series updates the moment
-  // the spend/gain actually happens, which is the whole point of this view.
+  // Credit pool here is the live per-line pool tracked during parsing (see
+  // creditPool/anchorPool above): it changes the moment a gain/spend actually
+  // happens, e.g. Corp paying 4 to rez ice mid-Runner's-turn shows up in the
+  // Runner's slot, and it's reset to the exact printed value at every turn
+  // boundary so parsing gaps can't drift it for the rest of the game. Each
+  // slot shows the pool as it stood at the end of that slot.
   const creditPoolSeqSeries = {};
   players.forEach(p => {
     const arr = new Array(totalSeq + 1).fill(0);
+    const bySeq = poolBySeq[p] || {};
     let running = 5;
     arr[0] = running;
     for (let s = 1; s <= totalSeq; s++){
-      running += (creditsGainedSeqSeries[p][s] || 0) - (creditsSpentSeqSeries[p][s] || 0);
-      // Credits can never go below 0 — the game itself caps a forced loss at
-      // whatever the player actually has (e.g. a card's printed "lose 7" only
-      // takes a player down to 0 if they only had 6). This is a safety-net
-      // floor for that case and for any remaining event-tracking imprecision,
-      // not a substitute for tracking the real amount lost.
-      if (running < 0) running = 0;
-      arr[s] = running;
+      if (bySeq[s] !== undefined) running = bySeq[s];
+      // Only reachable when a missed gain made a payment look unaffordable;
+      // the real pool can never be negative.
+      arr[s] = Math.max(0, running);
     }
     creditPoolSeqSeries[p] = arr;
   });
@@ -2620,6 +2650,7 @@ function parseLog(text){
     cardsAccessed, breachCounts, clicksGained,
     creditsGainedSeries, creditsNetSeries, creditPoolSeries, handSizeSeries, cardsDrawnSeries,
     totalSeq, seqAxisLabels, agendaSeqSeries, creditsNetSeqSeries, creditPoolSeqSeries,
+    poolSegments, finalCreditPool: creditPool,
     handSizeSeqSeries, cardsDrawnSeqSeries
   };
 }
