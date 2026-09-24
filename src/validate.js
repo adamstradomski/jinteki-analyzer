@@ -3,7 +3,8 @@
 export const MAX_PAYLOAD_CHARS = 64 * 1024;
 const MAX_DECODED_BYTES = 2 * 1024 * 1024; // zip-bomb guard
 const PAYLOAD_RE = /^(gz|raw)\.[A-Za-z0-9_-]+$/;
-const LOG_MARKER = /started their turn/i;
+// Same turn-start phrasing the page's parser recognises (turnStartRe).
+const LOG_MARKER = /started (?:his|her|their) turn \d+/;
 
 export class ValidationError extends Error {}
 
