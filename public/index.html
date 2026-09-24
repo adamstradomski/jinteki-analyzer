@@ -1908,6 +1908,10 @@ function parseLines(rawLines, chatBadges, undos){
   const selfToScoreAreaRe = /\buses?\s+(.+?)\s+to\s+add\s+itself\s+to\s+\S+\s+score\s+area\s+as\s+an\s+agenda\s+worth\s+(-?\d+)(?:\s+agenda)?\s+points?/i;
   // "forfeits <agenda>" — as a cost or an effect; takes that agenda's points
   // back out of the forfeiting player's score.
+  // Manual corrections with jinteki.net's /agenda-point and /tag commands:
+  // "X sets their agenda points to 3 (+1).", "X sets Tags to 2 (+1)."
+  const agendaSetRe = new RegExp(String.raw`\bsets ${PRONOUN} agenda points? to (-?\d+) \(([+-]?\d+)\)`, 'i');
+  const tagSetRe = /\bsets tags to (\d+) \(([+-]?\d+)\)/i;
   const forfeitRe = /\bforfeits\s+(?:\d+\s+agendas?\s+\()?(.+?)\)?(?=\s+to\s+|\.?$)/i;
   // Game-end and pre-game system lines (wording from jinteki.net's own
   // message strings: "<player> is flatlined.", "<player> is decked.",
@@ -2673,6 +2677,15 @@ function parseLines(rawLines, chatBadges, undos){
       const title = cleanCardName(m[1]);
       agendaEvents.push({ player, turn, seq: currentGlobalSeq, points: +m[2] });
       agendaTitlePoints[player + '::' + title.toLowerCase()] = +m[2];
+    }
+    if ((m = line.match(agendaSetRe))){
+      agendaEvents.push({ player, turn, seq: currentGlobalSeq, points: +m[2] });
+      flagged.push({ reason: `Manual agenda point adjustment (${player}) — set to ${m[1]} with the /agenda-point command; applied to the score`, line });
+    }
+    // Tags set by hand aren't counted as given or taken (it's not clear which
+    // a correction stands for); flagged so the tag totals can be checked.
+    if (tagSetRe.test(line)){
+      flagged.push({ reason: `Manual tag adjustment (${player}) — not counted in the tag totals`, line });
     }
     if ((m = line.match(forfeitRe))){
       m[1].split(/\s*,\s*(?:and\s+)?|\s+and\s+/).filter(Boolean).forEach(raw => {
