@@ -1372,6 +1372,8 @@ Runner Player approaches Empiricist protecting HQ at position 1.
 Corp Player has no further action.
 Runner Player encounters Empiricist protecting HQ at position 1.
 Runner Player pays 2  to increase the strength of Unity to 7.
+Runner Player sets credit to 9 (+1).
+Runner Player sets credit to 10 (+1).
 Runner Player pays 5  to increase the strength of Carmen to 5 and break all 3 subroutines on Empiricist.
 Runner Player passes Empiricist protecting HQ at position 1.
 Runner Player will continue the run.
@@ -1951,6 +1953,9 @@ function parseLines(rawLines, chatBadges, undos){
   // to the end of the line (optional trailing whitespace/period only) so it
   // can't fire on "...to take 1 tag and force the Corp to lose 3..." (Transfer
   // of Wealth), which has plenty of text after the number.
+  // "X sets credit to 9 (+1)." — the /credit command (see change-msg in
+  // mtgred/netrunner src/clj/game/core/change_vals.clj).
+  const creditSetRe = /\bsets credits? to (-?\d+) \(([+-]?\d+)\)/i;
   const takeCreditRe = /\buses?\s+.+?\s+to\s+take\s+(\d+)\s*\.?\s*$/i;
   const giveTagRe = /\bgives?\s+the Runner (\d+) tags?/i;
   const takeTagRe = /\btakes?\s+(\d+)\s+tags?/i;
@@ -2594,6 +2599,17 @@ function parseLines(rawLines, chatBadges, undos){
     } else {
       const spm = creditScanLine.match(selfPayRe);
       if (spm) spendCredits(player, +spm[1], false);
+    }
+
+    // Manual correction with jinteki.net's /credit command, e.g. "X sets
+    // credit to 9 (+1)." after a misclick. The delta is applied like any
+    // other gain/spend, so the credit-tracking check still catches anything
+    // else that was missed in the same turn.
+    if ((m = line.match(creditSetRe))){
+      const delta = +m[2];
+      if (delta > 0) gainCredits(player, delta);
+      else if (delta < 0) spendCredits(player, -delta, false);
+      flagged.push({ reason: `Manual credit adjustment (${player}) — set to ${m[1]} with the /credit command; applied to the credit pool and totals`, line });
     }
 
     // draws
