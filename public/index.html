@@ -3125,6 +3125,9 @@ const hideZeroState = {};
 
 function fmt(n){ return (typeof n === 'number') ? n.toLocaleString() : n; }
 
+// Easter egg: jinteki.net usernames (lowercase) of Netrunner content creators.
+const NET_CELEBRITIES = new Set(['amavric', 'dull_bulb']);
+
 function renderSummary(data){
   const grid = document.getElementById('summaryGrid');
   grid.innerHTML = '';
@@ -3164,6 +3167,7 @@ function renderSummary(data){
       else if (side === 'corp') chip('Subliminal Messaging', 'No chat detected from this player.');
       else chips.push('<span style="color:var(--dim);">no chat detected</span>');
     }
+    if (NET_CELEBRITIES.has(p.toLowerCase())) chip('Net Celebrity', 'Twitch/YouTube content creator.');
     (earned[p] || []).forEach(a => {
       chips.push(`<span class="badge achievement ${a.side}" tabindex="0" data-desc="${a.description}">${a.name}</span>`);
     });
