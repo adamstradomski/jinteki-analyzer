@@ -141,25 +141,29 @@
     border: 1px solid var(--accent-dim); color: var(--accent); border-radius: 3px;
     padding: 2px 7px; letter-spacing: 0.03em;
   }
+  .badge.corp{ border-color: var(--corp); color: var(--corp); }
+  .badge.runner{ border-color: var(--runner); color: var(--runner); }
+  .player-badges{ flex-wrap: wrap; }
+  .player-badges .badge-player.corp, .stat .num.corp{ color: var(--corp); }
+  .player-badges .badge-player.runner, .stat .num.runner{ color: var(--runner); }
+  .stat.corp{ border-left-color: var(--corp); }
+  .stat.runner{ border-left-color: var(--runner); }
 
-  .achievements-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); gap: 18px; }
-  .achievement-player{ font-family: var(--mono); font-size: 12.5px; margin-bottom: 10px; }
-  .achievement-side{
-    font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.04em;
-    border: 1px solid currentColor; border-radius: 3px; padding: 1px 6px; margin-left: 6px;
+  .badge.achievement{
+    position: relative; cursor: help; font-weight: 600;
+    background: color-mix(in srgb, currentColor 14%, transparent);
   }
-  .achievement-side.corp{ color: var(--corp); }
-  .achievement-side.runner{ color: var(--runner); }
-  .achievement{
-    border-left: 3px solid var(--line); background: var(--panel-2);
-    border-radius: 0 4px 4px 0; padding: 8px 12px; margin-bottom: 8px;
+  .badge.achievement::after{
+    content: attr(data-desc);
+    position: absolute; left: 0; bottom: calc(100% + 6px);
+    width: max-content; max-width: 240px; white-space: normal; text-align: center;
+    background: var(--panel-2); color: var(--text);
+    border: 1px solid var(--line); border-radius: 4px; padding: 6px 9px;
+    font-weight: 400; letter-spacing: 0; line-height: 1.35;
+    opacity: 0; visibility: hidden; pointer-events: none; z-index: 20;
+    transition: opacity 0.12s ease;
   }
-  .achievement.corp{ border-left-color: var(--corp); }
-  .achievement.runner{ border-left-color: var(--runner); }
-  .achievement-name{ display:block; font-weight: 600; }
-  .achievement.corp .achievement-name{ color: var(--corp); }
-  .achievement.runner .achievement-name{ color: var(--runner); }
-  .achievement-desc{ display:block; font-family: var(--mono); font-size: 11.5px; color: var(--dim); }
+  .badge.achievement:hover::after, .badge.achievement:focus::after{ opacity: 1; visibility: visible; }
 
   table{ width:100%; border-collapse: collapse; font-size: 13.5px; margin-bottom: 6px; }
   th, td{ text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); }
@@ -289,13 +293,6 @@
         <div class="badges-row" id="badgesRow"></div>
         <h3>Game stats</h3>
         <div id="gameStatsWrap"></div>
-      </div>
-    </div>
-
-    <div class="panel">
-      <div class="panel-header"><h2>Achievements</h2><span class="collapse-icon">−</span></div>
-      <div class="panel-body">
-        <div class="achievements-grid" id="achievementsWrap"></div>
       </div>
     </div>
 
@@ -3127,33 +3124,40 @@ function renderSummary(data){
   const grid = document.getElementById('summaryGrid');
   grid.innerHTML = '';
   const stats = [
-    { label: 'Winner', num: data.winner || '—' },
+    { label: 'Winner', num: data.winner || '—', side: data.playerSide[data.winner] },
     { label: 'Rounds', num: data.rounds || 0 }
   ];
   if (data.undos.length) stats.push({ label: 'Undo commands (see flagged lines)', num: data.undos.length });
   data.players.forEach(p => {
-    stats.push({ label: `${p} — turns taken`, num: data.maxTurn[p] || 0 });
+    stats.push({ label: `${p} — turns taken`, num: data.maxTurn[p] || 0, side: data.playerSide[p] });
   });
   stats.forEach(s => {
+    const side = s.side || '';
     const div = document.createElement('div');
-    div.className = 'stat';
-    div.innerHTML = `<span class="num">${s.num}</span><span class="label">${s.label}</span>`;
+    div.className = `stat ${side}`;
+    div.innerHTML = `<span class="num ${side}">${s.num}</span><span class="label">${s.label}</span>`;
     grid.appendChild(div);
   });
 
   const badgesRow = document.getElementById('badgesRow');
   badgesRow.innerHTML = '';
+  const earned = evaluateAchievements(data);
   data.players.forEach(p => {
     const b = data.chatBadges[p] || {};
+    const side = data.playerSide[p] || '';
     const chips = [];
-    if (b.glhf) chips.push('<span class="badge">GLHF</span>');
-    if (b.gg) chips.push('<span class="badge">GG</span>');
-    if (b.ty) chips.push('<span class="badge">TY4TG</span>');
-    if (b.savedReplay) chips.push('<span class="badge" title="Saved a replay of this game">💾 SAVED</span>');
+    if (b.glhf) chips.push(`<span class="badge ${side}">GLHF</span>`);
+    if (b.gg) chips.push(`<span class="badge ${side}">GG</span>`);
+    if (b.ty) chips.push(`<span class="badge ${side}">TY4TG</span>`);
+    if (b.savedReplay) chips.push(`<span class="badge ${side}" title="Saved a replay of this game">💾 SAVED</span>`);
     if (data.concededPlayer === p) chips.push('<span class="badge" style="border-color:var(--neg);color:var(--neg);">CONCEDE</span>');
+    if (!chips.length) chips.push('<span style="color:var(--dim);">no chat detected</span>');
+    (earned[p] || []).forEach(a => {
+      chips.push(`<span class="badge achievement ${a.side}" tabindex="0" data-desc="${a.description}">${a.name}</span>`);
+    });
     const div = document.createElement('div');
     div.className = 'player-badges';
-    div.innerHTML = `<strong>${p}</strong>${chips.length ? chips.join('') : '<span style="color:var(--dim);">no chat detected</span>'}`;
+    div.innerHTML = `<strong class="badge-player ${side}">${p}</strong>${chips.join('')}`;
     badgesRow.appendChild(div);
   });
 }
@@ -3806,23 +3810,6 @@ function renderGameStats(data){
   wrap.innerHTML = tbl;
 }
 
-function renderAchievements(data){
-  const wrap = document.getElementById('achievementsWrap');
-  const earned = evaluateAchievements(data);
-  wrap.innerHTML = data.players.map(p => {
-    const side = data.playerSide[p] || '';
-    const items = earned[p].map(a => `
-      <div class="achievement ${a.side}">
-        <span class="achievement-name">${a.name}</span>
-        <span class="achievement-desc">${a.description}</span>
-      </div>`).join('');
-    return `<div class="achievement-col">
-      <div class="achievement-player"><strong>${p}</strong>${side ? ` <span class="achievement-side ${side}">${side}</span>` : ''}</div>
-      ${items || '<div class="empty-note">No achievements this game.</div>'}
-    </div>`;
-  }).join('');
-}
-
 function runParse(){
   const text = logInput.value;
   if (!text.trim()){
@@ -3839,7 +3826,6 @@ function runParse(){
   statusMsg.style.color = '';
   renderSummary(currentData);
   renderGameStats(currentData);
-  renderAchievements(currentData);
   renderAllCharts(currentData);
   buildPlayerSections(currentData);
   renderFlagged(currentData.flagged);
