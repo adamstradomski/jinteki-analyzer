@@ -149,11 +149,12 @@
   .stat.corp{ border-left-color: var(--corp); }
   .stat.runner{ border-left-color: var(--runner); }
 
+  .badge[data-desc]{ position: relative; cursor: help; }
   .badge.achievement{
-    position: relative; cursor: help; font-weight: 600;
+    font-weight: 600;
     background: color-mix(in srgb, currentColor 14%, transparent);
   }
-  .badge.achievement::after{
+  .badge[data-desc]::after{
     content: attr(data-desc);
     position: absolute; left: 0; bottom: calc(100% + 6px);
     width: max-content; max-width: 240px; white-space: normal; text-align: center;
@@ -163,7 +164,7 @@
     opacity: 0; visibility: hidden; pointer-events: none; z-index: 20;
     transition: opacity 0.12s ease;
   }
-  .badge.achievement:hover::after, .badge.achievement:focus::after{ opacity: 1; visibility: visible; }
+  .badge[data-desc]:hover::after, .badge[data-desc]:focus::after{ opacity: 1; visibility: visible; }
 
   table{ width:100%; border-collapse: collapse; font-size: 13.5px; margin-bottom: 6px; }
   th, td{ text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); }
@@ -3146,12 +3147,18 @@ function renderSummary(data){
     const b = data.chatBadges[p] || {};
     const side = data.playerSide[p] || '';
     const chips = [];
-    if (b.glhf) chips.push(`<span class="badge ${side}">GLHF</span>`);
-    if (b.gg) chips.push(`<span class="badge ${side}">GG</span>`);
-    if (b.ty) chips.push(`<span class="badge ${side}">TY4TG</span>`);
-    if (b.savedReplay) chips.push(`<span class="badge ${side}" title="Saved a replay of this game">💾 SAVED</span>`);
-    if (data.concededPlayer === p) chips.push('<span class="badge" style="border-color:var(--neg);color:var(--neg);">CONCEDE</span>');
-    if (!chips.length) chips.push('<span style="color:var(--dim);">no chat detected</span>');
+    const chip = (label, desc, extra = '') =>
+      chips.push(`<span class="badge ${side}" tabindex="0" data-desc="${desc}"${extra}>${label}</span>`);
+    if (b.glhf) chip('GLHF', 'Wished good luck / have fun in chat.');
+    if (b.gg) chip('GG', 'Said “good game” in chat.');
+    if (b.ty) chip('TY4TG', 'Thanked the opponent for the game in chat.');
+    if (b.savedReplay) chip('💾 SAVED', 'Saved a replay of this game.');
+    if (data.concededPlayer === p) chip('CONCEDE', 'Conceded the game.', ' style="border-color:var(--neg);color:var(--neg);"');
+    if (!chips.length){
+      if (side === 'runner') chip('Silencer', 'No chat detected from this player.');
+      else if (side === 'corp') chip('Subliminal Messaging', 'No chat detected from this player.');
+      else chips.push('<span style="color:var(--dim);">no chat detected</span>');
+    }
     (earned[p] || []).forEach(a => {
       chips.push(`<span class="badge achievement ${a.side}" tabindex="0" data-desc="${a.description}">${a.name}</span>`);
     });
