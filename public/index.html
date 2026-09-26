@@ -3889,6 +3889,19 @@ function warnAgainstBookmarkletClick(e){
   return false;
 }
 
+// The bookmarklet's href hardcodes https://jinteki.win/ as its target. When
+// the page is served from somewhere else over http(s) — e.g. the test Worker
+// on workers.dev — point it at that origin instead, so a bookmark dragged
+// from the test site opens games in the test site rather than production.
+// Opened as a local file, there's no origin to point at, so it keeps prod.
+(function retargetBookmarklet(){
+  if (!/^https?:$/.test(location.protocol) || location.hostname === 'jinteki.win') return;
+  const btn = document.getElementById('bookmarkletBtn');
+  const prod = encodeURIComponent('"https://jinteki.win/#log="');
+  const here = encodeURIComponent('"' + location.origin + '/#log="');
+  btn.setAttribute('href', btn.getAttribute('href').replace(prod, here));
+})();
+
 document.getElementById('skipCopyPasteBtn').addEventListener('click', () => {
   const section = document.getElementById('bookmarkSection');
   const btn = document.getElementById('skipCopyPasteBtn');
