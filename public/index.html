@@ -2255,10 +2255,15 @@ function parseLines(rawLines, chatBadges, undos){
     return null;
   }
 
-  function addPerTurn(op, turn, gainAmt, costAmt){
-    const pt = op.perTurn.get(turn) || { turn, gain: 0, cost: 0 };
-    pt.gain += gainAmt; pt.cost += costAmt;
-    op.perTurn.set(turn, pt);
+  // Each play of an event/operation is its own trigger, even when several land on the
+  // same turn (e.g. two Bravados). Paying to play always opens a new trigger; a gain
+  // settles the earliest trigger on that turn that hasn't gained yet (plays resolve in
+  // order), or opens a new one when there is none (cost-free/unlogged plays).
+  function addTrigger(op, turn, kind, amount){
+    let t = kind === 'gain' ? op.triggers.find(x => x.turn === turn && !x.gained) : null;
+    if (!t){ t = { turn, gain: 0, cost: 0, gained: false }; op.triggers.push(t); }
+    if (kind === 'gain'){ t.gain += amount; t.gained = true; }
+    else t.cost += amount;
   }
 
   function logCardDraw(player, rawName, amount, turn){
@@ -2314,11 +2319,11 @@ function parseLines(rawLines, chatBadges, undos){
 
     const key = player + '::' + name;
     let op = operations.get(key);
-    if (!op){ op = { player, name, gain: 0, cost: 0, gainCount: 0, costCount: 0, turns: new Set(), perTurn: new Map() }; operations.set(key, op); }
+    if (!op){ op = { player, name, gain: 0, cost: 0, gainCount: 0, costCount: 0, turns: new Set(), triggers: [] }; operations.set(key, op); }
     if (kind === 'gain'){
-      op.gain += amount; op.gainCount++; op.turns.add(turn); addPerTurn(op, turn, amount, 0);
+      op.gain += amount; op.gainCount++; op.turns.add(turn); addTrigger(op, turn, 'gain', amount);
     } else {
-      op.cost += amount; op.costCount++; op.turns.add(turn); addPerTurn(op, turn, 0, amount);
+      op.cost += amount; op.costCount++; op.turns.add(turn); addTrigger(op, turn, 'cost', amount);
     }
   }
 
@@ -2767,9 +2772,15 @@ function parseLines(rawLines, chatBadges, undos){
 
   const opsRows = Array.from(operations.values()).map(op => {
     const triggered = Math.max(op.gainCount, op.costCount);
-    const perTurnRows = Array.from(op.perTurn.values())
-      .map(pt => ({ turn: pt.turn, cost: pt.cost, gain: pt.gain, net: pt.gain - pt.cost }))
-      .sort((a, b) => a.turn - b.turn);
+    const perTurnCount = {};
+    op.triggers.forEach(t => { perTurnCount[t.turn] = (perTurnCount[t.turn] || 0) + 1; });
+    const seenPerTurn = {};
+    const perTurnRows = op.triggers
+      .map(t => {
+        const nth = perTurnCount[t.turn] > 1 ? (seenPerTurn[t.turn] = (seenPerTurn[t.turn] || 0) + 1) : null;
+        return { turn: t.turn, nth, cost: t.cost, gain: t.gain, net: t.gain - t.cost };
+      })
+      .sort((a, b) => a.turn - b.turn || (a.nth || 0) - (b.nth || 0));
     return {
       name: op.name,
       player: op.player,
@@ -3313,7 +3324,7 @@ function renderOpsTable(tableId, tbody, rows, hideZero){
         const sub = document.createElement('tr');
         sub.style.background = 'var(--panel-2)';
         sub.innerHTML =
-          `<td style="padding-left:28px;color:var(--dim);">turn ${pt.turn}</td>` +
+          `<td style="padding-left:28px;color:var(--dim);">turn ${pt.turn}${pt.nth ? ` #${pt.nth}` : ''}</td>` +
           `<td></td>` +
           `<td class="num">${fmt(pt.cost)}</td>` +
           `<td class="num">${fmt(pt.gain)}</td>` +
