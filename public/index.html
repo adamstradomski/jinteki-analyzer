@@ -2325,11 +2325,11 @@ function parseLines(rawLines, chatBadges, undos){
 
     const key = player + '::' + name;
     let op = operations.get(key);
-    if (!op){ op = { player, name, gain: 0, cost: 0, turns: new Set(), triggers: [] }; operations.set(key, op); }
+    if (!op){ op = { player, name, gain: 0, cost: 0, triggers: [] }; operations.set(key, op); }
     if (kind === 'gain'){
-      op.gain += amount; op.turns.add(turn); addTrigger(op, turn, 'gain', amount, rawLine);
+      op.gain += amount; addTrigger(op, turn, 'gain', amount, rawLine);
     } else {
-      op.cost += amount; op.turns.add(turn); addTrigger(op, turn, 'cost', amount, rawLine);
+      op.cost += amount; addTrigger(op, turn, 'cost', amount, rawLine);
     }
   }
 
@@ -2794,7 +2794,7 @@ function parseLines(rawLines, chatBadges, undos){
       totalCost: op.cost,
       totalGain: op.gain,
       totalNet: op.gain - op.cost,
-      turnsList: Array.from(op.turns).sort((a,b)=>a-b).join(', '),
+      turnsList: op.triggers.map(t => t.turn).sort((a,b)=>a-b).join(', '),
       perTurnRows
     };
   });
