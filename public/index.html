@@ -427,7 +427,7 @@
           <li>Corp assets and ice are installed face-down, so the log doesn't reveal a name until they're rezzed. "In play from" for those cards is the turn they were rezzed, not the (unknown) turn they were actually installed.</li>
           <li>Credits are attributed to a card via its own "uses X to gain N" / "reveal ... and gain N" triggers, plus any "pays N from X" spend that draws from a card's hosted credits.</li>
           <li>Cost is the credits spent to install, rez, play, or activate a card — net credits is gained minus cost.</li>
-          <li>In the operations &amp; events table, "triggered" is the larger of how many times the card generated credits and how many times it cost credits — per-trigger figures divide by that.</li>
+          <li>In the operations &amp; events table, "triggered" counts each play separately (paying to play starts a new one, even on the same turn) — the expanded rows list every play.</li>
           <li>Identity abilities (cards with a "Faction: Title" name) are tracked as in play from turn 1 for the whole game.</li>
           <li>Click-for-credit is grouped separately per side rather than attributed to any card. When a card's "gain" line has no number (the credit icon was stripped from the log text), it's read as a click gain rather than a credit — 1 click by default, or a hardcoded amount for specific cards known to grant more (e.g. Nanomanagement grants 2).</li>
           <li>A card that shuffles itself away (e.g. Spin Doctor's "shuffle" ability) is treated as leaving play at that point, same as being trashed.</li>
@@ -2256,11 +2256,17 @@ function parseLines(rawLines, chatBadges, undos){
   }
 
   // Each play of an event/operation is its own trigger, even when several land on the
-  // same turn (e.g. two Bravados). Paying to play always opens a new trigger; a gain
-  // settles the earliest trigger on that turn that hasn't gained yet (plays resolve in
-  // order), or opens a new one when there is none (cost-free/unlogged plays).
-  function addTrigger(op, turn, kind, amount){
-    let t = kind === 'gain' ? op.triggers.find(x => x.turn === turn && !x.gained) : null;
+  // same turn (e.g. two Bravados). Paying "to play" always opens a new trigger; any other
+  // cost (e.g. Oppo Research's extra 5 to "use" it) adds to the latest trigger that turn;
+  // a gain settles the earliest trigger on that turn that hasn't gained yet (plays resolve
+  // in order). Either opens a new trigger when there's nothing to attach to.
+  function addTrigger(op, turn, kind, amount, rawLine){
+    let t = null;
+    if (kind === 'gain') t = op.triggers.find(x => x.turn === turn && !x.gained);
+    else if (!/ to play /i.test(rawLine || '')){
+      const last = op.triggers[op.triggers.length - 1];
+      if (last && last.turn === turn) t = last;
+    }
     if (!t){ t = { turn, gain: 0, cost: 0, gained: false }; op.triggers.push(t); }
     if (kind === 'gain'){ t.gain += amount; t.gained = true; }
     else t.cost += amount;
@@ -2319,11 +2325,11 @@ function parseLines(rawLines, chatBadges, undos){
 
     const key = player + '::' + name;
     let op = operations.get(key);
-    if (!op){ op = { player, name, gain: 0, cost: 0, gainCount: 0, costCount: 0, turns: new Set(), triggers: [] }; operations.set(key, op); }
+    if (!op){ op = { player, name, gain: 0, cost: 0, turns: new Set(), triggers: [] }; operations.set(key, op); }
     if (kind === 'gain'){
-      op.gain += amount; op.gainCount++; op.turns.add(turn); addTrigger(op, turn, 'gain', amount);
+      op.gain += amount; op.turns.add(turn); addTrigger(op, turn, 'gain', amount, rawLine);
     } else {
-      op.cost += amount; op.costCount++; op.turns.add(turn); addTrigger(op, turn, 'cost', amount);
+      op.cost += amount; op.turns.add(turn); addTrigger(op, turn, 'cost', amount, rawLine);
     }
   }
 
@@ -2771,7 +2777,7 @@ function parseLines(rawLines, chatBadges, undos){
   }
 
   const opsRows = Array.from(operations.values()).map(op => {
-    const triggered = Math.max(op.gainCount, op.costCount);
+    const triggered = op.triggers.length;
     const perTurnCount = {};
     op.triggers.forEach(t => { perTurnCount[t.turn] = (perTurnCount[t.turn] || 0) + 1; });
     const seenPerTurn = {};
