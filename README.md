@@ -50,6 +50,10 @@ Build settings: root directory `/`, build command `node scripts/render-config.mj
 
 Short links accept only this site's log payloads (never arbitrary URLs), are created only from the site's own origin, are rate-limited per IP, and identical logs reuse the same link. Stay on the Workers Free plan: if a daily limit is reached, requests fail until the reset instead of being billed, and the site falls back to the long share link.
 
+## Market Research
+
+`/market-research/` is a second page: tournament card meta (most played cards, trends, winrates, top-cut conversion) for NSG Netrunner Standard, built from [AlwaysBeRunning.net](https://alwaysberunning.net), NSG Cobra and NetrunnerDB data. The page lives in `public/market-research/` and reads precomputed snapshots from `data.jinteki.win`; the batch pipeline that builds them is in [`market-research/`](market-research/README.md), with docs in [`docs/market-research/`](docs/market-research/architecture.md).
+
 ## Support
 
 If this tool is useful to you, consider [supporting it on Ko-fi](https://ko-fi.com/inermis2020).
