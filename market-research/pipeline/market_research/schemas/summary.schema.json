@@ -1,0 +1,305 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://data.jinteki.win/schemas/summary.schema.json",
+  "title": "Market Research slice summary (mr.summary/1)",
+  "description": "Current-period metrics for every card played in one slice (side x ban list x tier group). Ratios are precomputed from the additive counts in trends.json.",
+  "type": "object",
+  "required": [
+    "schema",
+    "version",
+    "side",
+    "restriction",
+    "tier_group",
+    "period",
+    "previous_period",
+    "baseline",
+    "cards",
+    "risers",
+    "fallers"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "const": "mr.summary/1"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{4}Z$"
+    },
+    "side": {
+      "enum": [
+        "corp",
+        "runner"
+      ]
+    },
+    "restriction": {
+      "type": "string",
+      "pattern": "^(all|[a-z0-9_]{1,80})$"
+    },
+    "tier_group": {
+      "type": "string",
+      "pattern": "^(all|[a-z0-9_]{1,40})$"
+    },
+    "period": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "required": [
+        "from",
+        "to"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "from": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}$"
+        },
+        "to": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}$"
+        }
+      }
+    },
+    "previous_period": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "required": [
+        "from",
+        "to"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "from": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}$"
+        },
+        "to": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}$"
+        }
+      }
+    },
+    "baseline": {
+      "type": "object",
+      "required": [
+        "decks",
+        "games",
+        "wins",
+        "winrate",
+        "entries_hc",
+        "cut_hc",
+        "cut_rate",
+        "tournaments",
+        "tournaments_hc"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "decks": {
+          "type": "integer"
+        },
+        "games": {
+          "type": "integer"
+        },
+        "wins": {
+          "type": "number"
+        },
+        "winrate": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "entries_hc": {
+          "type": "integer"
+        },
+        "cut_hc": {
+          "type": "integer"
+        },
+        "cut_rate": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "tournaments": {
+          "type": "integer"
+        },
+        "tournaments_hc": {
+          "type": "integer"
+        }
+      }
+    },
+    "cards": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "card_id",
+          "rank",
+          "decks",
+          "popularity",
+          "avg_copies",
+          "copies_mode",
+          "prev_popularity",
+          "change_pp",
+          "games",
+          "wins",
+          "winrate",
+          "winrate_diff_pp",
+          "wilson_low_pp",
+          "wilson_high_pp",
+          "winrate_status",
+          "entries_hc",
+          "cut_hc",
+          "tournaments_hc",
+          "conversion",
+          "conversion_ratio",
+          "conversion_diff_pp",
+          "conversion_status"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "card_id": {
+            "type": "string",
+            "pattern": "^[a-z0-9_]{1,80}$"
+          },
+          "rank": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "decks": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "popularity": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "avg_copies": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "copies_mode": {
+            "enum": [
+              1,
+              2,
+              3,
+              null
+            ]
+          },
+          "prev_popularity": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "change_pp": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "games": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "wins": {
+            "type": "number",
+            "minimum": 0
+          },
+          "winrate": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "winrate_diff_pp": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "wilson_low_pp": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "wilson_high_pp": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "winrate_status": {
+            "enum": [
+              "ok",
+              "insufficient"
+            ]
+          },
+          "entries_hc": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "cut_hc": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "tournaments_hc": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "conversion": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "conversion_ratio": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "conversion_diff_pp": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "conversion_status": {
+            "enum": [
+              "ok",
+              "insufficient"
+            ]
+          }
+        }
+      }
+    },
+    "risers": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9_]{1,80}$"
+      },
+      "maxItems": 10
+    },
+    "fallers": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9_]{1,80}$"
+      },
+      "maxItems": 10
+    }
+  }
+}

@@ -109,6 +109,8 @@ class Ingestor:
         self._since_flush = 0
         self._last_flush = time.monotonic()
         self._stopped: set[str] = set()
+        prev_q = stores.canonical.get_json(QUALITY_KEY)
+        self._prev_quality: dict[str, Any] = prev_q if isinstance(prev_q, dict) else {}
         links = stores.canonical.get_json(LINKS_KEY)
         self.cobra_abr_codes: dict[str, str] = links if isinstance(links, dict) else {}
         self.handlers: dict[str, Callable[[Item], None]] = {
@@ -329,7 +331,7 @@ class Ingestor:
         with self._lock:
             self.frontier.save(self.stores.canonical)
             self.stores.canonical.put_json(LINKS_KEY, self.cobra_abr_codes)
-            prev = self.stores.canonical.get_json(QUALITY_KEY) or {}
+            prev = self._prev_quality
             cur = self.quality.to_json()
             drift = {
                 k: sorted(set(prev.get("drift", {}).get(k, [])) | set(v)) for k, v in cur["drift"].items()

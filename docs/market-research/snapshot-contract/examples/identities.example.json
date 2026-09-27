@@ -1,0 +1,58 @@
+{
+  "schema": "mr.identities/1",
+  "version": "2026-09-27T0402Z",
+  "side": "corp",
+  "restriction": "all",
+  "tier_group": "all",
+  "period": {
+    "from": "2026-07",
+    "to": "2026-09"
+  },
+  "baseline": {
+    "entries": 50,
+    "games": 94,
+    "wins": 49.5,
+    "winrate": 0.5266,
+    "cut_entries": 32,
+    "cut_made": 9,
+    "cut_rate": 0.2812
+  },
+  "identities": [
+    {
+      "card_id": "haas_bioroid_precision_design",
+      "entries": 9,
+      "share": 0.18,
+      "games": 10,
+      "wins": 6.0,
+      "winrate": 0.6,
+      "winrate_diff_pp": 7.34,
+      "wilson_low_pp": -21.39,
+      "wilson_high_pp": 30.52,
+      "winrate_status": "insufficient",
+      "cut_entries": 6,
+      "cut_made": 2,
+      "conversion": 0.3333,
+      "conversion_ratio": 1.185,
+      "conversion_status": "insufficient",
+      "rank": 1
+    },
+    {
+      "card_id": "epiphany_analytica_nations_undivided",
+      "entries": 8,
+      "share": 0.16,
+      "games": 13,
+      "wins": 10.0,
+      "winrate": 0.7692,
+      "winrate_diff_pp": 24.26,
+      "wilson_low_pp": -2.92,
+      "wilson_high_pp": 39.16,
+      "winrate_status": "insufficient",
+      "cut_entries": 5,
+      "cut_made": 1,
+      "conversion": 0.2,
+      "conversion_ratio": 0.711,
+      "conversion_status": "insufficient",
+      "rank": 2
+    }
+  ]
+}

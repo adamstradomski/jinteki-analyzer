@@ -1,0 +1,218 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://data.jinteki.win/schemas/manifest.schema.json",
+  "title": "Market Research manifest (mr.manifest/1)",
+  "description": "Entry point for the UI. Short TTL. Slice URLs are base_path + paths.<kind> with {side}, {restriction} and {tier_group} filled from the lists below.",
+  "type": "object",
+  "required": [
+    "schema",
+    "version",
+    "base_path",
+    "generated_at",
+    "data_as_of",
+    "formats",
+    "sides",
+    "restrictions",
+    "tier_groups",
+    "months",
+    "period_months",
+    "thresholds",
+    "paths",
+    "schemas",
+    "attribution",
+    "disclaimer"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "const": "mr.manifest/1"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{4}Z$"
+    },
+    "base_path": {
+      "type": "string",
+      "pattern": "^v=\\d{4}-\\d{2}-\\d{2}T\\d{4}Z/$"
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "data_as_of": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "formats": {
+      "const": [
+        "standard"
+      ]
+    },
+    "sides": {
+      "const": [
+        "corp",
+        "runner"
+      ]
+    },
+    "restrictions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^(all|[a-z0-9_]+)$"
+          },
+          "name": {
+            "type": "string"
+          },
+          "date_start": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "minItems": 1
+    },
+    "tier_groups": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^(all|[a-z0-9_]+)$"
+          },
+          "name": {
+            "type": "string"
+          },
+          "date_start": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "minItems": 1
+    },
+    "months": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^\\d{4}-\\d{2}$"
+      }
+    },
+    "period_months": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "thresholds": {
+      "type": "object",
+      "required": [
+        "min_games",
+        "min_entries",
+        "coverage_hc",
+        "min_players"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "min_games": {
+          "type": "integer"
+        },
+        "min_entries": {
+          "type": "integer"
+        },
+        "coverage_hc": {
+          "type": "number"
+        },
+        "min_players": {
+          "type": "integer"
+        }
+      }
+    },
+    "paths": {
+      "type": "object",
+      "required": [
+        "catalog",
+        "summary",
+        "trends",
+        "identities",
+        "quality"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "catalog": {
+          "type": "string"
+        },
+        "summary": {
+          "type": "string"
+        },
+        "trends": {
+          "type": "string"
+        },
+        "identities": {
+          "type": "string"
+        },
+        "quality": {
+          "type": "string"
+        }
+      }
+    },
+    "schemas": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "attribution": {
+      "type": "object",
+      "required": [
+        "text",
+        "links"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "text": {
+          "type": "string"
+        },
+        "links": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "name",
+              "url"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "url": {
+                "type": "string",
+                "format": "uri"
+              }
+            }
+          }
+        }
+      }
+    },
+    "disclaimer": {
+      "type": "string"
+    }
+  }
+}

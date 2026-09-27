@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://data.jinteki.win/schemas/trends.schema.json",
+  "title": "Market Research slice trends (mr.trends/1)",
+  "description": "Monthly additive counts. Each row is [month_index, restriction_index, ...columns]. Sum rows over any months, ban lists or tier groups, then divide sums.",
+  "type": "object",
+  "required": [
+    "schema",
+    "version",
+    "side",
+    "restriction",
+    "tier_group",
+    "months",
+    "restrictions",
+    "columns",
+    "baseline_columns",
+    "baseline",
+    "cards"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "const": "mr.trends/1"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{4}Z$"
+    },
+    "side": {
+      "enum": [
+        "corp",
+        "runner"
+      ]
+    },
+    "restriction": {
+      "type": "string",
+      "pattern": "^(all|[a-z0-9_]{1,80})$"
+    },
+    "tier_group": {
+      "type": "string",
+      "pattern": "^(all|[a-z0-9_]{1,40})$"
+    },
+    "months": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^\\d{4}-\\d{2}$"
+      }
+    },
+    "restrictions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9_]{1,80}$"
+      }
+    },
+    "columns": {
+      "const": [
+        "decks_with_card",
+        "copies_sum",
+        "qty1",
+        "qty2",
+        "qty3",
+        "games_total",
+        "games_won",
+        "entries_with_card_hc",
+        "cut_with_card_hc",
+        "tournaments_hc_with_card"
+      ]
+    },
+    "baseline_columns": {
+      "const": [
+        "side_decks",
+        "side_games",
+        "side_wins",
+        "side_entries_hc",
+        "side_cut_hc",
+        "tournaments",
+        "tournaments_hc"
+      ]
+    },
+    "baseline": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "number",
+          "minimum": 0
+        },
+        "minItems": 9,
+        "maxItems": 9
+      }
+    },
+    "cards": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "pattern": "^[a-z0-9_]{1,80}$"
+      },
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "minimum": 0
+          },
+          "minItems": 12,
+          "maxItems": 12
+        }
+      }
+    }
+  }
+}

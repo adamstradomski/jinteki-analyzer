@@ -1,0 +1,209 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://data.jinteki.win/schemas/identities.schema.json",
+  "title": "Market Research identities (mr.identities/1)",
+  "description": "Share, winrate and top-cut conversion per identity in the slice's current period.",
+  "type": "object",
+  "required": [
+    "schema",
+    "version",
+    "side",
+    "restriction",
+    "tier_group",
+    "period",
+    "baseline",
+    "identities"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "const": "mr.identities/1"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{4}Z$"
+    },
+    "side": {
+      "enum": [
+        "corp",
+        "runner"
+      ]
+    },
+    "restriction": {
+      "type": "string",
+      "pattern": "^(all|[a-z0-9_]{1,80})$"
+    },
+    "tier_group": {
+      "type": "string",
+      "pattern": "^(all|[a-z0-9_]{1,40})$"
+    },
+    "period": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "required": [
+        "from",
+        "to"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "from": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}$"
+        },
+        "to": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}$"
+        }
+      }
+    },
+    "baseline": {
+      "type": "object",
+      "required": [
+        "entries",
+        "games",
+        "wins",
+        "winrate",
+        "cut_entries",
+        "cut_made",
+        "cut_rate"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "entries": {
+          "type": "integer"
+        },
+        "games": {
+          "type": "integer"
+        },
+        "wins": {
+          "type": "number"
+        },
+        "winrate": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "cut_entries": {
+          "type": "integer"
+        },
+        "cut_made": {
+          "type": "integer"
+        },
+        "cut_rate": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      }
+    },
+    "identities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "card_id",
+          "rank",
+          "entries",
+          "share",
+          "games",
+          "wins",
+          "winrate",
+          "winrate_diff_pp",
+          "wilson_low_pp",
+          "wilson_high_pp",
+          "winrate_status",
+          "cut_entries",
+          "cut_made",
+          "conversion",
+          "conversion_ratio",
+          "conversion_status"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "card_id": {
+            "type": "string",
+            "pattern": "^[a-z0-9_]{1,80}$"
+          },
+          "rank": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "entries": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "share": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "games": {
+            "type": "integer"
+          },
+          "wins": {
+            "type": "number"
+          },
+          "winrate": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "winrate_diff_pp": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "wilson_low_pp": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "wilson_high_pp": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "winrate_status": {
+            "enum": [
+              "ok",
+              "insufficient"
+            ]
+          },
+          "cut_entries": {
+            "type": "integer"
+          },
+          "cut_made": {
+            "type": "integer"
+          },
+          "conversion": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "conversion_ratio": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "conversion_status": {
+            "enum": [
+              "ok",
+              "insufficient"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

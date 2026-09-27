@@ -1,0 +1,50 @@
+{
+  "schema": "mr.quality/1",
+  "version": "2026-09-27T0402Z",
+  "coverage": {
+    "tournaments": 6,
+    "tournaments_with_games": 3,
+    "tournaments_high_coverage": 4,
+    "mean_decklist_coverage": 0.7625,
+    "entries": 76,
+    "games": 98,
+    "decks": 121,
+    "legal_decks": 120,
+    "illegal_decks": 1,
+    "decks_by_source": {
+      "cobra": 51,
+      "nrdb_decklist": 70
+    },
+    "deck_comparison": {
+      "cobra_only": 42,
+      "match": 8,
+      "mismatch": 1,
+      "nrdb_only": 70
+    }
+  },
+  "unresolved_cards": {},
+  "unresolved_identities": {},
+  "parser_failures": [],
+  "link_mismatches": [],
+  "links": [
+    {
+      "abr_id": 5284,
+      "method": "abr_code",
+      "tid": "c4990"
+    },
+    {
+      "abr_id": 5310,
+      "method": "date_size_identities",
+      "tid": "c5012"
+    }
+  ],
+  "drift_warnings": {
+    "abr.tournament": [
+      "stream_viewers"
+    ]
+  },
+  "rejected_deck_refs": 1,
+  "skipped_tournaments": {
+    "abr_no_entries": 1
+  }
+}

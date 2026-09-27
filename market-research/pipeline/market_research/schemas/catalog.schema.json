@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://data.jinteki.win/schemas/catalog.schema.json",
+  "title": "Market Research card catalog (mr.catalog/1)",
+  "description": "Every card legal in Standard in at least one ban list of the window. Titles come from the NetrunnerDB catalog only.",
+  "type": "object",
+  "required": [
+    "schema",
+    "version",
+    "restrictions",
+    "cards"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "const": "mr.catalog/1"
+    },
+    "version": {
+      "type": "string"
+    },
+    "restrictions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9_]{1,80}$"
+      }
+    },
+    "cards": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "side",
+          "type",
+          "faction",
+          "printings",
+          "legal_in"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9_]{1,80}$"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "side": {
+            "enum": [
+              "corp",
+              "runner"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "pattern": "^[a-z0-9_]{1,80}$"
+          },
+          "faction": {
+            "type": "string",
+            "pattern": "^[a-z0-9_]{1,80}$"
+          },
+          "printings": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[0-9]{1,6}$"
+            }
+          },
+          "legal_in": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z0-9_]{1,80}$"
+            },
+            "minItems": 1
+          }
+        }
+      }
+    }
+  }
+}
