@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>jinteki.win</title>
+<title>Trace · jinteki.win</title>
 <!-- jinteki.win design system: colours per theme (tokens.css), fonts, shapes and
      components (bundle.css), and the theme helpers on window.JW (bundle.js). -->
-<link rel="stylesheet" href="shared/jw/tokens.css">
-<link rel="stylesheet" href="shared/jw/bundle.css">
-<script src="shared/jw/bundle.js"></script>
+<link rel="stylesheet" href="../shared/jw/tokens.css">
+<link rel="stylesheet" href="../shared/jw/bundle.css">
+<script src="../shared/jw/bundle.js"></script>
 <script>JW.initTheme();</script>
 <style>
   *{ box-sizing: border-box; }
@@ -226,7 +226,7 @@
 
   <header>
     <div class="header-top">
-      <div class="kicker"><a href="https://jinteki.win/">jinteki.win</a> / log analysis for jinteki.net</div>
+      <div class="kicker"><a href="../">jinteki.win</a> / trace: log analysis for jinteki.net</div>
       <div class="jw-controls"><div id="themeSwitcher"></div><div id="modeToggle"></div></div>
     </div>
     <p>Paste a game log copied from the jinteki.net chat panel.</p>
@@ -240,7 +240,7 @@
         <p style="color:var(--dim); font-size:13.5px; margin:0 0 14px;">Drag this into your bookmarks bar once. On any jinteki.net game, click it to open the log here, already parsed — no selecting, no pasting.</p>
         <div class="row" style="margin-top:0;">
           <a class="bookmarklet-link" id="bookmarkletBtn" onclick="return warnAgainstBookmarkletClick(event)"
-            href="javascript:!function()%7Bvar%20e%3Ddocument.querySelector(%22.log%20.messages%22)%7C%7Cdocument.querySelector(%22div.messages%22)%3Bif(e)%7Bvar%20r%3D%5B%5D%3BArray.prototype.forEach.call(e.children%2Cfunction(e)%7Bif(e.classList.contains(%22system%22))%7Bvar%20t%3De.textContent.replace(%2F%5C%5B%5Cd%7B1%2C2%7D%3A%5Cd%7B2%7D%3A%5Cd%7B2%7D%5C%5D%2Fg%2C%22%22).replace(%2F%5Cs%2B%2Fg%2C%22%20%22).trim()%3Bt%26%26r.push(t)%7Delse%20if(e.classList.contains(%22message%22))%7Bvar%20n%3De.querySelector(%22.content%22)%3Bif(!n)return%3Bvar%20a%3Dn.querySelector(%22.username%22)%2Co%3Da%3Fa.textContent.replace(%2F%5C%5B%5Cd%7B1%2C2%7D%3A%5Cd%7B2%7D%3A%5Cd%7B2%7D%5C%5D%2Fg%2C%22%22).trim()%3A%22%22%2Cl%3Dn.querySelectorAll(%22%3Ascope%20%3E%20div%22)%2Ci%3Dl.length%3Fl%5Bl.length-1%5D.textContent.replace(%2F%5C%5B%5Cd%7B1%2C2%7D%3A%5Cd%7B2%7D%3A%5Cd%7B2%7D%5C%5D%2Fg%2C%22%22).trim()%3A%22%22%3Bo%26%26(r.push(o)%2Cr.push(o))%2Ci%26%26r.push(i)%7D%7D)%3Bvar%20t%3Dr.join(%22%5Cn%22)%3Bif(t)%7Bvar%20n%3Dwindow.open(%22%22%2C%22_blank%22)%3Bn%26%26n.document.write(%22Preparing%20your%20Jnet%20Analyzer%20link...%22)%3Bvar%20a%3D(new%20TextEncoder).encode(t)%3Bif(window.CompressionStream)%7Bvar%20o%3Dnew%20CompressionStream(%22gzip%22)%2Cl%3Do.writable.getWriter()%3Bl.write(a)%2Cl.close()%2Cnew%20Response(o.readable).arrayBuffer().then(function(e)%7Bs(%22gz.%22%2Bi(new%20Uint8Array(e)))%7D).catch(function(e)%7Bn%26%26n.close()%2Calert(%22Jnet%20Analyzer%3A%20could%20not%20compress%20the%20log%20(%22%2Be.message%2B%22).%22)%7D)%7Delse%20s(%22raw.%22%2Bi(a))%7Delse%20alert(%22Jnet%20Analyzer%3A%20the%20log%20panel%20is%20empty.%20Play%20or%20load%20a%20game%20first.%22)%7Delse%20alert(%22Jnet%20Analyzer%3A%20could%20not%20find%20a%20game%20log%20on%20this%20page.%20Open%20a%20finished%20jinteki.net%20game%20first.%22)%3Bfunction%20i(e)%7Bfor(var%20r%3D%22%22%2Ct%3D0%3Bt%3Ce.length%3Bt%2B%3D32768)r%2B%3DString.fromCharCode.apply(null%2Ce.subarray(t%2Ct%2B32768))%3Breturn%20btoa(r).replace(%2F%5C%2B%2Fg%2C%22-%22).replace(%2F%5C%2F%2Fg%2C%22_%22).replace(%2F%3D%2B%24%2F%2C%22%22)%7Dfunction%20s(e)%7Bvar%20r%3D%22https%3A%2F%2Fjinteki.win%2F%23log%3D%22%2Be%3Bn%3Fn.location.href%3Dr%3Awindow.open(r%2C%22_blank%22)%7D%7D()%3B">
+            href="javascript:!function()%7Bvar%20e%3Ddocument.querySelector(%22.log%20.messages%22)%7C%7Cdocument.querySelector(%22div.messages%22)%3Bif(e)%7Bvar%20r%3D%5B%5D%3BArray.prototype.forEach.call(e.children%2Cfunction(e)%7Bif(e.classList.contains(%22system%22))%7Bvar%20t%3De.textContent.replace(%2F%5C%5B%5Cd%7B1%2C2%7D%3A%5Cd%7B2%7D%3A%5Cd%7B2%7D%5C%5D%2Fg%2C%22%22).replace(%2F%5Cs%2B%2Fg%2C%22%20%22).trim()%3Bt%26%26r.push(t)%7Delse%20if(e.classList.contains(%22message%22))%7Bvar%20n%3De.querySelector(%22.content%22)%3Bif(!n)return%3Bvar%20a%3Dn.querySelector(%22.username%22)%2Co%3Da%3Fa.textContent.replace(%2F%5C%5B%5Cd%7B1%2C2%7D%3A%5Cd%7B2%7D%3A%5Cd%7B2%7D%5C%5D%2Fg%2C%22%22).trim()%3A%22%22%2Cl%3Dn.querySelectorAll(%22%3Ascope%20%3E%20div%22)%2Ci%3Dl.length%3Fl%5Bl.length-1%5D.textContent.replace(%2F%5C%5B%5Cd%7B1%2C2%7D%3A%5Cd%7B2%7D%3A%5Cd%7B2%7D%5C%5D%2Fg%2C%22%22).trim()%3A%22%22%3Bo%26%26(r.push(o)%2Cr.push(o))%2Ci%26%26r.push(i)%7D%7D)%3Bvar%20t%3Dr.join(%22%5Cn%22)%3Bif(t)%7Bvar%20n%3Dwindow.open(%22%22%2C%22_blank%22)%3Bn%26%26n.document.write(%22Preparing%20your%20Jnet%20Analyzer%20link...%22)%3Bvar%20a%3D(new%20TextEncoder).encode(t)%3Bif(window.CompressionStream)%7Bvar%20o%3Dnew%20CompressionStream(%22gzip%22)%2Cl%3Do.writable.getWriter()%3Bl.write(a)%2Cl.close()%2Cnew%20Response(o.readable).arrayBuffer().then(function(e)%7Bs(%22gz.%22%2Bi(new%20Uint8Array(e)))%7D).catch(function(e)%7Bn%26%26n.close()%2Calert(%22Jnet%20Analyzer%3A%20could%20not%20compress%20the%20log%20(%22%2Be.message%2B%22).%22)%7D)%7Delse%20s(%22raw.%22%2Bi(a))%7Delse%20alert(%22Jnet%20Analyzer%3A%20the%20log%20panel%20is%20empty.%20Play%20or%20load%20a%20game%20first.%22)%7Delse%20alert(%22Jnet%20Analyzer%3A%20could%20not%20find%20a%20game%20log%20on%20this%20page.%20Open%20a%20finished%20jinteki.net%20game%20first.%22)%3Bfunction%20i(e)%7Bfor(var%20r%3D%22%22%2Ct%3D0%3Bt%3Ce.length%3Bt%2B%3D32768)r%2B%3DString.fromCharCode.apply(null%2Ce.subarray(t%2Ct%2B32768))%3Breturn%20btoa(r).replace(%2F%5C%2B%2Fg%2C%22-%22).replace(%2F%5C%2F%2Fg%2C%22_%22).replace(%2F%3D%2B%24%2F%2C%22%22)%7Dfunction%20s(e)%7Bvar%20r%3D%22https%3A%2F%2Fjinteki.win%2Ftrace%2F%23log%3D%22%2Be%3Bn%3Fn.location.href%3Dr%3Awindow.open(r%2C%22_blank%22)%7D%7D()%3B">
             Analyze this game ↗
           </a>
         </div>
@@ -441,7 +441,7 @@
 
   </div>
 
-  <footer>Parses locally in your browser — nothing is uploaded, unless you use the optional "Shorten link" button, which stores the encoded log on jinteki.win so the short link can be opened later.<br>If this tool's useful, <a href="https://ko-fi.com/inermis2020" target="_blank" rel="noopener">support it on Ko-fi</a>.<br>Also on jinteki.win: <a href="/market-research/">Market Research</a>, tournament card meta.<br>Build: dev</footer>
+  <footer>Parses locally in your browser — nothing is uploaded, unless you use the optional "Shorten link" button, which stores the encoded log on jinteki.win so the short link can be opened later.<br>If this tool's useful, <a href="https://ko-fi.com/inermis2020" target="_blank" rel="noopener">support it on Ko-fi</a>.<br>Also on jinteki.win: <a href="../market-research/">Market Research</a>, tournament card meta.<br>Build: dev</footer>
 </div>
 
 <script>
@@ -3902,7 +3902,7 @@ function warnAgainstBookmarkletClick(e){
   return false;
 }
 
-// The bookmarklet's href hardcodes https://jinteki.win/ as its target. When
+// The bookmarklet's href hardcodes https://jinteki.win/trace/ as its target. When
 // the page is served from somewhere else over http(s) — e.g. the test Worker
 // on workers.dev — point it at that origin instead, so a bookmark dragged
 // from the test site opens games in the test site rather than production.
@@ -3910,8 +3910,8 @@ function warnAgainstBookmarkletClick(e){
 (function retargetBookmarklet(){
   if (!/^https?:$/.test(location.protocol) || location.hostname === 'jinteki.win') return;
   const btn = document.getElementById('bookmarkletBtn');
-  const prod = encodeURIComponent('"https://jinteki.win/#log="');
-  const here = encodeURIComponent('"' + location.origin + '/#log="');
+  const prod = encodeURIComponent('"https://jinteki.win/trace/#log="');
+  const here = encodeURIComponent('"' + location.origin + '/trace/#log="');
   btn.setAttribute('href', btn.getAttribute('href').replace(prod, here));
 })();
 
@@ -3954,7 +3954,7 @@ document.getElementById('clearBtn').addEventListener('click', () => {
 // copy of the page happens to be running from (e.g. a local file or a dev
 // server) — otherwise a link built while testing locally would be useless
 // to anyone else.
-const HOSTED_SITE_URL = 'https://jinteki.win/';
+const HOSTED_SITE_URL = 'https://jinteki.win/trace/';
 
 function bytesToBase64Url(bytes){
   let binary = '';

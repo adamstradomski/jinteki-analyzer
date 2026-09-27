@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; base-uri 'none'; form-action 'none'; object-src 'none'">
+<title>jinteki.win</title>
+<meta name="description" content="Netrunner tools: Trace analyzes jinteki.net game logs, Market Research shows the tournament card meta.">
+<!-- home.js runs first: it forwards old share links (/#log=…) to /trace/ before anything paints. -->
+<script src="home.js"></script>
+<link rel="stylesheet" href="shared/jw/tokens.css">
+<link rel="stylesheet" href="shared/jw/bundle.css">
+<link rel="stylesheet" href="home.css">
+<script src="shared/jw/bundle.js"></script>
+<script src="home-theme.js"></script>
+</head>
+<body class="jw-page">
+<div class="jw-wrap home-wrap">
+  <header class="home-header">
+    <div class="home-topline">
+      <div class="kicker">jinteki.win</div>
+      <div class="jw-controls"><div id="theme-switcher"></div><div id="mode-toggle"></div></div>
+    </div>
+    <h1 class="jw-title">jinteki.win</h1>
+    <p class="lede">Tools for Netrunner players: look back at a game you just played, or see what the tournament meta is doing.</p>
+  </header>
+
+  <main class="home-apps">
+    <section class="panel" aria-labelledby="trace-title">
+      <div class="panel-header"><h2 id="trace-title">Trace</h2></div>
+      <div class="panel-body">
+        <p>Paste a finished jinteki.net game log, or send it over with the bookmarklet, to get turn-by-turn charts,
+          credit and click usage, and a per-card cost breakdown. Logs are parsed in your browser.</p>
+        <a class="btn" href="trace/">Open Trace</a>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="mr-title">
+      <div class="panel-header"><h2 id="mr-title">Market Research</h2></div>
+      <div class="panel-body">
+        <p>Card meta from NSG Netrunner Standard tournaments: the most played cards and identities, trends over time,
+          winrates and top-cut conversion.</p>
+        <a class="btn" href="market-research/">Open Market Research</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="jw-footer home-footer">
+    <p>If these tools are useful, <a href="https://ko-fi.com/inermis2020" target="_blank" rel="noopener">support them on Ko-fi</a>.</p>
+    <p>Fan project, not affiliated with Null Signal Games.</p>
+  </footer>
+</div>
+</body>
+</html>

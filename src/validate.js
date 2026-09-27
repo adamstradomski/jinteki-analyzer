@@ -45,7 +45,7 @@ async function gunzipCapped(bytes) {
   return out;
 }
 
-// Mirrors decodeLogFromUrl() in index.html: the payload must decode to text
+// Mirrors decodeLogFromUrl() in public/trace/index.html: the payload must decode to text
 // that actually looks like a jinteki.net game log.
 export async function validatePayload(payload) {
   if (typeof payload !== 'string' || payload.length > MAX_PAYLOAD_CHARS || !PAYLOAD_RE.test(payload)) {

@@ -1,0 +1,12 @@
+/* Landing page layout. Colours, type and shape come only from the jinteki.win design
+   system tokens (tokens.css) and components (bundle.css); no raw colour values here. */
+
+body { margin: 0; background: var(--bg); }
+.home-wrap { padding: var(--space-5) 16px; box-sizing: border-box; }
+.home-header { margin-bottom: var(--space-4); }
+.home-topline { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2); }
+.home-topline .jw-controls { flex-wrap: wrap; }
+.home-apps { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-4); }
+.home-apps .panel-body p { color: var(--dim); margin: 0 0 var(--space-3); max-width: 60ch; }
+.home-apps .btn { text-decoration: none; display: inline-block; }
+.home-footer { margin-top: var(--space-5); }

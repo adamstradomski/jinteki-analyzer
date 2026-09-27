@@ -125,5 +125,5 @@ sequenceDiagram
 
 The brief describes a `site/` tree. This repository serves the site from `public/` (the existing
 Worker's static-asset directory), so the page lives in `public/market-research/` and the design
-system files in `public/shared/jw/`; the hub (`public/index.html`, the Trace log analyzer) gains
-only a link. CI path filters use those paths.
+system files in `public/shared/jw/`; the landing page (`public/index.html`) links to it, and the Trace log analyzer
+(`public/trace/index.html`) gains only a footer link. CI path filters use those paths.
