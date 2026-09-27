@@ -2,6 +2,7 @@
 pytest
 pytest-cov
 pytest-socket
+pytest-xdist
 respx
 freezegun
 hypothesis
