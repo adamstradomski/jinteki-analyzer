@@ -2,12 +2,193 @@
 
 from __future__ import annotations
 
+import json
+import sys
+from datetime import date
+from enum import StrEnum
+from pathlib import Path
+from typing import Annotated
+
 import typer
+
+from market_research import logs
+from market_research.clock import Clock, FakeClock, SystemClock
+from market_research.config import Settings, load_settings
+from market_research.runner import (
+    EXIT_FAILURE,
+    EXIT_OK,
+    RunResult,
+    Runtime,
+    backfill,
+    default_since,
+    do_compute,
+    do_ingest,
+    do_normalize,
+    dry_run_stores,
+    format_plan,
+    parse_now,
+    plan,
+    run_all,
+)
+from market_research.storage import Stores, stores_from_settings
 
 app = typer.Typer(
     add_completion=False, no_args_is_help=True, help="Market Research tournament card-meta pipeline."
 )
+fixtures_app = typer.Typer(help="Fixture maintenance (manual only; never run in CI).")
+app.add_typer(fixtures_app, name="fixtures")
+log = logs.get("market_research.cli")
+
+
+class Source(StrEnum):
+    abr = "abr"
+    cobra = "cobra"
+    nrdb = "nrdb"
+
+
+DryRun = Annotated[bool, typer.Option("--dry-run", help="Use a LocalObjectStore in a temporary directory.")]
+Fixtures = Annotated[
+    Path | None, typer.Option("--fixtures", hidden=True, help="Serve HTTP from a fixture directory.")
+]
+Now = Annotated[str | None, typer.Option("--now", hidden=True, help="Pin the clock (ISO time with zone).")]
+
+
+def _runtime(dry_run: bool = False, fixtures: Path | None = None, now: str | None = None) -> Runtime:
+    logs.configure()
+    settings: Settings = load_settings()
+    logs.register_secret(
+        settings.r2_secret_access_key.get_secret_value() if settings.r2_secret_access_key else None
+    )
+    logs.register_secret(settings.r2_access_key_id.get_secret_value() if settings.r2_access_key_id else None)
+    clock: Clock = FakeClock(parse_now(now)) if now else SystemClock()
+    if dry_run:
+        stores, root = dry_run_stores()
+        log.info("dry_run_store", path=str(root))
+    else:
+        stores = stores_from_settings(settings)
+    transport = None
+    if fixtures is not None:
+        from market_research.testing import FixtureRoutes, FixtureTransport
+
+        transport = FixtureTransport(FixtureRoutes(fixtures))
+    return Runtime(settings=settings, clock=clock, stores=stores, transport=transport)
+
+
+def _finish(res: RunResult, command: str) -> None:
+    log.info("run_summary", command=command, **res.summary())
+    raise typer.Exit(res.exit_code)
+
+
+@app.command()
+def ingest(
+    budget: Annotated[int | None, typer.Option(help="Requests per host for this run (default 400).")] = None,
+    source: Annotated[Source | None, typer.Option(help="Only this source.")] = None,
+    dry_run: DryRun = False,
+    fixtures: Fixtures = None,
+    now: Now = None,
+) -> None:
+    """Fetch what the frontier says is due, within each host's budget."""
+    rt = _runtime(dry_run, fixtures, now)
+    res = RunResult()
+    do_ingest(rt, res, budget=budget, sources={source.value} if source else None)
+    _finish(res, "ingest")
+
+
+@app.command("normalize")
+def normalize_cmd(fixtures: Fixtures = None, now: Now = None) -> None:
+    """Rebuild the canonical tables from the source records."""
+    rt = _runtime(False, fixtures, now)
+    do_normalize(rt)
+    _finish(RunResult(), "normalize")
+
+
+@app.command()
+def compute(
+    no_publish: Annotated[bool, typer.Option("--no-publish", help="Build and validate only.")] = False,
+    now: Now = None,
+) -> None:
+    """Compute every slice, validate it and publish (manifest last)."""
+    from market_research.publish import PublishError
+
+    rt = _runtime(False, None, now)
+    res = RunResult()
+    try:
+        do_compute(rt, res, publish_it=not no_publish)
+    except PublishError:
+        res.exit_code = EXIT_FAILURE
+    _finish(res, "compute")
+
+
+@app.command("run-all")
+def run_all_cmd(
+    budget: Annotated[int | None, typer.Option(help="Requests per host for this run (default 400).")] = None,
+    dry_run: DryRun = False,
+    fixtures: Fixtures = None,
+    now: Now = None,
+) -> None:
+    """ingest -> normalize -> compute/publish."""
+    rt = _runtime(dry_run, fixtures, now)
+    _finish(run_all(rt, budget=budget), "run-all")
+
+
+@app.command("backfill")
+def backfill_cmd(
+    since: Annotated[
+        str | None,
+        typer.Option(help="Start date YYYY-MM-DD (default: oldest relevant ban list or 24 months)."),
+    ] = None,
+    plan_only: Annotated[
+        bool, typer.Option("--plan", help="Only list, then print requests and duration per host.")
+    ] = False,
+    phase: Annotated[int | None, typer.Option(min=1, max=3, help="Run only this phase.")] = None,
+    dry_run: DryRun = False,
+    fixtures: Fixtures = None,
+    now: Now = None,
+) -> None:
+    """Initial load: no per-run budget, newest and biggest first, publishes after each phase; resumable."""
+    rt = _runtime(dry_run, fixtures, now)
+    today = rt.clock.now().date()
+    start = date.fromisoformat(since) if since else default_since(today, rt.stores)
+    if plan_only:
+        p = plan(rt, start)
+        typer.echo(format_plan(p))
+        log.info("backfill_plan", **p)
+        raise typer.Exit(EXIT_OK)
+    _finish(backfill(rt, start, phase=phase), "backfill")
+
+
+@app.command()
+def report(fixtures: Fixtures = None) -> None:
+    """Print the latest published quality report."""
+    rt = _runtime(False, fixtures, None)
+    stores: Stores = rt.stores
+    manifest = stores.published.get_json("manifest.json")
+    if not isinstance(manifest, dict):
+        typer.echo("No snapshot has been published yet.", err=True)
+        raise typer.Exit(EXIT_FAILURE)
+    rep = stores.published.get_json(manifest["base_path"] + manifest["paths"]["quality"])
+    typer.echo(json.dumps(rep, indent=2, ensure_ascii=False))
+
+
+@fixtures_app.command("refresh")
+def fixtures_refresh(
+    cobra: Annotated[int | None, typer.Option(help="Cobra tournament ID.")] = None,
+    abr: Annotated[int | None, typer.Option(help="ABR tournament ID.")] = None,
+    out: Annotated[Path, typer.Option(help="Output directory for review.")] = Path("tests/fixtures/refresh"),
+) -> None:
+    """Fetch one tournament live, anonymise it with canaries and write fixture files for review."""
+    if (cobra is None) == (abr is None):
+        typer.echo("Give exactly one of --cobra or --abr.", err=True)
+        raise typer.Exit(EXIT_FAILURE)
+    from market_research.fixtures_refresh import refresh
+
+    rt = _runtime(True)
+    written = refresh(rt, out, cobra=cobra, abr=abr)
+    typer.echo(f"wrote {len(written)} files to {out}; review them before committing")
 
 
 def main() -> None:
-    app()
+    try:
+        app()
+    except KeyboardInterrupt:  # pragma: no cover
+        sys.exit(EXIT_FAILURE)

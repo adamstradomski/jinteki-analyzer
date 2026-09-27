@@ -1,6 +1,6 @@
 {
   "schema": "mr.catalog/1",
-  "version": "2026-09-27T0402Z",
+  "version": "2026-09-27T040220Z",
   "restrictions": [
     "standard_ban_list_26_05",
     "standard_balance_update_26_08"

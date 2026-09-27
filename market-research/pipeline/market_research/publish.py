@@ -6,7 +6,7 @@ import json
 import tempfile
 from collections import defaultdict
 from dataclasses import dataclass
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from functools import cache
 from importlib import resources
 from typing import Any
@@ -76,7 +76,15 @@ def encode(obj: Any) -> bytes:
 
 
 def version_of(now: datetime) -> str:
-    return now.strftime("%Y-%m-%dT%H%MZ")
+    return now.strftime("%Y-%m-%dT%H%M%SZ")
+
+
+def free_version(stores: Stores, now: datetime) -> str:
+    """The first second at or after `now` with no published version, so versions never collide."""
+    t = now.replace(microsecond=0)
+    while stores.published.exists(f"v={version_of(t)}/{PATHS['catalog']}"):
+        t += timedelta(seconds=1)
+    return version_of(t)
 
 
 def add_months(month: str, n: int) -> str:
@@ -116,14 +124,19 @@ def _num(v: Any) -> float | int:
 
 class SnapshotBuilder:
     def __init__(
-        self, con: duckdb.DuckDBPyConnection, catalog: Catalog, settings: Settings, now: datetime
+        self,
+        con: duckdb.DuckDBPyConnection,
+        catalog: Catalog,
+        settings: Settings,
+        now: datetime,
+        version: str | None = None,
     ) -> None:
         self.con = con
         self.catalog = catalog
         self.settings = settings
         self.now = now
         self.tiers = tier_config()
-        self.version = version_of(now)
+        self.version = version or version_of(now)
         compute_counts(con, catalog, settings)
         self.cards = _rows(
             con, "card_counts", ["side", "restriction_id", "tier", "month", "card_id"], CARD_COLUMNS
@@ -482,7 +495,7 @@ def build(stores: Stores, settings: Settings, now: datetime) -> tuple[Snapshot, 
         try:
             load_tables(stores.canonical, con, tmp)
             norm_q = stores.canonical.get_json(NORMALIZE_QUALITY_KEY) or {}
-            builder = SnapshotBuilder(con, catalog, settings, now)
+            builder = SnapshotBuilder(con, catalog, settings, now, free_version(stores, now))
             snap = builder.build(quality_report(stores, con, norm_q, settings))
             errors = validate(snap, con)
         finally:
