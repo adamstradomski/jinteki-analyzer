@@ -4,22 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>jinteki.win</title>
+<!-- jinteki.win design system: colours per theme (tokens.css), fonts, shapes and
+     components (bundle.css), and the theme helpers on window.JW (bundle.js). -->
+<link rel="stylesheet" href="ds/tokens.css">
+<link rel="stylesheet" href="ds/bundle.css">
+<script src="ds/bundle.js"></script>
+<script>JW.initTheme();</script>
 <style>
-  :root{
-    --bg: #0d1210;
-    --panel: #131a17;
-    --panel-2: #182019;
-    --line: #24322b;
-    --text: #d8e6dd;
-    --dim: #7f9689;
-    --accent: #4fd6a8;
-    --accent-dim: #2d7a5c;
-    --accent2: #d6a84f;
-    --warn: #d6a84f;
-    --neg: #d97878;
-    --mono: "IBM Plex Mono", "SF Mono", Menlo, Consolas, monospace;
-    --serif: "Source Serif 4", Georgia, serif;
-  }
   *{ box-sizing: border-box; }
   body{
     margin:0; background:var(--bg); color:var(--text);
@@ -29,16 +20,17 @@
   .wrap{ max-width: 1080px; margin: 0 auto; }
 
   header{ margin-bottom: 28px; }
+  .header-top{ display:flex; justify-content:space-between; align-items:center; gap: 12px; flex-wrap: wrap; }
   header .kicker{ font-family: var(--mono); font-size: 13px; color: var(--accent); letter-spacing: 0.02em; }
   header .kicker a{ color: inherit; text-decoration: none; }
   header .kicker a:hover{ text-decoration: underline; }
-  h1{ font-family: var(--serif); font-weight: 600; font-size: 32px; margin: 6px 0 8px; color: var(--text); }
+  h1{ font-family: var(--font-display); font-weight: 600; font-size: 32px; margin: 6px 0 8px; color: var(--text); }
   header p{ color: var(--dim); max-width: 66ch; font-size: 15px; }
 
   .panel{
     background: var(--panel);
     border: 1px solid var(--line);
-    border-radius: 6px;
+    border-radius: var(--radius-lg);
     padding: 20px 22px;
     margin-bottom: 22px;
   }
@@ -53,7 +45,7 @@
   .panel-header:hover .collapse-icon{ color: var(--text); border-color: var(--accent-dim); }
   .collapse-icon{
     font-family: var(--mono); font-size: 13px; color: var(--dim);
-    border: 1px solid var(--line); border-radius: 4px;
+    border: 1px solid var(--line); border-radius: var(--radius-md);
     width: 22px; height: 22px; display:flex; align-items:center; justify-content:center;
     flex-shrink: 0; line-height: 1;
   }
@@ -66,7 +58,7 @@
   .panel h3:first-of-type{ margin-top: 0; }
 
   .player-name{
-    font-family: var(--serif); font-weight: 600; font-size: 21px;
+    font-family: var(--font-display); font-weight: 600; font-size: 21px;
     color: var(--text); margin: 0 0 4px;
   }
   .player-sub{ font-family: var(--mono); font-size: 11.5px; color: var(--dim); margin-bottom: 14px; }
@@ -74,37 +66,26 @@
   textarea{
     width: 100%; min-height: 220px; resize: vertical;
     background: var(--panel-2); color: var(--text);
-    border: 1px solid var(--line); border-radius: 4px;
+    border: 1px solid var(--line); border-radius: var(--radius-md);
     font-family: var(--mono); font-size: 12.5px; padding: 12px;
   }
   textarea:focus{ outline: none; border-color: var(--accent-dim); }
 
   .row{ display:flex; gap:10px; margin-top: 14px; flex-wrap: wrap; align-items:center; }
 
-  button{
-    font-family: var(--mono); font-size: 13px; cursor:pointer;
-    background: var(--accent); color: #06120d; border: none;
-    padding: 10px 18px; border-radius: 4px; font-weight: 600;
-    transition: background 0.15s ease;
-  }
-  button:hover{ background: #6ee6bc; }
-  button.secondary{
-    background: transparent; color: var(--dim);
-    border: 1px solid var(--line);
-    font-weight: 500; padding: 6px 12px; font-size: 12px;
-  }
-  button.secondary:hover{ color: var(--text); border-color: var(--accent-dim); }
+  /* Buttons are .btn / .btn.secondary from the design system (ds/bundle.css). */
+  .btn:disabled{ cursor: default; opacity: 0.6; }
 
   a.bookmarklet-link{
     display: inline-flex; align-items: center; gap: 8px;
     font-family: var(--mono); font-size: 13px; font-weight: 600;
     cursor: grab; text-decoration: none;
-    background: var(--accent); color: #06120d;
-    padding: 10px 18px; border-radius: 4px;
-    transition: background 0.15s ease;
+    background: var(--accent); color: var(--on-accent);
+    padding: 10px 18px; border-radius: var(--radius-md);
+    box-shadow: var(--glow); transition: filter 0.15s;
   }
   a.bookmarklet-link:active{ cursor: grabbing; }
-  a.bookmarklet-link:hover{ background: #6ee6bc; }
+  a.bookmarklet-link:hover{ filter: brightness(1.15); }
 
   .status{ font-family: var(--mono); font-size: 12.5px; color: var(--dim); }
 
@@ -125,11 +106,6 @@
 
   .badges-row{ display:flex; gap: 24px; flex-wrap: wrap; border-top: 1px solid var(--line); padding-top: 14px; }
   .player-badges{ font-family: var(--mono); font-size: 12.5px; display:flex; align-items:center; gap: 8px; }
-  .badge{
-    display:inline-block; font-family: var(--mono); font-size: 10.5px;
-    border: 1px solid var(--accent-dim); color: var(--accent); border-radius: 3px;
-    padding: 2px 7px; letter-spacing: 0.03em;
-  }
 
   table{ width:100%; border-collapse: collapse; font-size: 13.5px; margin-bottom: 6px; }
   th, td{ text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); }
@@ -140,11 +116,11 @@
   th:hover{ color: var(--accent); }
   th.sorted::after{ content: " \2193"; color: var(--accent); }
   th.sorted-asc::after{ content: " \2191"; color: var(--accent); }
-  td.num, th.num{ text-align:right; font-family: var(--mono); }
+  td.num, th.num{ text-align:right; font-family: var(--mono); font-variant-numeric: tabular-nums; }
   td.card{ font-weight: 600; }
   .instance-tag{ font-weight: 400; font-family: var(--mono); font-size: 10.5px; color: var(--dim); }
   td.neg{ color: var(--neg); }
-  td.pos{ color: var(--accent); }
+  td.pos{ color: var(--pos); }
   tr:hover td{ background: var(--panel-2); }
   .empty-note{ color: var(--dim); font-size: 13px; font-family: var(--mono); padding: 8px 0 14px; }
 
@@ -181,20 +157,21 @@
   .caveats{ font-size: 13px; color: var(--dim); }
   .caveats li{ margin-bottom: 6px; }
 
-  .legend{ display:flex; gap: 18px; font-family: var(--mono); font-size: 12px; color: var(--dim); margin-bottom: 10px; }
-  .legend-item{ display:flex; align-items:center; gap: 6px; }
-  .legend-swatch{ width: 12px; height: 3px; display:inline-block; }
+  .legend{ margin-bottom: 10px; }
 
   footer{ text-align:center; color: var(--dim); font-family: var(--mono); font-size: 11.5px; margin-top: 40px; }
   footer a{ color: var(--accent); text-decoration: none; }
   footer a:hover{ text-decoration: underline; }
 </style>
 </head>
-<body>
+<body class="jw-page">
 <div class="wrap">
 
   <header>
-    <div class="kicker"><a href="https://jinteki.win/">jinteki.win</a> / log analysis for jinteki.net</div>
+    <div class="header-top">
+      <div class="kicker"><a href="https://jinteki.win/">jinteki.win</a> / log analysis for jinteki.net</div>
+      <div id="themeSwitcher"></div>
+    </div>
     <p>Paste a game log copied from the jinteki.net chat panel.</p>
   </header>
 
@@ -232,20 +209,20 @@
     <div class="panel-body">
       <textarea id="logInput" placeholder="Paste the full jinteki.net game log here..."></textarea>
       <div class="row">
-        <button id="parseBtn">Parse log</button>
-        <button class="secondary" id="example1Btn">Log example 1</button>
-        <button class="secondary" id="example2Btn">Log example 2</button>
-        <button class="secondary" id="clearBtn">Clear</button>
-        <button class="secondary" id="permalinkBtn">Share link</button>
-        <button class="secondary" id="reportBugBtn" type="button">Report a bug</button>
-        <button class="secondary" id="skipCopyPasteBtn" type="button">How to skip copy-paste</button>
+        <button class="btn" id="parseBtn">Parse log</button>
+        <button class="btn secondary" id="example1Btn">Log example 1</button>
+        <button class="btn secondary" id="example2Btn">Log example 2</button>
+        <button class="btn secondary" id="clearBtn">Clear</button>
+        <button class="btn secondary" id="permalinkBtn">Share link</button>
+        <button class="btn secondary" id="reportBugBtn" type="button">Report a bug</button>
+        <button class="btn secondary" id="skipCopyPasteBtn" type="button">How to skip copy-paste</button>
         <span class="status" id="statusMsg"></span>
       </div>
       <div class="row" id="permalinkRow" style="display:none;">
         <input id="permalinkUrlInput" type="text" readonly
-          style="flex:1;min-width:200px;background:var(--panel-2);color:var(--text);border:1px solid var(--line);border-radius:4px;font-family:var(--mono);font-size:11.5px;padding:8px;">
-        <button class="secondary" id="copyPermalinkBtn">Copy</button>
-        <button class="secondary" id="shortenPermalinkBtn" type="button" title="Stores this log on jinteki.win to get a short link. Unlike the plain share link, the log data leaves your browser.">Shorten link</button>
+          style="flex:1;min-width:200px;background:var(--panel-2);color:var(--text);border:1px solid var(--line);border-radius:var(--radius-md);font-family:var(--mono);font-size:11.5px;padding:8px;">
+        <button class="btn secondary" id="copyPermalinkBtn">Copy</button>
+        <button class="btn secondary" id="shortenPermalinkBtn" type="button" title="Stores this log on jinteki.win to get a short link. Unlike the plain share link, the log data leaves your browser.">Shorten link</button>
       </div>
     </div>
   </div>
@@ -1508,11 +1485,18 @@ const AGENDA_POINTS = {
   'fujii asset retrieval': 3,
   'sisyphus protocol': 2
 };
-const COLORS = ['#4fd6a8', '#d6a84f', '#d97878', '#7fb0d6'];
-const NETRUNNER_COLORS = { corp: '#5b93d9', runner: '#e2585f' };
+// Series colours come from the current theme (design system tokens), so they are
+// resolved at draw time and charts are redrawn when the theme changes.
+function seriesColor(idx){
+  const colors = JW.chartColors();
+  return colors[idx % colors.length];
+}
 
 function getChartColors(data){
-  return data.players.map((p, idx) => NETRUNNER_COLORS[data.playerSide[p]] || COLORS[idx % COLORS.length]);
+  return data.players.map((p, idx) => {
+    const side = data.playerSide[p];
+    return (side === 'corp' || side === 'runner') ? JW.sideColor(side) : seriesColor(idx);
+  });
 }
 
 // Words that signal the start of appended ability/effect text rather than part of a
@@ -2731,7 +2715,7 @@ function renderInstalledTable(tableId, tbody, rows, hideZero){
       `<td class="num">${fmt(r.gained)}</td>` +
       `<td class="num">${fmt(r.cost)}</td>` +
       netCell(r.net) +
-      `<td class="num"><button class="secondary" data-expand-toggle="${rowKey}">${expanded ? '\u2212' : '+'}</button></td>`;
+      `<td class="num"><button class="btn secondary" data-expand-toggle="${rowKey}">${expanded ? '\u2212' : '+'}</button></td>`;
     tbody.appendChild(tr);
 
     if (expanded){
@@ -2775,7 +2759,7 @@ function renderOpsTable(tableId, tbody, rows, hideZero){
       `<td class="num">${fmt(r.totalGain)}</td>` +
       netCell(r.totalNet) +
       `<td>${r.turnsList}</td>` +
-      `<td class="num"><button class="secondary" data-expand-toggle="${rowKey}">${expanded ? '\u2212' : '+'}</button></td>`;
+      `<td class="num"><button class="btn secondary" data-expand-toggle="${rowKey}">${expanded ? '\u2212' : '+'}</button></td>`;
     tbody.appendChild(tr);
 
     if (expanded){
@@ -2860,7 +2844,7 @@ function buildPlayerSections(data){
         <h3>${permTitle}</h3>
         <div class="controls">
           <label class="toggle"><input type="checkbox" data-hidezero="${instTableId}" checked> Hide cards that gained no credits</label>
-          <button class="secondary" data-export="${instTableId}">Export CSV</button>
+          <button class="btn secondary" data-export="${instTableId}">Export CSV</button>
         </div>
       </div>
       <div class="table-scroll"><table id="${instTableId}">
@@ -2885,7 +2869,7 @@ function buildPlayerSections(data){
         <h3>${opsTitle}</h3>
         <div class="controls">
           <label class="toggle"><input type="checkbox" data-hidezero="${opsTableId}" checked> Hide cards that gained no credits</label>
-          <button class="secondary" data-export="${opsTableId}">Export CSV</button>
+          <button class="btn secondary" data-export="${opsTableId}">Export CSV</button>
         </div>
       </div>
       <div class="table-scroll"><table id="${opsTableId}">
@@ -3095,7 +3079,7 @@ function renderLineChart(ids, series, players, rounds, opts){
   }
 
   players.forEach((p, idx) => {
-    const color = (opts.colors && opts.colors[idx]) || COLORS[idx % COLORS.length];
+    const color = (opts.colors && opts.colors[idx]) || seriesColor(idx);
     const s = series[p];
     if (!s) return;
     if (opts.style === 'bar'){
@@ -3124,7 +3108,7 @@ function renderLineChart(ids, series, players, rounds, opts){
   chartDiv.innerHTML = svg;
 
   players.forEach((p, idx) => {
-    const color = (opts.colors && opts.colors[idx]) || COLORS[idx % COLORS.length];
+    const color = (opts.colors && opts.colors[idx]) || seriesColor(idx);
     const div = document.createElement('div');
     div.className = 'legend-item';
     div.innerHTML = `<span class="legend-swatch" style="background:${color};"></span>${p}`;
@@ -3254,6 +3238,11 @@ function runParse(){
   results.style.display = 'block';
   statusMsg.textContent = `Parsed ${text.trim().split(/\r?\n/).length} lines. Players: ${currentData.players.join(', ')}`;
 }
+
+JW.mountThemeSwitcher(document.getElementById('themeSwitcher'));
+document.addEventListener('jw:themechange', () => {
+  if (currentData && !currentData.playerCountError) renderAllCharts(currentData);
+});
 
 document.addEventListener('click', (e) => {
   const header = e.target.closest('.panel-header');

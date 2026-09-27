@@ -1,0 +1,122 @@
+/* jinteki.win design system: tokens.
+   Generated from the design system's tokens.json; do not edit by hand.
+   One block per theme, selected by data-theme on <html>. */
+
+:root {
+  --faction-neutral: #8a9a92;
+  --faction-hb: #9a7fd1;
+  --faction-jinteki: #d9607a;
+  --faction-nbn: #e0b050;
+  --faction-weyland: #5fae8a;
+  --faction-anarch: #e08a4f;
+  --faction-criminal: #6f9fe0;
+  --faction-shaper: #7fc36a;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 14px;
+  --space-4: 22px;
+  --space-5: 40px;
+  --radius-sm: 3px;
+  --radius-md: 4px;
+  --radius-lg: 6px;
+}
+
+:root, [data-theme="jnet"] {
+  --bg: #0d1210;
+  --panel: #131a17;
+  --panel-2: #182019;
+  --line: #24322b;
+  --text: #d8e6dd;
+  --dim: #7f9689;
+  --accent: #4fd6a8;
+  --accent-dim: #2d7a5c;
+  --on-accent: #06120d;
+  --accent2: #d6a84f;
+  --pos: #4fd6a8;
+  --neg: #d97878;
+  --warn: #d6a84f;
+  --corp: #5b93d9;
+  --runner: #e2585f;
+  --chart-1: #4fd6a8;
+  --chart-2: #5b93d9;
+  --chart-3: #d6a84f;
+  --chart-4: #e2585f;
+  --chart-5: #b58be0;
+  --chart-6: #8fc7d6;
+  --glow: none;
+}
+
+[data-theme="icewall"] {
+  --bg: #070b14;
+  --panel: #0c1322;
+  --panel-2: #0f1a2e;
+  --line: #1c2a44;
+  --text: #dfe8f7;
+  --dim: #7d8fae;
+  --accent: #3ad2ff;
+  --accent-dim: #1d5f80;
+  --on-accent: #070b14;
+  --accent2: #b28cff;
+  --pos: #5cf2b0;
+  --neg: #ff7a5c;
+  --warn: #ffc24d;
+  --corp: #6aa6ff;
+  --runner: #ff4d6d;
+  --chart-1: #3ad2ff;
+  --chart-2: #b28cff;
+  --chart-3: #5cf2b0;
+  --chart-4: #ffc24d;
+  --chart-5: #ff7ab8;
+  --chart-6: #9fb3d1;
+  --glow: 0 0 0 1px #1c2a44;
+}
+
+[data-theme="console"] {
+  --bg: #0a0805;
+  --panel: #110d07;
+  --panel-2: #1a1408;
+  --line: #4d3a14;
+  --text: #ffcf7a;
+  --dim: #a8823a;
+  --accent: #ffb000;
+  --accent-dim: #7a5410;
+  --on-accent: #0a0805;
+  --accent2: #c8e66b;
+  --pos: #c8e66b;
+  --neg: #ff6a3d;
+  --warn: #ffb000;
+  --corp: #7fd8ff;
+  --runner: #ff8a5c;
+  --chart-1: #ffb000;
+  --chart-2: #7fd8ff;
+  --chart-3: #c8e66b;
+  --chart-4: #ff8a5c;
+  --chart-5: #e0a0ff;
+  --chart-6: #fff0c8;
+  --glow: 0 0 12px rgba(255, 176, 0, 0.18);
+}
+
+[data-theme="nightcity"] {
+  --bg: #0d0718;
+  --panel: #150c26;
+  --panel-2: #1e1236;
+  --line: #2c1b4a;
+  --text: #efe6ff;
+  --dim: #a293c4;
+  --accent: #ff3df2;
+  --accent-dim: #7a2a8a;
+  --on-accent: #0d0718;
+  --accent2: #37e2ff;
+  --pos: #7dffb2;
+  --neg: #ff6b9a;
+  --warn: #ffd23d;
+  --corp: #37e2ff;
+  --runner: #ff3d7f;
+  --chart-1: #37e2ff;
+  --chart-2: #ff3df2;
+  --chart-3: #ffd23d;
+  --chart-4: #7dffb2;
+  --chart-5: #ff9a3d;
+  --chart-6: #b8a6ff;
+  --glow: 0 0 24px rgba(255, 61, 242, 0.30);
+}
