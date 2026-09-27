@@ -49,7 +49,8 @@ CATALOG_KINDS: tuple[CatalogKind, ...] = (
     "cards",
     "printings",
 )
-PAGE_SIZE: dict[str, int] = {"cards": 10000, "printings": 10000}
+# 500 keeps each page near 2.2 MB, well under max_response_bytes (1000 is already ~4.5 MB).
+PAGE_SIZE: dict[str, int] = {"cards": 500, "printings": 500}
 
 CARD_ATTRS = frozenset({
     "id", "stripped_title", "title", "card_type_id", "side_id", "faction_id", "cost",

@@ -89,9 +89,9 @@
   }
  },
  {
-  "url": "https://api.netrunnerdb.com/api/v3/public/cards?page%5Bnumber%5D=1&page%5Bsize%5D=10000",
+  "url": "https://api.netrunnerdb.com/api/v3/public/cards?page%5Bnumber%5D=1&page%5Bsize%5D=500",
   "status": 200,
-  "file": "api.netrunnerdb.com__api__v3__public__cards__page%5Bnumber%5D-1_page%5Bsize%5D-10000.json",
+  "file": "api.netrunnerdb.com__api__v3__public__cards__page%5Bnumber%5D-1_page%5Bsize%5D-500.json",
   "headers": {
    "Content-Type": "application/json",
    "ETag": "W/\"nrdb3-cards-v1\""
@@ -107,9 +107,9 @@
   }
  },
  {
-  "url": "https://api.netrunnerdb.com/api/v3/public/printings?page%5Bnumber%5D=1&page%5Bsize%5D=10000",
+  "url": "https://api.netrunnerdb.com/api/v3/public/printings?page%5Bnumber%5D=1&page%5Bsize%5D=500",
   "status": 200,
-  "file": "api.netrunnerdb.com__api__v3__public__printings__page%5Bnumber%5D-1_page%5Bsize%5D-10000.json",
+  "file": "api.netrunnerdb.com__api__v3__public__printings__page%5Bnumber%5D-1_page%5Bsize%5D-500.json",
   "headers": {
    "Content-Type": "application/json",
    "ETag": "W/\"nrdb3-printings-v1\""

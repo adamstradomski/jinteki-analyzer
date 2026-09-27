@@ -109,9 +109,10 @@ Findings, including where Cobra differs from the brief:
 ### v3 catalog (`api.netrunnerdb.com/api/v3/public`)
 
 `GET /{card_sets,restrictions,formats,snapshots}?page[number]=1&page[size]=1000` each run
-(conditional), and `GET /{cards,printings}?page[number]=1&page[size]=10000` only when a new card set
+(conditional), and `GET /{cards,printings}?page[number]=<n>&page[size]=500` (about 5 pages each) only when a new card set
 or restriction appears. JSON:API (Graphiti), pagination links on; cards and printings allow page
-sizes up to 10 000.
+sizes up to 10 000, but a full page of either is about 9 MB (1 000 is already about 4.5 MB), over the
+runner's 5 MB response cap, so they are fetched 500 at a time.
 
 Kept: cards (`id`, `title`, `side_id`, `card_type_id`, `faction_id`, `influence_cost`,
 `influence_limit`, `minimum_deck_size`, `deck_limit`, `agenda_points`, `is_unique`, `card_pool_ids`,

@@ -433,8 +433,8 @@ def build_catalog(cd: Cards, used: set[str]) -> None:
         }
     )
     for name, items, size in (
-        ("cards", cards, 10000),
-        ("printings", printings, 10000),
+        ("cards", cards, 500),
+        ("printings", printings, 500),
         ("card_sets", sets, 1000),
         ("formats", formats, 1000),
         ("restrictions", restrictions, 1000),
