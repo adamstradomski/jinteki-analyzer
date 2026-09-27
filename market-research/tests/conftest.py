@@ -26,3 +26,18 @@ def settings() -> Settings:
 @pytest.fixture
 def rng() -> random.Random:
     return random.Random(1234)
+
+
+@pytest.fixture(scope="session")
+def fixture_run(tmp_path_factory):
+    """One ingest + normalize over the recorded fixtures, shared by read-only tests."""
+    from helpers import make_env
+    from market_research.ingest import Ingestor
+    from market_research.normalize import normalize
+
+    root = tmp_path_factory.mktemp("fixture_run")
+    env = make_env(root, FakeClock(NOW))
+    ing = Ingestor(env.settings, env.clock, env.http(), env.stores, parallel=False)
+    ing.run()
+    data, q = normalize(env.stores, env.settings)
+    return env, ing, data, q

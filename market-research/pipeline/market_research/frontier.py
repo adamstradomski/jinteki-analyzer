@@ -110,7 +110,7 @@ class Frontier:
                 fh.write(raw)
             con = duckdb.connect()
             try:
-                rows = con.execute(f"SELECT * FROM read_parquet('{path}') ORDER BY key").fetchall()  # noqa: S608
+                rows = con.execute(f"SELECT * FROM read_parquet('{path}') ORDER BY key").fetchall()
                 cols = [d[0] for d in con.description or []]
             finally:
                 con.close()
@@ -138,10 +138,10 @@ class Frontier:
                 for i in sorted(self.items.values(), key=lambda i: i.key)
             ]
             if rows:
-                con.executemany("INSERT INTO f VALUES (" + ",".join(["?"] * 16) + ")", rows)  # noqa: S608
+                con.executemany("INSERT INTO f VALUES (" + ",".join(["?"] * 16) + ")", rows)
             with tempfile.TemporaryDirectory() as tmp:
                 path = os.path.join(tmp, "f.parquet")
-                con.execute(f"COPY (SELECT * FROM f ORDER BY key) TO '{path}' (FORMAT PARQUET)")  # noqa: S608 - temp path
+                con.execute(f"COPY (SELECT * FROM f ORDER BY key) TO '{path}' (FORMAT PARQUET)")
                 with open(path, "rb") as fh:
                     store.put(FRONTIER_KEY, fh.read(), content_type="application/vnd.apache.parquet")
         finally:
