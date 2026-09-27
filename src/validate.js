@@ -3,8 +3,9 @@
 export const MAX_PAYLOAD_CHARS = 64 * 1024;
 const MAX_DECODED_BYTES = 2 * 1024 * 1024; // zip-bomb guard
 const PAYLOAD_RE = /^(gz|raw)\.[A-Za-z0-9_-]+$/;
-// Same turn-start phrasing the page's parser recognises (turnStartRe).
-const LOG_MARKER = /started (?:his|her|their) turn \d+/;
+// Same turn-start phrasing the page's parser recognises (turnStartRe), with
+// every pronoun jinteki.net can substitute (select-pronoun in say.clj).
+const LOG_MARKER = /started (?:his|her|their|its|faer|nir|vis|eir|hir|zir|xyr|xir) turn \d+/;
 
 export class ValidationError extends Error {}
 
