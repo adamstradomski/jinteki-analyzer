@@ -165,6 +165,9 @@
   @media (max-width: 640px){
     body{ padding: 24px 10px 60px; }
     .panel{ padding: 14px 12px; }
+    /* Console light's title bar runs edge to edge by undoing the panel's
+       desktop padding; match the smaller phone padding instead. */
+    [data-theme="console-light"] .panel-header{ margin: -14px -12px 14px; padding: 6px 12px; }
     table{ font-size: 12.5px; }
     th, td{ padding: 6px 7px; }
     .table-actions .controls{ flex-wrap: wrap; }

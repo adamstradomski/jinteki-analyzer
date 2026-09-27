@@ -191,7 +191,7 @@
 [data-theme^="icewall"] .meter-track { background: repeating-linear-gradient(90deg, var(--panel-2) 0 6px, transparent 6px 8px); }
 [data-theme="icewall-light"] .panel { box-shadow: 0 1px 0 var(--line), 0 12px 28px -20px rgba(10, 20, 38, 0.35); }
 
-/* Console: double-rule frames, bracketed titles. Dark: phosphor glow + scanlines. Light: greenbar printout. */
+/* Console: bracketed VT323 titles. Dark: amber phosphor, double rules, glow + scanlines. Light: Inverse Video. */
 [data-theme^="console"] .panel h2::before, [data-theme^="console"] .panel-title::before { content: "[ "; }
 [data-theme^="console"] .panel h2::after, [data-theme^="console"] .panel-title::after { content: " ]"; }
 [data-theme^="console"] .panel h2, [data-theme^="console"] .panel-title { font-family: var(--font-display); font-size: 22px; font-weight: 400; letter-spacing: 0.04em; }
@@ -201,15 +201,25 @@
 [data-theme="console"] .jw-page, [data-theme="console"].jw-page { text-shadow: 0 0 4px rgba(255, 176, 0, 0.35); }
 [data-theme="console"] .jw-page::after, [data-theme="console"].jw-page::after { content: ""; position: fixed; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.25) 0 1px, transparent 1px 3px); }
 [data-theme="console"] .btn, [data-theme="console"] .side-toggle button[aria-pressed="true"], [data-theme="console"] .theme-switcher button[aria-pressed="true"], [data-theme="console"] .mode-toggle { text-shadow: none; }
-[data-theme="console-light"] .jw-page, [data-theme="console-light"].jw-page { position: relative; background-color: var(--bg); background-image: repeating-linear-gradient(180deg, #e4eedb 0 44px, transparent 44px 88px); }
-[data-theme="console-light"] .jw-page::before, [data-theme="console-light"] .jw-page::after,
-[data-theme="console-light"].jw-page::before, [data-theme="console-light"].jw-page::after { content: ""; position: absolute; top: 0; bottom: 0; width: 24px; pointer-events: none; background: radial-gradient(circle at 12px 14px, #d6cfbc 5px, #b8ac8c 5.5px, transparent 6px) 0 0 / 24px 28px repeat-y; border: 0 dashed #c9bfa3; }
-[data-theme="console-light"] .jw-page::before, [data-theme="console-light"].jw-page::before { left: 0; border-right-width: 1px; }
-[data-theme="console-light"] .jw-page::after, [data-theme="console-light"].jw-page::after { right: 0; border-left-width: 1px; }
-[data-theme="console-light"] .panel { background: rgba(251, 248, 239, 0.72); border: 3px double var(--text); }
-[data-theme="console-light"] .stat { border-left-color: var(--text); }
-[data-theme="console-light"] .meter-track { height: 8px; background: repeating-linear-gradient(90deg, #d8cfb6 0 7px, transparent 7px 9px); }
-[data-theme="console-light"] .meter-fill { background: repeating-linear-gradient(90deg, var(--side, var(--accent)) 0 7px, transparent 7px 9px); }
+/* Console light — Inverse Video: a white screen where headings print as selected terminal lines.
+   Amber #ffb000 is too pale for text on white, so it only fills (bars, buttons, meters) under dark ink #1c1405. */
+[data-theme="console-light"] .panel { border: 2px solid #1c1405; }
+[data-theme="console-light"] .panel-header { margin: -20px -22px 16px; padding: 6px 22px; background: #ffb000; }
+[data-theme="console-light"] .panel h2, [data-theme="console-light"] .panel-title { color: #1c1405; }
+[data-theme="console-light"] .panel-header .collapse-icon, [data-theme="console-light"] .panel-header .btn.chip, [data-theme="console-light"] .panel-header > span { color: #1c1405; border-color: #1c1405; background: transparent; }
+[data-theme="console-light"] .jw-title { display: inline-block; align-self: flex-start; background: #1c1405; color: #ffb000; padding: 4px 12px 0; }
+[data-theme="console-light"] .jw-title::after { content: "█"; color: #ffb000; margin-left: 6px; }
+[data-theme="console-light"] .kicker { color: #1c1405; }
+[data-theme="console-light"] .kicker::before { content: "> "; color: var(--accent); }
+[data-theme="console-light"] .btn:not(.secondary):not(.chip), [data-theme="console-light"] .theme-switcher button[aria-pressed="true"] { background: #ffb000; color: #1c1405; }
+[data-theme="console-light"] .btn.chip[aria-pressed="true"] { background: #ffb000; color: #1c1405; border-color: #1c1405; }
+[data-theme="console-light"] .mode-toggle[aria-checked="true"] .mode-light { background: #ffb000; color: #1c1405; }
+[data-theme="console-light"] .stat { border-left: 4px solid #ffb000; }
+[data-theme="console-light"] .stat .num { color: #1c1405; }
+[data-theme="console-light"] .stat.corp { border-left-color: var(--corp); } [data-theme="console-light"] .stat.runner { border-left-color: var(--runner); }
+[data-theme="console-light"] .stat.corp .num { color: var(--corp); } [data-theme="console-light"] .stat.runner .num { color: var(--runner); }
+[data-theme="console-light"] .meter-track { height: 10px; background: repeating-linear-gradient(90deg, #f3e6c4 0 8px, transparent 8px 10px); }
+[data-theme="console-light"] .meter-fill { background: repeating-linear-gradient(90deg, var(--side, #ffb000) 0 8px, transparent 8px 10px); }
 
 /* Night City: rounded neon — glowing accent edge on panels, pill controls, glowing numbers */
 [data-theme^="nightcity"] .panel h2, [data-theme^="nightcity"] .panel-title { font-family: var(--font-display); font-size: 16px; font-weight: 700; }

@@ -212,27 +212,27 @@
 }
 
 [data-theme="console-light"] {
-  --bg: #fbf8ef;
-  --panel: #fbf8ef;
-  --panel-2: #e4eedb;
-  --line: #b8ac8c;
-  --text: #2a1d05;
-  --dim: #6a5528;
-  --accent: #8a4f00;
-  --accent-dim: #d2b27a;
-  --on-accent: #fbf8ef;
+  --bg: #fffdf7;
+  --panel: #ffffff;
+  --panel-2: #fff3d6;
+  --line: #e3c27a;
+  --text: #1c1405;
+  --dim: #6b5424;
+  --accent: #8f5a00;
+  --accent-dim: #f0cf85;
+  --on-accent: #ffffff;
   --accent2: #3d6b00;
   --pos: #3d6b00;
   --neg: #b3261e;
-  --warn: #8a4f00;
+  --warn: #8f5a00;
   --corp: #0f5a8a;
   --runner: #b3401a;
-  --chart-1: #8a4f00;
+  --chart-1: #b37400;
   --chart-2: #0f5a8a;
   --chart-3: #3d6b00;
   --chart-4: #b3401a;
   --chart-5: #6b3fa0;
-  --chart-6: #6a5528;
+  --chart-6: #6b5424;
   --faction-neutral: #5f6b66;
   --faction-hb: #6b3fa0;
   --faction-jinteki: #b0243a;
