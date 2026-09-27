@@ -1,0 +1,85 @@
+{
+ "cards": [
+  {
+   "nrdb_card_id": "bling",
+   "nrdb_printing_id": "35006",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "carnivore",
+   "nrdb_printing_id": "30003",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "daily_casts",
+   "nrdb_printing_id": "26094",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "direct_access",
+   "nrdb_printing_id": "26028",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "docklands_pass",
+   "nrdb_printing_id": "30013",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "manuel_lattes_de_moura",
+   "nrdb_printing_id": "34075",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "marrow",
+   "nrdb_printing_id": "33006",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "nga",
+   "nrdb_printing_id": "33072",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "num",
+   "nrdb_printing_id": "33073",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "odore",
+   "nrdb_printing_id": "26071",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "rising_tide",
+   "nrdb_printing_id": "35009",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "solidarity_badge",
+   "nrdb_printing_id": "34003",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "sure_gamble",
+   "nrdb_printing_id": "30030",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "whistleblower",
+   "nrdb_printing_id": "26030",
+   "qty": 1
+  }
+ ],
+ "identity": {
+  "nrdb_card_id": "rene_loup_arcemont_party_animal",
+  "nrdb_printing_id": "30001"
+ },
+ "nrdb_uuid": null,
+ "pid": 60202,
+ "record_hash": "sha256:ae9b1daea95bfa11d351fc08cb1f69feaf52494f19a45b43096284712fdc13a9",
+ "schema": "cobra.deck/1",
+ "side": "runner",
+ "stage_visibility": "public",
+ "tournament_id": 5015
+}

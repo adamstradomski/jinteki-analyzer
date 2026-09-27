@@ -1,0 +1,57 @@
+{
+ "items": [
+  {
+   "extra": null,
+   "id": "1",
+   "name": "GNK / Seasonal"
+  },
+  {
+   "extra": null,
+   "id": "10",
+   "name": "National Championship"
+  },
+  {
+   "extra": null,
+   "id": "2",
+   "name": "Store Championship"
+  },
+  {
+   "extra": null,
+   "id": "3",
+   "name": "District Championship"
+  },
+  {
+   "extra": null,
+   "id": "4",
+   "name": "Megacity Championship"
+  },
+  {
+   "extra": null,
+   "id": "5",
+   "name": "Continental Championship"
+  },
+  {
+   "extra": null,
+   "id": "6",
+   "name": "Intercontinental Championship"
+  },
+  {
+   "extra": null,
+   "id": "7",
+   "name": "Circuit Breaker Invitational"
+  },
+  {
+   "extra": null,
+   "id": "8",
+   "name": "Community Tournament"
+  },
+  {
+   "extra": null,
+   "id": "9",
+   "name": "Casual Event"
+  }
+ ],
+ "kind": "tournament_types",
+ "record_hash": "sha256:12d09a7cea982fa10034d85df7adf1f00a3c6d4669a378c13b0d5051a3dee528",
+ "schema": "cobra.catalog/1"
+}

@@ -1,0 +1,22 @@
+{
+ "items": [
+  {
+   "extra": "standard|2026-08-01",
+   "id": "standard_balance_update_26_08",
+   "name": "Standard Balance Update 26.08"
+  },
+  {
+   "extra": "standard|2026-03-13",
+   "id": "standard_ban_list_26_03",
+   "name": "Standard Ban List 26.03"
+  },
+  {
+   "extra": "standard|2026-05-01",
+   "id": "standard_ban_list_26_05",
+   "name": "Standard Ban List 26.05"
+  }
+ ],
+ "kind": "deckbuilding_restrictions",
+ "record_hash": "sha256:fa219bd8b775bc9c6ce666c832f7f7465d9e4937d659b0b9018a38b347cbb57a",
+ "schema": "cobra.catalog/1"
+}

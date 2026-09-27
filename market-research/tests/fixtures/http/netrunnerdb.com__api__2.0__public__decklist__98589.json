@@ -1,0 +1,41 @@
+{
+ "data": [
+  {
+   "id": 98589,
+   "uuid": "0001811d-0000-4000-8000-00000001811d",
+   "date_creation": "2026-09-20T18:30:00+00:00",
+   "date_update": "2026-09-20T18:30:00+00:00",
+   "name": "PII_CANARY_DECKNAME_119",
+   "description": "PII_CANARY_DESCRIPTION_120",
+   "user_id": "PII_CANARY_USER_1234",
+   "user_name": "PII_CANARY_NAME_121",
+   "tournament_badge": true,
+   "cards": {
+    "30010": 1,
+    "34083": 1,
+    "34030": 3,
+    "35014": 3,
+    "35033": 3,
+    "35016": 3,
+    "34081": 3,
+    "34076": 3,
+    "33020": 3,
+    "33077": 3,
+    "26029": 3,
+    "33018": 3,
+    "34012": 3,
+    "30030": 3,
+    "30034": 1,
+    "33079": 2
+   },
+   "mwl_code": null,
+   "votes_count": 3,
+   "favorites_count": 1,
+   "comments_count": 0
+  }
+ ],
+ "total": 1,
+ "success": true,
+ "version_number": "2.0",
+ "last_updated": "2026-09-20T18:30:00+00:00"
+}

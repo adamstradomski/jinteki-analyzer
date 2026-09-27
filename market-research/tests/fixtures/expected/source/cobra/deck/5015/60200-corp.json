@@ -1,0 +1,85 @@
+{
+ "cards": [
+  {
+   "nrdb_card_id": "ansel_2_0",
+   "nrdb_printing_id": "36028",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "djupstad_grid",
+   "nrdb_printing_id": "33102",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "echo",
+   "nrdb_printing_id": "33035",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "elivagar_bifurcation",
+   "nrdb_printing_id": "33031",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "fully_operational",
+   "nrdb_printing_id": "26036",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "hedge_fund",
+   "nrdb_printing_id": "30075",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "orbital_superiority",
+   "nrdb_printing_id": "30068",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "otto_campaign",
+   "nrdb_printing_id": "35040",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "project_ingatan",
+   "nrdb_printing_id": "35038",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "regolith_mining_license",
+   "nrdb_printing_id": "30071",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "sorocaban_blade",
+   "nrdb_printing_id": "34101",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "stegodon_mk_iv",
+   "nrdb_printing_id": "34032",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "tithe",
+   "nrdb_printing_id": "30073",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "whitespace",
+   "nrdb_printing_id": "30074",
+   "qty": 3
+  }
+ ],
+ "identity": {
+  "nrdb_card_id": "haas_bioroid_precision_design",
+  "nrdb_printing_id": "30035"
+ },
+ "nrdb_uuid": null,
+ "pid": 60200,
+ "record_hash": "sha256:d0167b2bc98d244f9d10888f8bdc0ee7d5298b3ef9905c04dcdf9563818b3d5f",
+ "schema": "cobra.deck/1",
+ "side": "corp",
+ "stage_visibility": "public",
+ "tournament_id": 5015
+}

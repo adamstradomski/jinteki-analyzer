@@ -1,0 +1,42 @@
+{
+ "card_sets": [],
+ "cards": [],
+ "formats": [
+  {
+   "active_snapshot_id": "standard_36",
+   "id": "standard",
+   "name": "Standard",
+   "restriction_ids": [
+    "standard_balance_update_26_08",
+    "standard_ban_list_25_08",
+    "standard_ban_list_25_10",
+    "standard_ban_list_25_12",
+    "standard_ban_list_26_03",
+    "standard_ban_list_26_05"
+   ],
+   "snapshot_ids": [
+    "standard_31",
+    "standard_32",
+    "standard_33",
+    "standard_34",
+    "standard_35",
+    "standard_36"
+   ]
+  },
+  {
+   "active_snapshot_id": "startup_1",
+   "id": "startup",
+   "name": "Startup",
+   "restriction_ids": [],
+   "snapshot_ids": [
+    "startup_1"
+   ]
+  }
+ ],
+ "kind": "formats",
+ "printings": [],
+ "record_hash": "sha256:89163b1b9703e006fd0ee2887b3130eb7d654160cbc161ed459320c721b154da",
+ "restrictions": [],
+ "schema": "nrdb.catalog/1",
+ "snapshots": []
+}

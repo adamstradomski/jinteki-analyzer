@@ -1,0 +1,100 @@
+{
+ "cards": [
+  {
+   "nrdb_card_id": "ashen_epilogue",
+   "nrdb_printing_id": "34094",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "asmund_pudlat",
+   "nrdb_printing_id": "33082",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "bahia_bands",
+   "nrdb_printing_id": "34030",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "borrowed_goods",
+   "nrdb_printing_id": "36013",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "carmen",
+   "nrdb_printing_id": "30015",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "hermes",
+   "nrdb_printing_id": "34014",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "maintenance_access",
+   "nrdb_printing_id": "35016",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "mutual_favor",
+   "nrdb_printing_id": "30011",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "pan_weave",
+   "nrdb_printing_id": "33014",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "revolver",
+   "nrdb_printing_id": "33018",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "s_dobrado",
+   "nrdb_printing_id": "34012",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "side_hustle",
+   "nrdb_printing_id": "35034",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "t400_memory_diamond",
+   "nrdb_printing_id": "30031",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "the_back",
+   "nrdb_printing_id": "26082",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "tremolo",
+   "nrdb_printing_id": "33080",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "valentina_ferreira_carvalho",
+   "nrdb_printing_id": "34095",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "verbal_plasticity",
+   "nrdb_printing_id": "30034",
+   "qty": 3
+  }
+ ],
+ "identity": {
+  "nrdb_card_id": "barry_baz_wong_tri_maf_veteran",
+  "nrdb_printing_id": "35012"
+ },
+ "nrdb_uuid": null,
+ "pid": 59695,
+ "record_hash": "sha256:a37f541cbf355d0c5a9b310a2fb2280c0cf78380753832e914e4bfda84123a47",
+ "schema": "cobra.deck/1",
+ "side": "runner",
+ "stage_visibility": "public",
+ "tournament_id": 4990
+}

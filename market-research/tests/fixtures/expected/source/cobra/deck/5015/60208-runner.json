@@ -1,0 +1,90 @@
+{
+ "cards": [
+  {
+   "nrdb_card_id": "amelia_earhart",
+   "nrdb_printing_id": "34083",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "bahia_bands",
+   "nrdb_printing_id": "34030",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "clean_getaway",
+   "nrdb_printing_id": "35014",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "maintenance_access",
+   "nrdb_printing_id": "35016",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "malandragem",
+   "nrdb_printing_id": "34081",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "meeting_of_minds",
+   "nrdb_printing_id": "34076",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "no_free_lunch",
+   "nrdb_printing_id": "33020",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "poison_vial",
+   "nrdb_printing_id": "33077",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "rejig",
+   "nrdb_printing_id": "26029",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "revolver",
+   "nrdb_printing_id": "33018",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "s_dobrado",
+   "nrdb_printing_id": "34012",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "sure_gamble",
+   "nrdb_printing_id": "30030",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "transfer_of_wealth",
+   "nrdb_printing_id": "35017",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "verbal_plasticity",
+   "nrdb_printing_id": "30034",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "zenit_chip_jz_2mj",
+   "nrdb_printing_id": "33079",
+   "qty": 2
+  }
+ ],
+ "identity": {
+  "nrdb_card_id": "zahya_sadeghi_versatile_smuggler",
+  "nrdb_printing_id": "30010"
+ },
+ "nrdb_uuid": null,
+ "pid": 60208,
+ "record_hash": "sha256:c654ae6f40a0747d77f18fc9edf2c945f12562bb639b6d28379093e694718ec3",
+ "schema": "cobra.deck/1",
+ "side": "runner",
+ "stage_visibility": "public",
+ "tournament_id": 5015
+}

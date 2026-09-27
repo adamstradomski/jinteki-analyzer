@@ -1,0 +1,105 @@
+{
+ "cards": [
+  {
+   "nrdb_card_id": "always_have_a_backup_plan",
+   "nrdb_printing_id": "26011",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "backstitching",
+   "nrdb_printing_id": "33019",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "borrowed_goods",
+   "nrdb_printing_id": "36013",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "chrysopoeian_skimming",
+   "nrdb_printing_id": "34011",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "dreamnet",
+   "nrdb_printing_id": "26095",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "laser_pointer",
+   "nrdb_printing_id": "34016",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "lucky_charm",
+   "nrdb_printing_id": "26014",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "open_market",
+   "nrdb_printing_id": "35022",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "overclock",
+   "nrdb_printing_id": "30029",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "reprise",
+   "nrdb_printing_id": "33076",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "s_dobrado",
+   "nrdb_printing_id": "34012",
+   "qty": 2
+  },
+  {
+   "nrdb_card_id": "the_back",
+   "nrdb_printing_id": "26082",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "tranquilizer",
+   "nrdb_printing_id": "30017",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "transfer_of_wealth",
+   "nrdb_printing_id": "35017",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "valentina_ferreira_carvalho",
+   "nrdb_printing_id": "34095",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "wake_implant_v2a_jrj",
+   "nrdb_printing_id": "33078",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "whistleblower",
+   "nrdb_printing_id": "26030",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "word_on_the_street",
+   "nrdb_printing_id": "36025",
+   "qty": 1
+  }
+ ],
+ "identity": {
+  "nrdb_card_id": "barry_baz_wong_tri_maf_veteran",
+  "nrdb_printing_id": "35012"
+ },
+ "nrdb_uuid": null,
+ "pid": 59703,
+ "record_hash": "sha256:91d1bb67a76b64f1de6b1234335794422ee987a3510878cda010de9bf936f28c",
+ "schema": "cobra.deck/1",
+ "side": "runner",
+ "stage_visibility": "public",
+ "tournament_id": 4990
+}

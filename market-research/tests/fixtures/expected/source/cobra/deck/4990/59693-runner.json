@@ -1,0 +1,90 @@
+{
+ "cards": [
+  {
+   "nrdb_card_id": "basilar_synthgland_2kvj",
+   "nrdb_printing_id": "33086",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "beatriz_friere_gonzalez",
+   "nrdb_printing_id": "34028",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "coalescence",
+   "nrdb_printing_id": "34089",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "cybertrooper_talut",
+   "nrdb_printing_id": "27003",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "deep_dive",
+   "nrdb_printing_id": "33022",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "hyperbaric",
+   "nrdb_printing_id": "33026",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "in_the_groove",
+   "nrdb_printing_id": "26020",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "mayfly",
+   "nrdb_printing_id": "30032",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "paules_cafe",
+   "nrdb_printing_id": "26092",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "propeller",
+   "nrdb_printing_id": "33027",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "spree",
+   "nrdb_printing_id": "34086",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "sure_gamble",
+   "nrdb_printing_id": "30030",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "the_artist",
+   "nrdb_printing_id": "26027",
+   "qty": 2
+  },
+  {
+   "nrdb_card_id": "valentina_ferreira_carvalho",
+   "nrdb_printing_id": "34095",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "word_on_the_street",
+   "nrdb_printing_id": "36025",
+   "qty": 1
+  }
+ ],
+ "identity": {
+  "nrdb_card_id": "tao_salonga_telepresence_magician",
+  "nrdb_printing_id": "30019"
+ },
+ "nrdb_uuid": null,
+ "pid": 59693,
+ "record_hash": "sha256:5f1eff7e520a7f8825894d6b5328741503389c29496ca292796ba69b1a155d21",
+ "schema": "cobra.deck/1",
+ "side": "runner",
+ "stage_visibility": "public",
+ "tournament_id": 4990
+}

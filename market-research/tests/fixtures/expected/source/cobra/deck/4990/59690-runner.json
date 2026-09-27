@@ -1,0 +1,85 @@
+{
+ "cards": [
+  {
+   "nrdb_card_id": "arruaceiras_crew",
+   "nrdb_printing_id": "34073",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "audrey_v2",
+   "nrdb_printing_id": "34004",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "fermenter",
+   "nrdb_printing_id": "30007",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "hannah_wheels_pilintra",
+   "nrdb_printing_id": "34008",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "isolation",
+   "nrdb_printing_id": "26001",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "light_the_fire",
+   "nrdb_printing_id": "33009",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "marrow",
+   "nrdb_printing_id": "33006",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "running_hot",
+   "nrdb_printing_id": "33003",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "shred",
+   "nrdb_printing_id": "35005",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "steelskin_scarring",
+   "nrdb_printing_id": "33004",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "strike_fund",
+   "nrdb_printing_id": "34001",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "sure_gamble",
+   "nrdb_printing_id": "30030",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "the_twinning",
+   "nrdb_printing_id": "33010",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "wildcat_strike",
+   "nrdb_printing_id": "30002",
+   "qty": 3
+  }
+ ],
+ "identity": {
+  "nrdb_card_id": "rene_loup_arcemont_party_animal",
+  "nrdb_printing_id": "30001"
+ },
+ "nrdb_uuid": null,
+ "pid": 59690,
+ "record_hash": "sha256:48d32d1ab639cb5fc29b4ecad3451087168fab551bbbd0c0d084d064e3c52a33",
+ "schema": "cobra.deck/1",
+ "side": "runner",
+ "stage_visibility": "public",
+ "tournament_id": 4990
+}

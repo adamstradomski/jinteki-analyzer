@@ -1,0 +1,20 @@
+{
+ "approved": 1,
+ "cardpool": "Vantage Point",
+ "claim_conflict": false,
+ "claim_count": 16,
+ "concluded": true,
+ "country": "Germany",
+ "date": "2026-06-20",
+ "fetched_at": "2026-09-27T04:00:00Z",
+ "format": "standard",
+ "id": 5250,
+ "matchdata": false,
+ "players_count": 20,
+ "record_hash": "sha256:d147dd50809c75f5fde15a76f83ba1162d097406cb7685ead17d4838464b11f3",
+ "schema": "abr.tournament/1",
+ "top_count": 8,
+ "type_id": "17",
+ "winner_corp_identity": null,
+ "winner_runner_identity": null
+}

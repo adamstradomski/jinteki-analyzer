@@ -1,0 +1,156 @@
+{
+ "data": [
+  {
+   "id": "1",
+   "type": "tournament_types",
+   "attributes": {
+    "name": "GNK / Seasonal",
+    "nsg_format": true,
+    "description": null,
+    "created_at": "2025-01-01T00:00:00Z",
+    "updated_at": "2025-01-01T00:00:00Z"
+   },
+   "links": {
+    "self": "https://tournaments.nullsignal.games/api/v1/public/tournament_types/1"
+   }
+  },
+  {
+   "id": "2",
+   "type": "tournament_types",
+   "attributes": {
+    "name": "Store Championship",
+    "nsg_format": true,
+    "description": null,
+    "created_at": "2025-01-01T00:00:00Z",
+    "updated_at": "2025-01-01T00:00:00Z"
+   },
+   "links": {
+    "self": "https://tournaments.nullsignal.games/api/v1/public/tournament_types/2"
+   }
+  },
+  {
+   "id": "3",
+   "type": "tournament_types",
+   "attributes": {
+    "name": "District Championship",
+    "nsg_format": true,
+    "description": null,
+    "created_at": "2025-01-01T00:00:00Z",
+    "updated_at": "2025-01-01T00:00:00Z"
+   },
+   "links": {
+    "self": "https://tournaments.nullsignal.games/api/v1/public/tournament_types/3"
+   }
+  },
+  {
+   "id": "4",
+   "type": "tournament_types",
+   "attributes": {
+    "name": "Megacity Championship",
+    "nsg_format": true,
+    "description": null,
+    "created_at": "2025-01-01T00:00:00Z",
+    "updated_at": "2025-01-01T00:00:00Z"
+   },
+   "links": {
+    "self": "https://tournaments.nullsignal.games/api/v1/public/tournament_types/4"
+   }
+  },
+  {
+   "id": "5",
+   "type": "tournament_types",
+   "attributes": {
+    "name": "Continental Championship",
+    "nsg_format": true,
+    "description": null,
+    "created_at": "2025-01-01T00:00:00Z",
+    "updated_at": "2025-01-01T00:00:00Z"
+   },
+   "links": {
+    "self": "https://tournaments.nullsignal.games/api/v1/public/tournament_types/5"
+   }
+  },
+  {
+   "id": "6",
+   "type": "tournament_types",
+   "attributes": {
+    "name": "Intercontinental Championship",
+    "nsg_format": true,
+    "description": null,
+    "created_at": "2025-01-01T00:00:00Z",
+    "updated_at": "2025-01-01T00:00:00Z"
+   },
+   "links": {
+    "self": "https://tournaments.nullsignal.games/api/v1/public/tournament_types/6"
+   }
+  },
+  {
+   "id": "7",
+   "type": "tournament_types",
+   "attributes": {
+    "name": "Circuit Breaker Invitational",
+    "nsg_format": true,
+    "description": null,
+    "created_at": "2025-01-01T00:00:00Z",
+    "updated_at": "2025-01-01T00:00:00Z"
+   },
+   "links": {
+    "self": "https://tournaments.nullsignal.games/api/v1/public/tournament_types/7"
+   }
+  },
+  {
+   "id": "8",
+   "type": "tournament_types",
+   "attributes": {
+    "name": "Community Tournament",
+    "nsg_format": false,
+    "description": null,
+    "created_at": "2025-01-01T00:00:00Z",
+    "updated_at": "2025-01-01T00:00:00Z"
+   },
+   "links": {
+    "self": "https://tournaments.nullsignal.games/api/v1/public/tournament_types/8"
+   }
+  },
+  {
+   "id": "9",
+   "type": "tournament_types",
+   "attributes": {
+    "name": "Casual Event",
+    "nsg_format": false,
+    "description": null,
+    "created_at": "2025-01-01T00:00:00Z",
+    "updated_at": "2025-01-01T00:00:00Z"
+   },
+   "links": {
+    "self": "https://tournaments.nullsignal.games/api/v1/public/tournament_types/9"
+   }
+  },
+  {
+   "id": "10",
+   "type": "tournament_types",
+   "attributes": {
+    "name": "National Championship",
+    "nsg_format": false,
+    "description": null,
+    "created_at": "2025-01-01T00:00:00Z",
+    "updated_at": "2025-01-01T00:00:00Z"
+   },
+   "links": {
+    "self": "https://tournaments.nullsignal.games/api/v1/public/tournament_types/10"
+   }
+  }
+ ],
+ "links": {
+  "self": "https://tournaments.nullsignal.games/api/v1/public/tournament_types",
+  "first": "https://tournaments.nullsignal.games/api/v1/public/tournament_types?page%5Bnumber%5D=1",
+  "last": "https://tournaments.nullsignal.games/api/v1/public/tournament_types?page%5Bnumber%5D=1"
+ },
+ "meta": {
+  "stats": {
+   "total": {
+    "count": 10
+   }
+  }
+ }
+}

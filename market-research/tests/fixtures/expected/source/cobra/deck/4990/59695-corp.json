@@ -1,0 +1,95 @@
+{
+ "cards": [
+  {
+   "nrdb_card_id": "anemone",
+   "nrdb_printing_id": "33043",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "b_1001",
+   "nrdb_printing_id": "34065",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "cloud_eater",
+   "nrdb_printing_id": "34110",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "cohort_guidance_program",
+   "nrdb_printing_id": "34108",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "flower_sermon",
+   "nrdb_printing_id": "26106",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "flyswatter",
+   "nrdb_printing_id": "35079",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "hedge_fund",
+   "nrdb_printing_id": "30075",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "isaac_liberdade",
+   "nrdb_printing_id": "34129",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "let_them_dream",
+   "nrdb_printing_id": "36066",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "letheia_nisei",
+   "nrdb_printing_id": "26046",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "mavirus",
+   "nrdb_printing_id": "33047",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "mitosis",
+   "nrdb_printing_id": "33046",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "petty_cash",
+   "nrdb_printing_id": "35081",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "phoneutria",
+   "nrdb_printing_id": "34043",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "reaper_function",
+   "nrdb_printing_id": "33107",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "sisyphus_protocol",
+   "nrdb_printing_id": "34106",
+   "qty": 3
+  }
+ ],
+ "identity": {
+  "nrdb_card_id": "jinteki_restoring_humanity",
+  "nrdb_printing_id": "30043"
+ },
+ "nrdb_uuid": null,
+ "pid": 59695,
+ "record_hash": "sha256:49b4cc11c9ad3a6cde0486ea578c8ee0cce844707d972dc0d97baa2c819869e5",
+ "schema": "cobra.deck/1",
+ "side": "corp",
+ "stage_visibility": "public",
+ "tournament_id": 4990
+}

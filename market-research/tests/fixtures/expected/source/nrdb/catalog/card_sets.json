@@ -1,0 +1,78 @@
+{
+ "card_sets": [
+  {
+   "card_cycle_id": "ashes",
+   "date_release": "2019-03-18",
+   "id": "downfall",
+   "name": "Downfall"
+  },
+  {
+   "card_cycle_id": "elevation",
+   "date_release": "2025-04-24",
+   "id": "elevation",
+   "name": "Elevation"
+  },
+  {
+   "card_cycle_id": "borealis",
+   "date_release": "2022-07-22",
+   "id": "midnight_sun",
+   "name": "Midnight Sun"
+  },
+  {
+   "card_cycle_id": "borealis",
+   "date_release": "2022-03-18",
+   "id": "midnight_sun_booster_pack",
+   "name": "Midnight Sun Booster Pack"
+  },
+  {
+   "card_cycle_id": "borealis",
+   "date_release": "2022-12-09",
+   "id": "parhelion",
+   "name": "Parhelion"
+  },
+  {
+   "card_cycle_id": "liberation",
+   "date_release": "2024-03-18",
+   "id": "rebellion_without_rehearsal",
+   "name": "Rebellion Without Rehearsal"
+  },
+  {
+   "card_cycle_id": "system_gateway",
+   "date_release": "2021-03-28",
+   "id": "system_gateway",
+   "name": "System Gateway"
+  },
+  {
+   "card_cycle_id": "liberation",
+   "date_release": "2023-07-31",
+   "id": "the_automata_initiative",
+   "name": "The Automata Initiative"
+  },
+  {
+   "card_cycle_id": "ashes",
+   "date_release": "2019-12-31",
+   "id": "uprising",
+   "name": "Uprising"
+  },
+  {
+   "card_cycle_id": "ashes",
+   "date_release": "2019-09-09",
+   "id": "uprising_booster_pack",
+   "name": "Uprising Booster Pack"
+  },
+  {
+   "card_cycle_id": "vantage_point",
+   "date_release": "2026-03-02",
+   "id": "vantage_point",
+   "name": "Vantage Point"
+  }
+ ],
+ "cards": [],
+ "formats": [],
+ "kind": "card_sets",
+ "printings": [],
+ "record_hash": "sha256:ce70453def9e4c8dc117d556c9cda7ad97fc32733623835fe1c769189d756f8f",
+ "restrictions": [],
+ "schema": "nrdb.catalog/1",
+ "snapshots": []
+}

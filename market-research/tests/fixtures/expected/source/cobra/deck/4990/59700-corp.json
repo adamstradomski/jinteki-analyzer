@@ -1,0 +1,85 @@
+{
+ "cards": [
+  {
+   "nrdb_card_id": "bumi_1_0",
+   "nrdb_printing_id": "35041",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "calvin_b4l3y",
+   "nrdb_printing_id": "26033",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "echo",
+   "nrdb_printing_id": "33035",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "hakarl_1_0",
+   "nrdb_printing_id": "33036",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "hedge_fund",
+   "nrdb_printing_id": "30075",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "hypoxia",
+   "nrdb_printing_id": "33101",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "lamplighter",
+   "nrdb_printing_id": "35080",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "megaprix_qualifier",
+   "nrdb_printing_id": "27004",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "mercia_b4ll4rd",
+   "nrdb_printing_id": "35045",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "project_ingatan",
+   "nrdb_printing_id": "35038",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "refuge_campaign",
+   "nrdb_printing_id": "33033",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "regolith_mining_license",
+   "nrdb_printing_id": "30071",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "send_a_message",
+   "nrdb_printing_id": "30069",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "top_down_solutions",
+   "nrdb_printing_id": "35044",
+   "qty": 3
+  }
+ ],
+ "identity": {
+  "nrdb_card_id": "haas_bioroid_precision_design",
+  "nrdb_printing_id": "30035"
+ },
+ "nrdb_uuid": "9d3f6b2e-0c4a-4e7b-8b1d-5a6c7e8f9012",
+ "pid": 59700,
+ "record_hash": "sha256:15c82f5a6ea2563fc76ba8036b70ee8ab7250a7e074f4d5ac2c9bad7797422b7",
+ "schema": "cobra.deck/1",
+ "side": "corp",
+ "stage_visibility": "public",
+ "tournament_id": 4990
+}

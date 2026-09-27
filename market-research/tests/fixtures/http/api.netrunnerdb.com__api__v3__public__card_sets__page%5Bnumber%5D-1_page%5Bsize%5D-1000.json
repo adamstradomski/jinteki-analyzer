@@ -1,0 +1,225 @@
+{
+ "data": [
+  {
+   "id": "downfall",
+   "type": "card_sets",
+   "attributes": {
+    "name": "Downfall",
+    "date_release": "2019-03-18",
+    "size": 65,
+    "card_cycle_id": "ashes",
+    "card_set_type_id": "data_pack",
+    "legacy_code": "df",
+    "position": 1,
+    "first_printing_id": null,
+    "released_by": "null_signal_games",
+    "updated_at": "2026-08-31T00:00:00Z"
+   },
+   "links": {
+    "self": "https://api.netrunnerdb.com/api/v3/public/card_sets/downfall"
+   }
+  },
+  {
+   "id": "elevation",
+   "type": "card_sets",
+   "attributes": {
+    "name": "Elevation",
+    "date_release": "2025-04-24",
+    "size": 82,
+    "card_cycle_id": "elevation",
+    "card_set_type_id": "core",
+    "legacy_code": "elev",
+    "position": 1,
+    "first_printing_id": null,
+    "released_by": "null_signal_games",
+    "updated_at": "2026-08-31T00:00:00Z"
+   },
+   "links": {
+    "self": "https://api.netrunnerdb.com/api/v3/public/card_sets/elevation"
+   }
+  },
+  {
+   "id": "midnight_sun",
+   "type": "card_sets",
+   "attributes": {
+    "name": "Midnight Sun",
+    "date_release": "2022-07-22",
+    "size": 65,
+    "card_cycle_id": "borealis",
+    "card_set_type_id": "data_pack",
+    "legacy_code": "ms",
+    "position": 2,
+    "first_printing_id": null,
+    "released_by": "null_signal_games",
+    "updated_at": "2026-08-31T00:00:00Z"
+   },
+   "links": {
+    "self": "https://api.netrunnerdb.com/api/v3/public/card_sets/midnight_sun"
+   }
+  },
+  {
+   "id": "midnight_sun_booster_pack",
+   "type": "card_sets",
+   "attributes": {
+    "name": "Midnight Sun Booster Pack",
+    "date_release": "2022-03-18",
+    "size": 7,
+    "card_cycle_id": "borealis",
+    "card_set_type_id": "booster_pack",
+    "legacy_code": "msbp",
+    "position": 1,
+    "first_printing_id": null,
+    "released_by": "null_signal_games",
+    "updated_at": "2026-08-31T00:00:00Z"
+   },
+   "links": {
+    "self": "https://api.netrunnerdb.com/api/v3/public/card_sets/midnight_sun_booster_pack"
+   }
+  },
+  {
+   "id": "parhelion",
+   "type": "card_sets",
+   "attributes": {
+    "name": "Parhelion",
+    "date_release": "2022-12-09",
+    "size": 63,
+    "card_cycle_id": "borealis",
+    "card_set_type_id": "data_pack",
+    "legacy_code": "ph",
+    "position": 3,
+    "first_printing_id": null,
+    "released_by": "null_signal_games",
+    "updated_at": "2026-08-31T00:00:00Z"
+   },
+   "links": {
+    "self": "https://api.netrunnerdb.com/api/v3/public/card_sets/parhelion"
+   }
+  },
+  {
+   "id": "rebellion_without_rehearsal",
+   "type": "card_sets",
+   "attributes": {
+    "name": "Rebellion Without Rehearsal",
+    "date_release": "2024-03-18",
+    "size": 65,
+    "card_cycle_id": "liberation",
+    "card_set_type_id": "data_pack",
+    "legacy_code": "rwr",
+    "position": 2,
+    "first_printing_id": null,
+    "released_by": "null_signal_games",
+    "updated_at": "2026-08-31T00:00:00Z"
+   },
+   "links": {
+    "self": "https://api.netrunnerdb.com/api/v3/public/card_sets/rebellion_without_rehearsal"
+   }
+  },
+  {
+   "id": "system_gateway",
+   "type": "card_sets",
+   "attributes": {
+    "name": "System Gateway",
+    "date_release": "2021-03-28",
+    "size": 77,
+    "card_cycle_id": "system_gateway",
+    "card_set_type_id": "core",
+    "legacy_code": "sg",
+    "position": 1,
+    "first_printing_id": null,
+    "released_by": "null_signal_games",
+    "updated_at": "2026-08-31T00:00:00Z"
+   },
+   "links": {
+    "self": "https://api.netrunnerdb.com/api/v3/public/card_sets/system_gateway"
+   }
+  },
+  {
+   "id": "the_automata_initiative",
+   "type": "card_sets",
+   "attributes": {
+    "name": "The Automata Initiative",
+    "date_release": "2023-07-31",
+    "size": 65,
+    "card_cycle_id": "liberation",
+    "card_set_type_id": "data_pack",
+    "legacy_code": "tai",
+    "position": 1,
+    "first_printing_id": null,
+    "released_by": "null_signal_games",
+    "updated_at": "2026-08-31T00:00:00Z"
+   },
+   "links": {
+    "self": "https://api.netrunnerdb.com/api/v3/public/card_sets/the_automata_initiative"
+   }
+  },
+  {
+   "id": "uprising",
+   "type": "card_sets",
+   "attributes": {
+    "name": "Uprising",
+    "date_release": "2019-12-31",
+    "size": 65,
+    "card_cycle_id": "ashes",
+    "card_set_type_id": "data_pack",
+    "legacy_code": "ur",
+    "position": 3,
+    "first_printing_id": null,
+    "released_by": "null_signal_games",
+    "updated_at": "2026-08-31T00:00:00Z"
+   },
+   "links": {
+    "self": "https://api.netrunnerdb.com/api/v3/public/card_sets/uprising"
+   }
+  },
+  {
+   "id": "uprising_booster_pack",
+   "type": "card_sets",
+   "attributes": {
+    "name": "Uprising Booster Pack",
+    "date_release": "2019-09-09",
+    "size": 7,
+    "card_cycle_id": "ashes",
+    "card_set_type_id": "booster_pack",
+    "legacy_code": "urbp",
+    "position": 2,
+    "first_printing_id": null,
+    "released_by": "null_signal_games",
+    "updated_at": "2026-08-31T00:00:00Z"
+   },
+   "links": {
+    "self": "https://api.netrunnerdb.com/api/v3/public/card_sets/uprising_booster_pack"
+   }
+  },
+  {
+   "id": "vantage_point",
+   "type": "card_sets",
+   "attributes": {
+    "name": "Vantage Point",
+    "date_release": "2026-03-02",
+    "size": 66,
+    "card_cycle_id": "vantage_point",
+    "card_set_type_id": "deluxe",
+    "legacy_code": "vp",
+    "position": 1,
+    "first_printing_id": null,
+    "released_by": "null_signal_games",
+    "updated_at": "2026-08-31T00:00:00Z"
+   },
+   "links": {
+    "self": "https://api.netrunnerdb.com/api/v3/public/card_sets/vantage_point"
+   }
+  }
+ ],
+ "links": {
+  "self": "https://api.netrunnerdb.com/api/v3/public/card_sets",
+  "first": "https://api.netrunnerdb.com/api/v3/public/card_sets?page%5Bnumber%5D=1",
+  "last": "https://api.netrunnerdb.com/api/v3/public/card_sets?page%5Bnumber%5D=1"
+ },
+ "meta": {
+  "stats": {
+   "total": {
+    "count": 11
+   }
+  }
+ }
+}

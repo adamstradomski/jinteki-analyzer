@@ -1,0 +1,131 @@
+{
+ "data": [
+  {
+   "id": "59700",
+   "type": "players",
+   "attributes": {
+    "id": 59700,
+    "tournament_id": 4990,
+    "user_id": "PII_CANARY_USER_1234",
+    "name": "PII_CANARY_NAME_11",
+    "pronouns": "PII_CANARY_PRONOUNS",
+    "active": true,
+    "seed": null,
+    "fixed_table_number": null,
+    "manual_seed": null,
+    "first_round_bye": false,
+    "include_in_stream": true,
+    "registration_locked": true,
+    "corp_identity_id": 100,
+    "runner_identity_id": 204
+   }
+  },
+  {
+   "id": "59701",
+   "type": "players",
+   "attributes": {
+    "id": 59701,
+    "tournament_id": 4990,
+    "user_id": "PII_CANARY_USER_1234",
+    "name": "PII_CANARY_NAME_12",
+    "pronouns": "PII_CANARY_PRONOUNS",
+    "active": true,
+    "seed": null,
+    "fixed_table_number": null,
+    "manual_seed": null,
+    "first_round_bye": false,
+    "include_in_stream": true,
+    "registration_locked": true,
+    "corp_identity_id": 103,
+    "runner_identity_id": 201
+   }
+  },
+  {
+   "id": "59702",
+   "type": "players",
+   "attributes": {
+    "id": 59702,
+    "tournament_id": 4990,
+    "user_id": "PII_CANARY_USER_1234",
+    "name": "PII_CANARY_NAME_13",
+    "pronouns": "PII_CANARY_PRONOUNS",
+    "active": true,
+    "seed": null,
+    "fixed_table_number": null,
+    "manual_seed": null,
+    "first_round_bye": false,
+    "include_in_stream": true,
+    "registration_locked": true,
+    "corp_identity_id": 106,
+    "runner_identity_id": 206
+   }
+  },
+  {
+   "id": "59703",
+   "type": "players",
+   "attributes": {
+    "id": 59703,
+    "tournament_id": 4990,
+    "user_id": "PII_CANARY_USER_1234",
+    "name": "PII_CANARY_NAME_14",
+    "pronouns": "PII_CANARY_PRONOUNS",
+    "active": true,
+    "seed": null,
+    "fixed_table_number": null,
+    "manual_seed": null,
+    "first_round_bye": false,
+    "include_in_stream": true,
+    "registration_locked": true,
+    "corp_identity_id": 101,
+    "runner_identity_id": 203
+   }
+  },
+  {
+   "id": "59704",
+   "type": "players",
+   "attributes": {
+    "id": 59704,
+    "tournament_id": 4990,
+    "user_id": "PII_CANARY_USER_1234",
+    "name": "PII_CANARY_NAME_15",
+    "pronouns": "PII_CANARY_PRONOUNS",
+    "active": true,
+    "seed": null,
+    "fixed_table_number": null,
+    "manual_seed": null,
+    "first_round_bye": false,
+    "include_in_stream": true,
+    "registration_locked": true,
+    "corp_identity_id": 104,
+    "runner_identity_id": 200
+   }
+  },
+  {
+   "id": "59705",
+   "type": "players",
+   "attributes": {
+    "id": 59705,
+    "tournament_id": 4990,
+    "user_id": "PII_CANARY_USER_1234",
+    "name": "PII_CANARY_NAME_16",
+    "pronouns": "PII_CANARY_PRONOUNS",
+    "active": true,
+    "seed": null,
+    "fixed_table_number": null,
+    "manual_seed": null,
+    "first_round_bye": false,
+    "include_in_stream": true,
+    "registration_locked": true,
+    "corp_identity_id": 107,
+    "runner_identity_id": 205
+   }
+  }
+ ],
+ "meta": {
+  "stats": {
+   "total": {
+    "count": 16
+   }
+  }
+ }
+}

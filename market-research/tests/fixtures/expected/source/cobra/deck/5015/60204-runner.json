@@ -1,0 +1,105 @@
+{
+ "cards": [
+  {
+   "nrdb_card_id": "abaasy",
+   "nrdb_printing_id": "33070",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "arruaceiras_crew",
+   "nrdb_printing_id": "34073",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "boi_tata",
+   "nrdb_printing_id": "34071",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "cacophony",
+   "nrdb_printing_id": "35010",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "chain_reaction",
+   "nrdb_printing_id": "36001",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "demolisher",
+   "nrdb_printing_id": "26002",
+   "qty": 2
+  },
+  {
+   "nrdb_card_id": "finality",
+   "nrdb_printing_id": "33066",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "gourmand",
+   "nrdb_printing_id": "35007",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "hannah_wheels_pilintra",
+   "nrdb_printing_id": "34008",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "num",
+   "nrdb_printing_id": "33073",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "paladin_poemu",
+   "nrdb_printing_id": "26073",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "rejig",
+   "nrdb_printing_id": "26029",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "running_hot",
+   "nrdb_printing_id": "33003",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "solidarity_badge",
+   "nrdb_printing_id": "34003",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "sure_gamble",
+   "nrdb_printing_id": "30030",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "take_a_dive",
+   "nrdb_printing_id": "36002",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "trickster_taka",
+   "nrdb_printing_id": "26009",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "utae",
+   "nrdb_printing_id": "26005",
+   "qty": 3
+  }
+ ],
+ "identity": {
+  "nrdb_card_id": "esa_afontov_eco_insurrectionist",
+  "nrdb_printing_id": "33001"
+ },
+ "nrdb_uuid": null,
+ "pid": 60204,
+ "record_hash": "sha256:b0cc5ae6949141309c8972713df32bcceeabfbb4ee72a7072acaf7feb78bbe80",
+ "schema": "cobra.deck/1",
+ "side": "runner",
+ "stage_visibility": "public",
+ "tournament_id": 5015
+}

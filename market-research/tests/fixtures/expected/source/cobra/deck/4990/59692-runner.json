@@ -1,0 +1,100 @@
+{
+ "cards": [
+  {
+   "nrdb_card_id": "abaasy",
+   "nrdb_printing_id": "33070",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "bahia_bands",
+   "nrdb_printing_id": "34030",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "cacophony",
+   "nrdb_printing_id": "35010",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "chastushka",
+   "nrdb_printing_id": "33002",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "corsair",
+   "nrdb_printing_id": "36004",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "daily_casts",
+   "nrdb_printing_id": "26094",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "direct_access",
+   "nrdb_printing_id": "26028",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "docklands_pass",
+   "nrdb_printing_id": "30013",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "eru_ayase_pessoa",
+   "nrdb_printing_id": "34007",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "mayfly",
+   "nrdb_printing_id": "30032",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "paladin_poemu",
+   "nrdb_printing_id": "26073",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "stargate",
+   "nrdb_printing_id": "26004",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "steelskin_scarring",
+   "nrdb_printing_id": "33004",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "sure_gamble",
+   "nrdb_printing_id": "30030",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "the_tungsten_tailor",
+   "nrdb_printing_id": "36003",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "trickster_taka",
+   "nrdb_printing_id": "26009",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "utae",
+   "nrdb_printing_id": "26005",
+   "qty": 3
+  }
+ ],
+ "identity": {
+  "nrdb_card_id": "esa_afontov_eco_insurrectionist",
+  "nrdb_printing_id": "33001"
+ },
+ "nrdb_uuid": null,
+ "pid": 59692,
+ "record_hash": "sha256:851bd4b544a557ad3e448a3402f294f4e8b5c70918bc6ec0fe5b38f086076ca3",
+ "schema": "cobra.deck/1",
+ "side": "runner",
+ "stage_visibility": "public",
+ "tournament_id": 4990
+}

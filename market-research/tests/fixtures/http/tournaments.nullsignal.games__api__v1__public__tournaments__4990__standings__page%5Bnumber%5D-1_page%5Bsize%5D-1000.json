@@ -1,0 +1,283 @@
+{
+ "data": [
+  {
+   "id": "1",
+   "type": "standings",
+   "attributes": {
+    "id": "1",
+    "stage_id": 1,
+    "player_id": 59704,
+    "position": 1,
+    "points": 13,
+    "sos": 3.5,
+    "extended_sos": 3.287,
+    "corp_points": 13,
+    "runner_points": 0,
+    "bye_points": 0,
+    "side_bias": 0
+   }
+  },
+  {
+   "id": "2",
+   "type": "standings",
+   "attributes": {
+    "id": "2",
+    "stage_id": 1,
+    "player_id": 59691,
+    "position": 2,
+    "points": 13,
+    "sos": 3.5,
+    "extended_sos": 3.2222,
+    "corp_points": 7,
+    "runner_points": 6,
+    "bye_points": 0,
+    "side_bias": 0
+   }
+  },
+  {
+   "id": "3",
+   "type": "standings",
+   "attributes": {
+    "id": "3",
+    "stage_id": 1,
+    "player_id": 59696,
+    "position": 3,
+    "points": 13,
+    "sos": 3.2222,
+    "extended_sos": 3.1019,
+    "corp_points": 3,
+    "runner_points": 10,
+    "bye_points": 0,
+    "side_bias": 0
+   }
+  },
+  {
+   "id": "4",
+   "type": "standings",
+   "attributes": {
+    "id": "4",
+    "stage_id": 1,
+    "player_id": 59697,
+    "position": 4,
+    "points": 12,
+    "sos": 3.6667,
+    "extended_sos": 3.1574,
+    "corp_points": 3,
+    "runner_points": 9,
+    "bye_points": 0,
+    "side_bias": 0
+   }
+  },
+  {
+   "id": "5",
+   "type": "standings",
+   "attributes": {
+    "id": "5",
+    "stage_id": 1,
+    "player_id": 59693,
+    "position": 5,
+    "points": 12,
+    "sos": 3.4444,
+    "extended_sos": 3.1389,
+    "corp_points": 9,
+    "runner_points": 3,
+    "bye_points": 0,
+    "side_bias": 0
+   }
+  },
+  {
+   "id": "6",
+   "type": "standings",
+   "attributes": {
+    "id": "6",
+    "stage_id": 1,
+    "player_id": 59703,
+    "position": 6,
+    "points": 11,
+    "sos": 2.6111,
+    "extended_sos": 2.9444,
+    "corp_points": 9,
+    "runner_points": 2,
+    "bye_points": 0,
+    "side_bias": 0
+   }
+  },
+  {
+   "id": "7",
+   "type": "standings",
+   "attributes": {
+    "id": "7",
+    "stage_id": 1,
+    "player_id": 59699,
+    "position": 7,
+    "points": 9,
+    "sos": 3.2778,
+    "extended_sos": 3.0556,
+    "corp_points": 6,
+    "runner_points": 3,
+    "bye_points": 0,
+    "side_bias": 0
+   }
+  },
+  {
+   "id": "8",
+   "type": "standings",
+   "attributes": {
+    "id": "8",
+    "stage_id": 1,
+    "player_id": 59701,
+    "position": 8,
+    "points": 9,
+    "sos": 2.8889,
+    "extended_sos": 2.963,
+    "corp_points": 3,
+    "runner_points": 6,
+    "bye_points": 0,
+    "side_bias": 0
+   }
+  },
+  {
+   "id": "9",
+   "type": "standings",
+   "attributes": {
+    "id": "9",
+    "stage_id": 1,
+    "player_id": 59695,
+    "position": 9,
+    "points": 9,
+    "sos": 2.7222,
+    "extended_sos": 3.0278,
+    "corp_points": 6,
+    "runner_points": 3,
+    "bye_points": 0,
+    "side_bias": 0
+   }
+  },
+  {
+   "id": "10",
+   "type": "standings",
+   "attributes": {
+    "id": "10",
+    "stage_id": 1,
+    "player_id": 59705,
+    "position": 10,
+    "points": 9,
+    "sos": 2.3889,
+    "extended_sos": 2.7685,
+    "corp_points": 9,
+    "runner_points": 0,
+    "bye_points": 0,
+    "side_bias": 0
+   }
+  },
+  {
+   "id": "11",
+   "type": "standings",
+   "attributes": {
+    "id": "11",
+    "stage_id": 1,
+    "player_id": 59692,
+    "position": 11,
+    "points": 6,
+    "sos": 3.0556,
+    "extended_sos": 2.8704,
+    "corp_points": 3,
+    "runner_points": 3,
+    "bye_points": 0,
+    "side_bias": 0
+   }
+  },
+  {
+   "id": "12",
+   "type": "standings",
+   "attributes": {
+    "id": "12",
+    "stage_id": 1,
+    "player_id": 59700,
+    "position": 12,
+    "points": 6,
+    "sos": 2.8333,
+    "extended_sos": 2.7037,
+    "corp_points": 3,
+    "runner_points": 3,
+    "bye_points": 0,
+    "side_bias": 0
+   }
+  },
+  {
+   "id": "13",
+   "type": "standings",
+   "attributes": {
+    "id": "13",
+    "stage_id": 1,
+    "player_id": 59698,
+    "position": 13,
+    "points": 6,
+    "sos": 2.3889,
+    "extended_sos": 2.8056,
+    "corp_points": 0,
+    "runner_points": 6,
+    "bye_points": 0,
+    "side_bias": 0
+   }
+  },
+  {
+   "id": "14",
+   "type": "standings",
+   "attributes": {
+    "id": "14",
+    "stage_id": 1,
+    "player_id": 59702,
+    "position": 14,
+    "points": 6,
+    "sos": 2.1667,
+    "extended_sos": 2.7037,
+    "corp_points": 0,
+    "runner_points": 6,
+    "bye_points": 0,
+    "side_bias": 0
+   }
+  },
+  {
+   "id": "15",
+   "type": "standings",
+   "attributes": {
+    "id": "15",
+    "stage_id": 1,
+    "player_id": 59694,
+    "position": 15,
+    "points": 4,
+    "sos": 3.0,
+    "extended_sos": 2.8056,
+    "corp_points": 4,
+    "runner_points": 0,
+    "bye_points": 0,
+    "side_bias": 0
+   }
+  },
+  {
+   "id": "16",
+   "type": "standings",
+   "attributes": {
+    "id": "16",
+    "stage_id": 1,
+    "player_id": 59690,
+    "position": 16,
+    "points": 3,
+    "sos": 2.3333,
+    "extended_sos": 2.4445,
+    "corp_points": 3,
+    "runner_points": 0,
+    "bye_points": 0,
+    "side_bias": 0
+   }
+  }
+ ],
+ "meta": {
+  "stats": {
+   "total": {
+    "count": 16
+   }
+  }
+ }
+}

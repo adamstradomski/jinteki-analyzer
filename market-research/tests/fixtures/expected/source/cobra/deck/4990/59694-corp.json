@@ -1,0 +1,90 @@
+{
+ "cards": [
+  {
+   "nrdb_card_id": "anvil",
+   "nrdb_printing_id": "33124",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "argus_crackdown",
+   "nrdb_printing_id": "26126",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "biawak",
+   "nrdb_printing_id": "35074",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "business_as_usual",
+   "nrdb_printing_id": "34128",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "clearinghouse",
+   "nrdb_printing_id": "30061",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "hedge_fund",
+   "nrdb_printing_id": "30075",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "let_them_dream",
+   "nrdb_printing_id": "36066",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "measured_response",
+   "nrdb_printing_id": "35078",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "orbital_superiority",
+   "nrdb_printing_id": "30068",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "regolith_mining_license",
+   "nrdb_printing_id": "30071",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "rime",
+   "nrdb_printing_id": "26065",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "sandstone",
+   "nrdb_printing_id": "26059",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "sds_drone_deployment",
+   "nrdb_printing_id": "26056",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "secure_and_protect",
+   "nrdb_printing_id": "26061",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "vulture_fund",
+   "nrdb_printing_id": "36063",
+   "qty": 3
+  }
+ ],
+ "identity": {
+  "nrdb_card_id": "earth_station_sea_headquarters",
+  "nrdb_printing_id": "26120"
+ },
+ "nrdb_uuid": null,
+ "pid": 59694,
+ "record_hash": "sha256:0d2ad72d5d9af0c28f23c29d6b68b002221229eaa7c0a9ec5700da353e0b354c",
+ "schema": "cobra.deck/1",
+ "side": "corp",
+ "stage_visibility": "public",
+ "tournament_id": 4990
+}

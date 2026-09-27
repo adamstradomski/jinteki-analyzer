@@ -69,10 +69,10 @@ src = ["pipeline", "tests"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "S", "SIM", "RUF", "PL", "C4"]
-ignore = ["E501", "PLR0913", "PLR2004", "PLR0912", "PLR0915", "PLR0911", "S101", "RUF001", "RUF002", "RUF003", "PLC0415"]
+ignore = ["E501", "PLR0913", "PLR2004", "PLR0912", "PLR0915", "PLR0911", "S101", "RUF001", "RUF002", "RUF003", "PLC0415", "PLR0917"]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["S", "PLR", "B011"]
+"tests/**" = ["S", "PLR", "B011", "RUF015", "PLW0603", "B023"]
 
 [tool.mypy]
 strict = true

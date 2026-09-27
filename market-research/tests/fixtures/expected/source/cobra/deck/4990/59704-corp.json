@@ -1,0 +1,95 @@
+{
+ "cards": [
+  {
+   "nrdb_card_id": "b_1001",
+   "nrdb_printing_id": "34065",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "charlotte_cacador",
+   "nrdb_printing_id": "34107",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "cohort_guidance_program",
+   "nrdb_printing_id": "34108",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "complete_image",
+   "nrdb_printing_id": "26045",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "front_company",
+   "nrdb_printing_id": "34041",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "fujii_asset_retrieval",
+   "nrdb_printing_id": "34040",
+   "qty": 2
+  },
+  {
+   "nrdb_card_id": "hedge_fund",
+   "nrdb_printing_id": "30075",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "ivik",
+   "nrdb_printing_id": "33045",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "karuna",
+   "nrdb_printing_id": "30047",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "knowledge_seeker",
+   "nrdb_printing_id": "36040",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "proprionegation",
+   "nrdb_printing_id": "35048",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "regolith_mining_license",
+   "nrdb_printing_id": "30071",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "the_powers_that_be",
+   "nrdb_printing_id": "34130",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "tithe",
+   "nrdb_printing_id": "30073",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "vampyronassa",
+   "nrdb_printing_id": "33109",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "vulnerability_audit",
+   "nrdb_printing_id": "26063",
+   "qty": 3
+  }
+ ],
+ "identity": {
+  "nrdb_card_id": "a_teia_ip_recovery",
+  "nrdb_printing_id": "34039"
+ },
+ "nrdb_uuid": null,
+ "pid": 59704,
+ "record_hash": "sha256:cb0c9ba35787938a4876e76ba4c4999d52d239d64b5221169ed9aa90d1a5e8b0",
+ "schema": "cobra.deck/1",
+ "side": "corp",
+ "stage_visibility": "public",
+ "tournament_id": 4990
+}

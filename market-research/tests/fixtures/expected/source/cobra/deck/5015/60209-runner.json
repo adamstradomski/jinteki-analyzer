@@ -1,0 +1,100 @@
+{
+ "cards": [
+  {
+   "nrdb_card_id": "aniccam",
+   "nrdb_printing_id": "26084",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "bahia_bands",
+   "nrdb_printing_id": "34030",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "basilar_synthgland_2kvj",
+   "nrdb_printing_id": "33086",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "burner",
+   "nrdb_printing_id": "34085",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "cordyceps",
+   "nrdb_printing_id": "26086",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "direct_access",
+   "nrdb_printing_id": "26028",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "echelon",
+   "nrdb_printing_id": "30025",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "flux_capacitor",
+   "nrdb_printing_id": "33087",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "hippocampic_mechanocytes",
+   "nrdb_printing_id": "33085",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "pressure_spike",
+   "nrdb_printing_id": "34092",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "ritual",
+   "nrdb_printing_id": "35026",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "simulchip",
+   "nrdb_printing_id": "26085",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "slap_vandal",
+   "nrdb_printing_id": "34026",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "spree",
+   "nrdb_printing_id": "34086",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "sure_gamble",
+   "nrdb_printing_id": "30030",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "telework_contract",
+   "nrdb_printing_id": "30027",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "whistleblower",
+   "nrdb_printing_id": "26030",
+   "qty": 1
+  }
+ ],
+ "identity": {
+  "nrdb_card_id": "lat_ethical_freelancer",
+  "nrdb_printing_id": "26019"
+ },
+ "nrdb_uuid": null,
+ "pid": 60209,
+ "record_hash": "sha256:ec08741a747af09e9811596eaf3c02b03eca14353875cf3652c5c29e08f531d8",
+ "schema": "cobra.deck/1",
+ "side": "runner",
+ "stage_visibility": "public",
+ "tournament_id": 5015
+}

@@ -1,0 +1,95 @@
+{
+ "cards": [
+  {
+   "nrdb_card_id": "aggressive_trendsetting",
+   "nrdb_printing_id": "35037",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "bloop",
+   "nrdb_printing_id": "33098",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "caveat_emptor",
+   "nrdb_printing_id": "36032",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "hedge_fund",
+   "nrdb_printing_id": "30075",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "humanoid_resources",
+   "nrdb_printing_id": "35039",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "petty_cash",
+   "nrdb_printing_id": "35081",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "project_ingatan",
+   "nrdb_printing_id": "35038",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "pulse",
+   "nrdb_printing_id": "33099",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "scatter_field",
+   "nrdb_printing_id": "35042",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "send_a_message",
+   "nrdb_printing_id": "30069",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "shackleton_grid",
+   "nrdb_printing_id": "36065",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "superconducting_hub",
+   "nrdb_printing_id": "30070",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "synchrocyclotron",
+   "nrdb_printing_id": "36027",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "the_powers_that_be",
+   "nrdb_printing_id": "34130",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "top_down_solutions",
+   "nrdb_printing_id": "35044",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "vaporframe_fabricator",
+   "nrdb_printing_id": "26100",
+   "qty": 2
+  }
+ ],
+ "identity": {
+  "nrdb_card_id": "thunderbolt_armaments_peace_through_power",
+  "nrdb_printing_id": "34096"
+ },
+ "nrdb_uuid": null,
+ "pid": 59699,
+ "record_hash": "sha256:1e8285bf17efe1b6d55e08f97f3226ff2e19fe499424fb2858a85a54bab31a36",
+ "schema": "cobra.deck/1",
+ "side": "corp",
+ "stage_visibility": "public",
+ "tournament_id": 4990
+}

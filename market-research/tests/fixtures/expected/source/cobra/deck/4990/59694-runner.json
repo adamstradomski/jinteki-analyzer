@@ -1,0 +1,100 @@
+{
+ "cards": [
+  {
+   "nrdb_card_id": "begemot",
+   "nrdb_printing_id": "33007",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "chain_reaction",
+   "nrdb_printing_id": "36001",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "chastushka",
+   "nrdb_printing_id": "33002",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "daily_casts",
+   "nrdb_printing_id": "26094",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "eye_for_an_eye",
+   "nrdb_printing_id": "34067",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "friend_of_a_friend",
+   "nrdb_printing_id": "34074",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "gachapon",
+   "nrdb_printing_id": "26069",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "hackerspace",
+   "nrdb_printing_id": "36006",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "heliamphora",
+   "nrdb_printing_id": "34072",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "katorga_breakout",
+   "nrdb_printing_id": "33067",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "leech",
+   "nrdb_printing_id": "30008",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "light_the_fire",
+   "nrdb_printing_id": "33009",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "nga",
+   "nrdb_printing_id": "33072",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "rising_tide",
+   "nrdb_printing_id": "35009",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "sure_gamble",
+   "nrdb_printing_id": "30030",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "whistleblower",
+   "nrdb_printing_id": "26030",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "wildcat_strike",
+   "nrdb_printing_id": "30002",
+   "qty": 3
+  }
+ ],
+ "identity": {
+  "nrdb_card_id": "topan_ormas_leader",
+  "nrdb_printing_id": "35002"
+ },
+ "nrdb_uuid": null,
+ "pid": 59694,
+ "record_hash": "sha256:3c4f0afe787a6c04c6c9d58dfed38de4c76dcad68f596304cbcd63d400434296",
+ "schema": "cobra.deck/1",
+ "side": "runner",
+ "stage_visibility": "public",
+ "tournament_id": 4990
+}

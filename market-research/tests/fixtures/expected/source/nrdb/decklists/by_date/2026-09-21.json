@@ -1,0 +1,82 @@
+{
+ "date": "2026-09-21",
+ "decklists": [
+  {
+   "cards": [
+    {
+     "printing_id": "26048",
+     "qty": 3
+    },
+    {
+     "printing_id": "26050",
+     "qty": 3
+    },
+    {
+     "printing_id": "26054",
+     "qty": 3
+    },
+    {
+     "printing_id": "26118",
+     "qty": 3
+    },
+    {
+     "printing_id": "26130",
+     "qty": 3
+    },
+    {
+     "printing_id": "30052",
+     "qty": 1
+    },
+    {
+     "printing_id": "30055",
+     "qty": 2
+    },
+    {
+     "printing_id": "30074",
+     "qty": 3
+    },
+    {
+     "printing_id": "30075",
+     "qty": 3
+    },
+    {
+     "printing_id": "33053",
+     "qty": 3
+    },
+    {
+     "printing_id": "34065",
+     "qty": 3
+    },
+    {
+     "printing_id": "34114",
+     "qty": 3
+    },
+    {
+     "printing_id": "34117",
+     "qty": 3
+    },
+    {
+     "printing_id": "35059",
+     "qty": 3
+    },
+    {
+     "printing_id": "36051",
+     "qty": 3
+    },
+    {
+     "printing_id": "36066",
+     "qty": 3
+    }
+   ],
+   "id": "98592",
+   "identity_printing_id": "35058",
+   "kind": "decklist",
+   "published": "2026-09-21",
+   "record_hash": "sha256:8bafd134705178d61f50a733bf2226eff538338c07afc15501347d4e217a3c48",
+   "schema": "nrdb.decklist/1",
+   "uuid": "00018120-0000-4000-8000-000000018120"
+  }
+ ],
+ "record_hash": "sha256:9ca777cad1c07ff488f4035ed9a31aa4c97e6d6bfcfeafdb3d2239883cd5a313",
+ "schema": "nrdb.by_date/1"
+}

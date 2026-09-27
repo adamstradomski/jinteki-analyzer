@@ -1,0 +1,13 @@
+{
+ "data": [],
+ "meta": {
+  "stats": {
+   "total": {
+    "count": 6
+   }
+  }
+ },
+ "links": {
+  "self": "https://tournaments.nullsignal.games/api/v1/public/tournaments?page[number]=2&page[size]=250"
+ }
+}

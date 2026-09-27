@@ -1,0 +1,90 @@
+{
+ "cards": [
+  {
+   "nrdb_card_id": "anemone",
+   "nrdb_printing_id": "33043",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "cohort_guidance_program",
+   "nrdb_printing_id": "34108",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "empiricist",
+   "nrdb_printing_id": "35052",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "flower_sermon",
+   "nrdb_printing_id": "26106",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "hansei_review",
+   "nrdb_printing_id": "30048",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "hedge_fund",
+   "nrdb_printing_id": "30075",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "jaguarundi",
+   "nrdb_printing_id": "34035",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "la_costa_grid",
+   "nrdb_printing_id": "27005",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "let_them_dream",
+   "nrdb_printing_id": "36066",
+   "qty": 2
+  },
+  {
+   "nrdb_card_id": "longevity_serum",
+   "nrdb_printing_id": "30044",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "neurospike",
+   "nrdb_printing_id": "30049",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "peer_review",
+   "nrdb_printing_id": "35055",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "sericulture_expansion",
+   "nrdb_printing_id": "35049",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "simulation_reset",
+   "nrdb_printing_id": "33110",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "the_red_room",
+   "nrdb_printing_id": "36045",
+   "qty": 3
+  }
+ ],
+ "identity": {
+  "nrdb_card_id": "jinteki_restoring_humanity",
+  "nrdb_printing_id": "30043"
+ },
+ "nrdb_uuid": null,
+ "pid": 59703,
+ "record_hash": "sha256:5a862019d935511839bf77ed9cf6d92296845c6d5eae122a51c13865137e6f75",
+ "schema": "cobra.deck/1",
+ "side": "corp",
+ "stage_visibility": "public",
+ "tournament_id": 4990
+}

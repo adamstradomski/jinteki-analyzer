@@ -1,0 +1,90 @@
+{
+ "cards": [
+  {
+   "nrdb_card_id": "artificial_cryptocrash",
+   "nrdb_printing_id": "33049",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "balanced_coverage",
+   "nrdb_printing_id": "34050",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "capacitor",
+   "nrdb_printing_id": "34116",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "focus_group",
+   "nrdb_printing_id": "26052",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "freedom_of_information",
+   "nrdb_printing_id": "33112",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "hedge_fund",
+   "nrdb_printing_id": "30075",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "idiosyncresis",
+   "nrdb_printing_id": "35061",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "ip_enforcement",
+   "nrdb_printing_id": "35066",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "mestnichestvo",
+   "nrdb_printing_id": "33053",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "nihilo_agent",
+   "nrdb_printing_id": "36049",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "palisade",
+   "nrdb_printing_id": "30072",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "send_a_message",
+   "nrdb_printing_id": "30069",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "shipment_from_vladisibirsk",
+   "nrdb_printing_id": "33119",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "sync_rerouting",
+   "nrdb_printing_id": "26118",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "ubiquitous_vig",
+   "nrdb_printing_id": "33052",
+   "qty": 3
+  }
+ ],
+ "identity": {
+  "nrdb_card_id": "synapse_global_faster_than_thought",
+  "nrdb_printing_id": "35058"
+ },
+ "nrdb_uuid": null,
+ "pid": 59705,
+ "record_hash": "sha256:2049d90c658b9419baeab78cf603f9e58d795b3878869ef969d2a3ba1bfac204",
+ "schema": "cobra.deck/1",
+ "side": "corp",
+ "stage_visibility": "public",
+ "tournament_id": 4990
+}

@@ -1,0 +1,85 @@
+{
+ "cards": [
+  {
+   "nrdb_card_id": "azef_protocol",
+   "nrdb_printing_id": "33058",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "ballista",
+   "nrdb_printing_id": "30062",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "csr_campaign",
+   "nrdb_printing_id": "26064",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "descent",
+   "nrdb_printing_id": "34125",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "end_of_the_line",
+   "nrdb_printing_id": "33125",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "event_horizon",
+   "nrdb_printing_id": "36058",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "hedge_fund",
+   "nrdb_printing_id": "30075",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "luana_campos",
+   "nrdb_printing_id": "36057",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "mutually_assured_destruction",
+   "nrdb_printing_id": "33064",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "off_the_books",
+   "nrdb_printing_id": "35071",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "regolith_mining_license",
+   "nrdb_printing_id": "30071",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "slash_and_burn_agriculture",
+   "nrdb_printing_id": "34057",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "syailendra",
+   "nrdb_printing_id": "35076",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "vulture_fund",
+   "nrdb_printing_id": "36063",
+   "qty": 3
+  }
+ ],
+ "identity": {
+  "nrdb_card_id": "weyland_consortium_built_to_last",
+  "nrdb_printing_id": "30059"
+ },
+ "nrdb_uuid": null,
+ "pid": 60206,
+ "record_hash": "sha256:577c20a8f34c89b962325ae2ad1faf171bd62c03a6b8091f110c82ac0ae27035",
+ "schema": "cobra.deck/1",
+ "side": "corp",
+ "stage_visibility": "public",
+ "tournament_id": 5015
+}

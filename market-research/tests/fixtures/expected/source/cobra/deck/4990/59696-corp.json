@@ -1,0 +1,95 @@
+{
+ "cards": [
+  {
+   "nrdb_card_id": "attini",
+   "nrdb_printing_id": "34042",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "bladderwort",
+   "nrdb_printing_id": "33041",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "blood_in_the_water",
+   "nrdb_printing_id": "33039",
+   "qty": 2
+  },
+  {
+   "nrdb_card_id": "bring_them_home",
+   "nrdb_printing_id": "34112",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "cohort_guidance_program",
+   "nrdb_printing_id": "34108",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "ezam",
+   "nrdb_printing_id": "36039",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "hedge_fund",
+   "nrdb_printing_id": "30075",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "hyoubu_precog_manifold",
+   "nrdb_printing_id": "26110",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "longevity_serum",
+   "nrdb_printing_id": "30044",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "lotus_haze",
+   "nrdb_printing_id": "36037",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "reaper_function",
+   "nrdb_printing_id": "33107",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "regolith_mining_license",
+   "nrdb_printing_id": "30071",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "rime",
+   "nrdb_printing_id": "26065",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "sisyphus_protocol",
+   "nrdb_printing_id": "34106",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "superconducting_hub",
+   "nrdb_printing_id": "30070",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "tatu_bola",
+   "nrdb_printing_id": "34044",
+   "qty": 3
+  }
+ ],
+ "identity": {
+  "nrdb_card_id": "a_teia_ip_recovery",
+  "nrdb_printing_id": "34039"
+ },
+ "nrdb_uuid": null,
+ "pid": 59696,
+ "record_hash": "sha256:3c2df83d4ac00a59e1563f8e2692dc649326d07c1d8398d10a93d29ec22cd1d4",
+ "schema": "cobra.deck/1",
+ "side": "corp",
+ "stage_visibility": "public",
+ "tournament_id": 4990
+}

@@ -1,0 +1,95 @@
+{
+ "cards": [
+  {
+   "nrdb_card_id": "echelon",
+   "nrdb_printing_id": "30025",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "flux_capacitor",
+   "nrdb_printing_id": "33087",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "gamedragon_pro",
+   "nrdb_printing_id": "35027",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "hyperbaric",
+   "nrdb_printing_id": "33026",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "into_the_depths",
+   "nrdb_printing_id": "33023",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "madani",
+   "nrdb_printing_id": "35028",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "rejig",
+   "nrdb_printing_id": "26029",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "rigging_up",
+   "nrdb_printing_id": "33024",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "ritual",
+   "nrdb_printing_id": "35026",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "sure_gamble",
+   "nrdb_printing_id": "30030",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "the_artist",
+   "nrdb_printing_id": "26027",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "umbrella",
+   "nrdb_printing_id": "34027",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "unity",
+   "nrdb_printing_id": "30026",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "urban_art_vernissage",
+   "nrdb_printing_id": "34029",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "valentina_ferreira_carvalho",
+   "nrdb_printing_id": "34095",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "vrcation",
+   "nrdb_printing_id": "30021",
+   "qty": 3
+  }
+ ],
+ "identity": {
+  "nrdb_card_id": "tao_salonga_telepresence_magician",
+  "nrdb_printing_id": "30019"
+ },
+ "nrdb_uuid": null,
+ "pid": 59701,
+ "record_hash": "sha256:ec1629ca62735c22561e6702b4299e3c2996d0d2061d38cd77f6636c8dd51456",
+ "schema": "cobra.deck/1",
+ "side": "runner",
+ "stage_visibility": "public",
+ "tournament_id": 4990
+}
