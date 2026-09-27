@@ -3,22 +3,14 @@
    One block per theme, selected by data-theme on <html>. */
 
 :root {
-  --faction-neutral: #8a9a92;
-  --faction-hb: #9a7fd1;
-  --faction-jinteki: #d9607a;
-  --faction-nbn: #e0b050;
-  --faction-weyland: #5fae8a;
-  --faction-anarch: #e08a4f;
-  --faction-criminal: #6f9fe0;
-  --faction-shaper: #7fc36a;
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 14px;
   --space-4: 22px;
   --space-5: 40px;
-  --radius-sm: 3px;
-  --radius-md: 4px;
-  --radius-lg: 6px;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
 }
 
 :root, [data-theme="jnet"] {
@@ -43,6 +35,14 @@
   --chart-4: #e2585f;
   --chart-5: #b58be0;
   --chart-6: #8fc7d6;
+  --faction-neutral: #8a9a92;
+  --faction-hb: #9a7fd1;
+  --faction-jinteki: #d9607a;
+  --faction-nbn: #e0b050;
+  --faction-weyland: #5fae8a;
+  --faction-anarch: #e08a4f;
+  --faction-criminal: #6f9fe0;
+  --faction-shaper: #7fc36a;
   --glow: none;
 }
 
@@ -68,6 +68,14 @@
   --chart-4: #ffc24d;
   --chart-5: #ff7ab8;
   --chart-6: #9fb3d1;
+  --faction-neutral: #8a9a92;
+  --faction-hb: #9a7fd1;
+  --faction-jinteki: #d9607a;
+  --faction-nbn: #e0b050;
+  --faction-weyland: #5fae8a;
+  --faction-anarch: #e08a4f;
+  --faction-criminal: #6f9fe0;
+  --faction-shaper: #7fc36a;
   --glow: 0 0 0 1px #1c2a44;
 }
 
@@ -93,6 +101,14 @@
   --chart-4: #ff8a5c;
   --chart-5: #e0a0ff;
   --chart-6: #fff0c8;
+  --faction-neutral: #8a9a92;
+  --faction-hb: #9a7fd1;
+  --faction-jinteki: #d9607a;
+  --faction-nbn: #e0b050;
+  --faction-weyland: #5fae8a;
+  --faction-anarch: #e08a4f;
+  --faction-criminal: #6f9fe0;
+  --faction-shaper: #7fc36a;
   --glow: 0 0 12px rgba(255, 176, 0, 0.18);
 }
 
@@ -118,5 +134,145 @@
   --chart-4: #7dffb2;
   --chart-5: #ff9a3d;
   --chart-6: #b8a6ff;
+  --faction-neutral: #8a9a92;
+  --faction-hb: #9a7fd1;
+  --faction-jinteki: #d9607a;
+  --faction-nbn: #e0b050;
+  --faction-weyland: #5fae8a;
+  --faction-anarch: #e08a4f;
+  --faction-criminal: #6f9fe0;
+  --faction-shaper: #7fc36a;
   --glow: 0 0 24px rgba(255, 61, 242, 0.30);
+}
+
+[data-theme="jnet-light"] {
+  --bg: #f3f6f4;
+  --panel: #ffffff;
+  --panel-2: #e7eee9;
+  --line: #cfd9d3;
+  --text: #0d1a14;
+  --dim: #52665b;
+  --accent: #0b7a55;
+  --accent-dim: #7cc3a6;
+  --on-accent: #ffffff;
+  --accent2: #8f6000;
+  --pos: #0b7a55;
+  --neg: #b83838;
+  --warn: #8f6000;
+  --corp: #2458b0;
+  --runner: #c0303a;
+  --chart-1: #0b7a55;
+  --chart-2: #2458b0;
+  --chart-3: #a87000;
+  --chart-4: #c0303a;
+  --chart-5: #7a4fb5;
+  --chart-6: #2a7f99;
+  --faction-neutral: #5f6b66;
+  --faction-hb: #6b3fa0;
+  --faction-jinteki: #b0243a;
+  --faction-nbn: #8a6100;
+  --faction-weyland: #2e6b4f;
+  --faction-anarch: #b3501a;
+  --faction-criminal: #2e5fb8;
+  --faction-shaper: #2f7a33;
+  --glow: none;
+}
+
+[data-theme="icewall-light"] {
+  --bg: #f3f6fb;
+  --panel: #ffffff;
+  --panel-2: #eaf0f8;
+  --line: #cdd8ea;
+  --text: #0a1426;
+  --dim: #52627f;
+  --accent: #0072a8;
+  --accent-dim: #8fc3de;
+  --on-accent: #ffffff;
+  --accent2: #6d4fd1;
+  --pos: #0a7a52;
+  --neg: #c0392b;
+  --warn: #9a5b00;
+  --corp: #2455c9;
+  --runner: #d0223f;
+  --chart-1: #0072a8;
+  --chart-2: #6d4fd1;
+  --chart-3: #0a7a52;
+  --chart-4: #b36b00;
+  --chart-5: #c2185b;
+  --chart-6: #5c6f91;
+  --faction-neutral: #5f6b66;
+  --faction-hb: #6b3fa0;
+  --faction-jinteki: #b0243a;
+  --faction-nbn: #8a6100;
+  --faction-weyland: #2e6b4f;
+  --faction-anarch: #b3501a;
+  --faction-criminal: #2e5fb8;
+  --faction-shaper: #2f7a33;
+  --glow: 0 0 0 1px #cdd8ea;
+}
+
+[data-theme="console-light"] {
+  --bg: #fbf8ef;
+  --panel: #fbf8ef;
+  --panel-2: #e4eedb;
+  --line: #b8ac8c;
+  --text: #2a1d05;
+  --dim: #6a5528;
+  --accent: #8a4f00;
+  --accent-dim: #d2b27a;
+  --on-accent: #fbf8ef;
+  --accent2: #3d6b00;
+  --pos: #3d6b00;
+  --neg: #b3261e;
+  --warn: #8a4f00;
+  --corp: #0f5a8a;
+  --runner: #b3401a;
+  --chart-1: #8a4f00;
+  --chart-2: #0f5a8a;
+  --chart-3: #3d6b00;
+  --chart-4: #b3401a;
+  --chart-5: #6b3fa0;
+  --chart-6: #6a5528;
+  --faction-neutral: #5f6b66;
+  --faction-hb: #6b3fa0;
+  --faction-jinteki: #b0243a;
+  --faction-nbn: #8a6100;
+  --faction-weyland: #2e6b4f;
+  --faction-anarch: #b3501a;
+  --faction-criminal: #2e5fb8;
+  --faction-shaper: #2f7a33;
+  --glow: none;
+}
+
+[data-theme="nightcity-light"] {
+  --bg: #faf7ff;
+  --panel: #ffffff;
+  --panel-2: #f3edff;
+  --line: #e2d6f7;
+  --text: #1a0f2e;
+  --dim: #6a5a8a;
+  --accent: #b0149f;
+  --accent-dim: #e7a6df;
+  --on-accent: #ffffff;
+  --accent2: #006d8f;
+  --pos: #0a7d52;
+  --neg: #c42b4a;
+  --warn: #8f5c00;
+  --corp: #006d8f;
+  --runner: #d4145a;
+  --chart-1: #006d8f;
+  --chart-2: #b0149f;
+  --chart-3: #8f5c00;
+  --chart-4: #0a7d52;
+  --chart-5: #d4145a;
+  --chart-6: #6a5a8a;
+  --faction-neutral: #5f6b66;
+  --faction-hb: #6b3fa0;
+  --faction-jinteki: #b0243a;
+  --faction-nbn: #8a6100;
+  --faction-weyland: #2e6b4f;
+  --faction-anarch: #b3501a;
+  --faction-criminal: #2e5fb8;
+  --faction-shaper: #2f7a33;
+  --glow: 0 8px 20px -8px rgba(176, 20, 159, 0.55);
 }
