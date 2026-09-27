@@ -50,6 +50,10 @@ LINKS_KEY = "state/cobra_abr_codes.json"
 DISCOVERY_PRIORITY = 10_000_000.0
 BY_DATE_PRIORITY = 5_000_000.0
 BY_DATE_WINDOW = (-1, 14)  # days around an event in which its decklists are usually published
+# Cobra's index is sorted by ID (creation order), not by event date, and some events are created
+# long after the date they carry. Discovery therefore stops on creation date, with this much slack
+# for events created well before they are played; older-dated events are skipped one by one.
+COBRA_CREATED_SLACK = timedelta(days=366)
 
 SOURCE_GROUP = {"abr": "abr", "cobra": "cobra", "nrdb": "nrdb"}
 
@@ -530,15 +534,27 @@ class Ingestor:
                 raise ParseError("not a JSON:API document")
             data = doc["data"]
             for item in data:
-                meta, private = cobra.parse_index_item(item, self.quality, fetched)
+                try:
+                    meta, private = cobra.parse_index_item(item, self.quality, fetched)
+                except ParseError as e:
+                    # One bad event (seen live: date "20260-05-21") must not hide the rest of the index.
+                    raw_id = str(item.get("id")) if isinstance(item, dict) else ""
+                    item_id = raw_id if raw_id.isdigit() and len(raw_id) <= 9 else "unknown"
+                    self.quality.add_quarantine(
+                        f"cobra:index:{item_id}", f"ParseError: {e}", str(item).encode()
+                    )
+                    continue
                 key = f"cobra:tournament:{meta.id}"
                 if self.frontier.get(key) is not None:
                     stop = True  # newest first: everything after this is known
                     break
                 d = date.fromisoformat(meta.date)
                 if self.since and d < self.since:
-                    stop = True
-                    break
+                    created = cobra.created_date(item)
+                    if created is not None and created < self.since - COBRA_CREATED_SLACK:
+                        stop = True
+                        break
+                    continue
                 if d > self.today:
                     continue  # not played yet; seen again next run
                 if private:

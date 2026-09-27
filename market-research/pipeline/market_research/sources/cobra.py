@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from datetime import date
 from typing import Any
 
 from selectolax.parser import HTMLParser
@@ -146,6 +147,14 @@ def parse_index_item(item: dict[str, Any], q: IngestQuality, fetched_at: str) ->
         stage=_enum(a.get("stage"), {"swiss", "double_elim", "single_elim"}),
     )
     return rec.hashed(), as_bool(a.get("private"))
+
+
+def created_date(item: dict[str, Any]) -> date | None:
+    """The index item's creation date, or None when it is missing or unreadable."""
+    try:
+        return date.fromisoformat(parse_date(attributes(item).get("created_at")))
+    except ValueError:  # ParseError included
+        return None
 
 
 def _enum(value: object, allowed: set[str]) -> str | None:

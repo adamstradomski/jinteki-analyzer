@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import copy
+import json
 import random
 from datetime import date
 
+import httpx
 import pytest
 
 from helpers import make_env
@@ -114,3 +117,39 @@ class _Transport(FixtureTransport):
 
     def handle_request(self, request):
         return self.fn(request)
+
+
+def test_plan_skips_misdated_cobra_event_without_stopping(tmp_path, clock):
+    # Seen live: Cobra's index is sorted by ID, and a newly created event can carry an old date.
+    # It is skipped; the events listed after it are still discovered.
+    env = make_env(tmp_path, clock)
+    index = (
+        "https://tournaments.nullsignal.games/api/v1/public/tournaments"
+        "?page[number]=1&page[size]=250&sort=-id"
+    )
+    doc = json.loads(env.routes.body(index))
+    misdated = copy.deepcopy(doc["data"][0])
+    misdated["id"] = "5024"
+    misdated["attributes"].update(id=5024, date="2024-02-03", created_at="2026-09-02T10:00:00Z")
+    doc["data"].insert(1, misdated)
+    env.routes.override(index, httpx.Response(200, json=doc))
+    p = plan(rt(env), SINCE)
+    assert p["hosts"]["cobra"]["requests"] == {"0": 5, "1": 3 + 16 + 10, "2": 0, "3": 0}
+
+
+def test_plan_quarantines_unparsable_cobra_event_and_keeps_listing(tmp_path, clock):
+    # Seen live: one Cobra event had the date "20260-05-21".
+    env = make_env(tmp_path, clock)
+    index = (
+        "https://tournaments.nullsignal.games/api/v1/public/tournaments"
+        "?page[number]=1&page[size]=250&sort=-id"
+    )
+    doc = json.loads(env.routes.body(index))
+    broken = copy.deepcopy(doc["data"][0])
+    broken["id"] = "5024"
+    broken["attributes"].update(id=5024, date="20260-05-21")
+    doc["data"].insert(1, broken)
+    env.routes.override(index, httpx.Response(200, json=doc))
+    p = plan(rt(env), SINCE)
+    assert p["hosts"]["cobra"]["requests"] == {"0": 5, "1": 3 + 16 + 10, "2": 0, "3": 0}
+    assert '"key": "cobra:index:5024"' in env.log.getvalue()
