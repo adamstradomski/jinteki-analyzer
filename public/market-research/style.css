@@ -1,0 +1,79 @@
+/* Market Research page layout. Colours, type and shape come only from the jinteki.win design
+   system tokens (tokens.css) and components (bundle.css); no raw colour values here. */
+
+body { margin: 0; background: var(--bg); }
+.mr-wrap { padding: var(--space-5) 16px var(--space-5); box-sizing: border-box; }
+.mr-header { margin-bottom: var(--space-4); }
+.mr-topline { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2); }
+.mr-topline .jw-controls { flex-wrap: wrap; }
+.mr-panels { display: flex; flex-direction: column; gap: var(--space-4); }
+.mr-status { font-family: var(--font-mono); font-size: 13px; color: var(--dim); margin: 0 0 var(--space-4); }
+.mr-note { color: var(--dim); font-size: 13px; margin: 0 0 var(--space-3); max-width: 80ch; }
+
+.mr-filters { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: flex-end; margin-bottom: var(--space-3); }
+.mr-filters .select { min-width: 150px; }
+.mr-stats { margin-top: var(--space-3); }
+
+.mr-scroll { overflow-x: auto; }
+.mr-scroll .data-table { min-width: 560px; }
+.data-table th .mr-sort {
+  all: unset; cursor: pointer; font: inherit; color: inherit; border-radius: var(--radius-sm);
+}
+.data-table th .mr-sort:hover { color: var(--accent); }
+.data-table .meter { min-width: 120px; }
+.data-table .meter .num { min-width: 4.5em; text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.data-table tr.mr-insufficient td { color: var(--dim); }
+.data-table tr.mr-insufficient td.pos, .data-table tr.mr-insufficient td.neg { color: var(--dim); }
+.data-table td.card .faction { font-weight: 400; }
+.mr-link {
+  all: unset; cursor: pointer; font: inherit; color: inherit; font-weight: 600; border-radius: var(--radius-sm);
+}
+.mr-link:hover { color: var(--accent); text-decoration: underline; }
+.mr-more { margin-top: var(--space-3); }
+
+/* Visible focus in every theme: the accent ring on everything focusable. */
+.mr-sort:focus-visible, .mr-link:focus-visible, .mr-x:focus-visible, .select:focus-visible, .input:focus-visible,
+.mr-alt summary:focus-visible, a:focus-visible, .mr-option[aria-selected="true"] {
+  outline: 2px solid var(--accent); outline-offset: 2px;
+}
+
+.mr-combo { position: relative; max-width: 480px; }
+.mr-combo .input { width: 100%; box-sizing: border-box; }
+.mr-options {
+  position: absolute; z-index: 5; left: 0; right: 0; margin: 4px 0 0; padding: 4px; list-style: none;
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: var(--radius-md);
+}
+.mr-option { display: flex; justify-content: space-between; gap: var(--space-2); padding: 6px 8px; cursor: pointer; font-size: 13.5px; }
+.mr-option:hover, .mr-option[aria-selected="true"] { background: var(--panel); }
+
+.mr-chipbar { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: flex-end; justify-content: space-between; margin-bottom: var(--space-3); }
+.mr-chips { display: flex; flex-wrap: wrap; gap: var(--space-1); }
+.mr-chip { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--text); }
+.mr-x { all: unset; cursor: pointer; padding: 0 2px; color: var(--dim); }
+.mr-x:hover { color: var(--accent); }
+.mr-inline .select { min-width: 200px; }
+
+.mr-chart { margin: var(--space-2) 0; min-height: 60px; }
+.mr-chart svg { display: block; overflow: visible; }
+.mr-label { fill: var(--text); }
+.mr-alt { margin-top: var(--space-2); font-family: var(--font-mono); font-size: 12px; color: var(--dim); }
+.mr-alt summary { cursor: pointer; }
+.mr-alt .data-table { margin-top: var(--space-2); }
+
+.mr-tip {
+  position: absolute; z-index: 10; pointer-events: none; max-width: 280px;
+  background: var(--panel-2); color: var(--text); border: 1px solid var(--line); border-radius: var(--radius-md);
+  padding: 6px 9px; font-family: var(--font-mono); font-size: 11.5px; line-height: 1.5;
+}
+.mr-tip-title { color: var(--accent); }
+
+.mr-detail-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-2); margin-bottom: var(--space-3); }
+.mr-detail-title { margin: 0; font-family: var(--font-body); font-size: 18px; color: var(--text); text-transform: none; letter-spacing: 0; }
+
+.mr-footer { margin-top: var(--space-5); }
+.mr-footer p { margin: 0 0 var(--space-2); }
+
+@media (max-width: 640px) {
+  .mr-wrap { padding-top: var(--space-4); }
+  .mr-filters .field, .mr-filters .select { width: 100%; }
+}

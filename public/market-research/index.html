@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' https://data.jinteki.win; img-src 'self' data:; base-uri 'none'; form-action 'none'; object-src 'none'">
+<title>Market Research · jinteki.win</title>
+<meta name="description" content="Card meta from NSG Netrunner Standard tournaments: most played cards, trends, winrates and top-cut conversion.">
+<link rel="stylesheet" href="/shared/jw/tokens.css">
+<link rel="stylesheet" href="/shared/jw/bundle.css">
+<link rel="stylesheet" href="style.css">
+<script src="/shared/jw/bundle.js"></script>
+<script src="theme-init.js"></script>
+<script type="module" src="app.js"></script>
+</head>
+<body class="jw-page">
+<div class="jw-wrap mr-wrap">
+  <header class="mr-header">
+    <div class="mr-topline">
+      <div class="kicker"><a href="/">jinteki.win</a> / market-research</div>
+      <div class="jw-controls"><div id="theme-switcher"></div><div id="mode-toggle"></div></div>
+    </div>
+    <h1 class="jw-title">Market Research</h1>
+    <p class="lede">Card meta from NSG Netrunner Standard tournaments: what gets played, how it does, and what makes the top cut.</p>
+  </header>
+
+  <p id="status" class="mr-status" role="status" aria-live="polite">Loading data…</p>
+
+  <main id="app" class="mr-panels" hidden>
+    <section class="panel" id="filters" aria-labelledby="filters-title">
+      <div class="panel-header"><h2 id="filters-title">Filters</h2></div>
+      <div class="panel-body">
+        <div class="mr-filters">
+          <div class="field"><span>Side</span><div id="side-toggle"></div></div>
+          <label class="field">Ban list<select id="f-restriction" class="select"></select></label>
+          <label class="field">Tier<select id="f-tier" class="select"></select></label>
+          <label class="field">From<select id="f-from" class="select"></select></label>
+          <label class="field">To<select id="f-to" class="select"></select></label>
+          <div class="field"><span>&nbsp;</span><button type="button" id="f-reset" class="btn secondary">Reset filters</button></div>
+        </div>
+        <p id="period-note" class="mr-note"></p>
+        <div class="summary-grid mr-stats" id="stats"></div>
+      </div>
+    </section>
+
+    <section class="panel" id="search-panel" aria-labelledby="search-title">
+      <div class="panel-header"><h2 id="search-title">Card search</h2></div>
+      <div class="panel-body">
+        <div class="mr-combo">
+          <label class="field" for="card-search">Card
+            <input id="card-search" class="input" type="search" autocomplete="off" spellcheck="false"
+              placeholder="Type a card name" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="card-options">
+          </label>
+          <ul id="card-options" class="mr-options" role="listbox" hidden></ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="played" aria-labelledby="played-title">
+      <div class="panel-header"><h2 id="played-title">Most played cards</h2><div class="header-controls"><button type="button" class="collapse-icon" aria-label="Collapse section">−</button></div></div>
+      <div class="panel-body"><div id="played-body"></div></div>
+    </section>
+
+    <section class="panel" id="identities" aria-labelledby="identities-title">
+      <div class="panel-header"><h2 id="identities-title">Identities</h2><div class="header-controls"><button type="button" class="collapse-icon" aria-label="Collapse section">−</button></div></div>
+      <div class="panel-body"><p id="identities-note" class="mr-note"></p><div id="identities-body"></div></div>
+    </section>
+
+    <section class="panel" id="trends" aria-labelledby="trends-title">
+      <div class="panel-header"><h2 id="trends-title">Trends</h2><div class="header-controls"><button type="button" class="collapse-icon" aria-label="Collapse section">−</button></div></div>
+      <div class="panel-body">
+        <h3>Monthly inclusion</h3>
+        <div class="mr-chipbar"><div id="trend-chips" class="mr-chips"></div>
+          <label class="field mr-inline">Add card<select id="trend-add" class="select"></select></label></div>
+        <div id="trend-legend" class="legend"></div>
+        <div id="trend-chart" class="mr-chart"></div>
+        <details class="mr-alt"><summary>Show as a table</summary><div id="trend-table"></div></details>
+      </div>
+    </section>
+
+    <section class="panel" id="scatter" aria-labelledby="scatter-title">
+      <div class="panel-header"><h2 id="scatter-title">Popularity vs winrate</h2><div class="header-controls"><button type="button" class="collapse-icon" aria-label="Collapse section">−</button></div></div>
+      <div class="panel-body">
+        <p class="mr-note">Inclusion against winrate difference from the side's baseline. Point size shows games; hollow points are below the minimum sample and are not labelled.</p>
+        <div id="scatter-chart" class="mr-chart"></div>
+        <details class="mr-alt"><summary>Show as a table</summary><div id="scatter-table"></div></details>
+      </div>
+    </section>
+
+    <section class="panel" id="winrate" aria-labelledby="winrate-title">
+      <div class="panel-header"><h2 id="winrate-title">Winrate</h2><div class="header-controls"><button type="button" class="collapse-icon" aria-label="Collapse section">−</button></div></div>
+      <div class="panel-body"><p id="winrate-note" class="mr-note"></p><div id="winrate-body"></div></div>
+    </section>
+
+    <section class="panel" id="conversion" aria-labelledby="conversion-title">
+      <div class="panel-header"><h2 id="conversion-title">Top-cut conversion</h2><div class="header-controls"><button type="button" class="collapse-icon" aria-label="Collapse section">−</button></div></div>
+      <div class="panel-body"><p id="conversion-note" class="mr-note"></p><div id="conversion-body"></div></div>
+    </section>
+
+    <section class="panel" id="detail" aria-labelledby="detail-title" hidden>
+      <div class="panel-header"><h2 id="detail-title">Card detail</h2><div class="header-controls"><button type="button" id="detail-close" class="btn chip">Close detail</button></div></div>
+      <div class="panel-body"><div id="detail-body"></div></div>
+    </section>
+  </main>
+
+  <footer class="jw-footer mr-footer">
+    <p id="quality"></p>
+    <p>Tournament results from <a href="https://alwaysberunning.net" rel="noopener">AlwaysBeRunning.net</a> and
+      <a href="https://tournaments.nullsignal.games" rel="noopener">NSG Cobra</a>; decklists and card data from
+      <a href="https://netrunnerdb.com" rel="noopener">NetrunnerDB</a>. No personal data is collected or published.</p>
+    <p>Fan project, not affiliated with Null Signal Games. <a href="/">Back to jinteki.win</a></p>
+  </footer>
+</div>
+<div id="tip" class="mr-tip" role="tooltip" hidden></div>
+</body>
+</html>

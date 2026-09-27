@@ -62,4 +62,4 @@ jobs:
         with:
           node-version: "22"
       - name: data.js against the pipeline's golden snapshot
-        run: node --test market-research/tests/ui/
+        run: node --test market-research/tests/ui/*.test.mjs
