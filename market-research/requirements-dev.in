@@ -1,0 +1,12 @@
+-r requirements.in
+pytest
+pytest-cov
+pytest-socket
+respx
+freezegun
+hypothesis
+ruff
+mypy
+types-jsonschema
+boto3-stubs[s3]
+pip-audit
