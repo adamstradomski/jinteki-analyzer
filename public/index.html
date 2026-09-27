@@ -223,6 +223,21 @@
   footer{ text-align:center; color: var(--dim); font-family: var(--mono); font-size: 11.5px; margin-top: 40px; }
   footer a{ color: var(--accent); text-decoration: none; }
   footer a:hover{ text-decoration: underline; }
+
+  /* Reserves space for #results while a shared log is being decoded/parsed from
+     the URL hash, so revealing it doesn't produce a large, late layout shift. */
+  #results.loading{ min-height: 640px; position: relative; }
+  #results.loading .panel{ visibility: hidden; }
+  .results-spinner{ display:none; }
+  #results.loading .results-spinner{
+    display:flex; position:absolute; inset:0; align-items:center; justify-content:center;
+    flex-direction:column; gap:10px; color: var(--dim); font-family: var(--mono); font-size:13px;
+  }
+  .spinner-ring{
+    width:28px; height:28px; border:2px solid var(--line); border-top-color: var(--accent);
+    border-radius:50%; animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin{ to{ transform: rotate(360deg); } }
 </style>
 </head>
 <body>
@@ -286,6 +301,8 @@
   </div>
 
   <div id="results" style="display:none;">
+
+    <div class="results-spinner"><div class="spinner-ring"></div><span>Loading shared game…</span></div>
 
     <div class="panel">
       <div class="panel-header"><h2>Game summary</h2><span class="collapse-icon">−</span></div>
@@ -4115,6 +4132,10 @@ document.getElementById('shortenPermalinkBtn').addEventListener('click', async (
   const hash = location.hash;
   if (!hash.startsWith('#log=')) return;
   const encoded = hash.slice(5);
+  // Reserve #results' space up front (synchronously, before the await below
+  // yields) so revealing it after decode/parse doesn't cause a large CLS hit.
+  results.classList.add('loading');
+  results.style.display = 'block';
   try {
     statusMsg.textContent = 'Decoding shared log…';
     const text = await decodeLogFromUrl(decodeURIComponent(encoded));
@@ -4122,7 +4143,10 @@ document.getElementById('shortenPermalinkBtn').addEventListener('click', async (
     runParse();
     statusMsg.textContent += ' Loaded from shared link.';
   } catch (e) {
+    results.style.display = 'none';
     statusMsg.textContent = 'Could not load the log from this link: ' + e.message;
+  } finally {
+    results.classList.remove('loading');
   }
 })();
 </script>
