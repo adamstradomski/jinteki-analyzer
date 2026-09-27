@@ -5,10 +5,12 @@ from __future__ import annotations
 import json
 
 import httpx
+import pytest
 
 from helpers import make_env
 from market_research.frontier import Frontier
 from market_research.ingest import Ingestor
+from market_research.sources.common import ParseError, opt_printing
 from market_research.testing import normalize_url
 
 
@@ -192,3 +194,11 @@ def test_live_tournament_rechecked_and_decks_wait(tmp_path, clock):
     assert any(
         i.kind == "cobra_deck" for i in ing2.frontier.items.values() if i.entity_id.startswith("4990:")
     )
+
+
+def test_abr_string_null_identity_is_missing():
+    # Seen live on alwaysberunning.net: one event had winner_corp_identity "null" (a string).
+    assert opt_printing("null") is None
+    assert opt_printing("34096") == "34096"
+    with pytest.raises(ParseError):
+        opt_printing("nul")

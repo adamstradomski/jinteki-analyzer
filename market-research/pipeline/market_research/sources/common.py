@@ -88,7 +88,8 @@ def as_bool(value: object) -> bool:
 
 
 def opt_printing(value: object) -> str | None:
-    if value is None or value == "":
+    # ABR sometimes sends the string "null" instead of JSON null for a missing identity.
+    if value is None or value in ("", "null"):
         return None
     s = str(value)
     if not PRINTING_ID.match(s):
