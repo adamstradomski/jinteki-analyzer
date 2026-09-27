@@ -4,22 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>jinteki.win</title>
+<!-- jinteki.win design system: colours per theme (tokens.css), fonts, shapes and
+     components (bundle.css), and the theme helpers on window.JW (bundle.js). -->
+<link rel="stylesheet" href="shared/jw/tokens.css">
+<link rel="stylesheet" href="shared/jw/bundle.css">
+<script src="shared/jw/bundle.js"></script>
+<script>JW.initTheme();</script>
 <style>
-  :root{
-    --bg: #0d1210;
-    --panel: #131a17;
-    --panel-2: #182019;
-    --line: #24322b;
-    --text: #d8e6dd;
-    --dim: #7f9689;
-    --accent: #4fd6a8;
-    --accent-dim: #2d7a5c;
-    --accent2: #d6a84f;
-    --warn: #d6a84f;
-    --neg: #d97878;
-    --mono: "IBM Plex Mono", "SF Mono", Menlo, Consolas, monospace;
-    --serif: "Source Serif 4", Georgia, serif;
-  }
   *{ box-sizing: border-box; }
   body{
     margin:0; background:var(--bg); color:var(--text);
@@ -29,16 +20,18 @@
   .wrap{ max-width: 1080px; margin: 0 auto; }
 
   header{ margin-bottom: 28px; }
+  .header-top{ display:flex; justify-content:space-between; align-items:center; gap: 12px; flex-wrap: wrap; }
+  .header-top .jw-controls{ flex-wrap: wrap; }
   header .kicker{ font-family: var(--mono); font-size: 13px; color: var(--accent); letter-spacing: 0.02em; }
   header .kicker a{ color: inherit; text-decoration: none; }
   header .kicker a:hover{ text-decoration: underline; }
-  h1{ font-family: var(--serif); font-weight: 600; font-size: 32px; margin: 6px 0 8px; color: var(--text); }
+  h1{ font-family: var(--font-display); font-weight: 600; font-size: 32px; margin: 6px 0 8px; color: var(--text); }
   header p{ color: var(--dim); max-width: 66ch; font-size: 15px; }
 
   .panel{
     background: var(--panel);
     border: 1px solid var(--line);
-    border-radius: 6px;
+    border-radius: var(--radius-lg);
     padding: 20px 22px;
     margin-bottom: 22px;
   }
@@ -53,10 +46,15 @@
   .panel-header:hover .collapse-icon{ color: var(--text); border-color: var(--accent-dim); }
   .collapse-icon{
     font-family: var(--mono); font-size: 13px; color: var(--dim);
-    border: 1px solid var(--line); border-radius: 4px;
+    border: 1px solid var(--line); border-radius: var(--radius-md);
     width: 22px; height: 22px; display:flex; align-items:center; justify-content:center;
     flex-shrink: 0; line-height: 1;
   }
+  .header-controls{ display:flex; align-items:center; gap: 8px; flex-shrink: 0; }
+  /* The value-labels toggle is a design system chip (.btn.chip, shared/jw/bundle.css). */
+  .value-labels-toggle{ white-space: nowrap; line-height: 1; }
+  .value-labels-toggle:hover{ color: var(--text); border-color: var(--accent-dim); }
+  .panel.collapsed .value-labels-toggle{ display: none; }
   .panel.collapsed .panel-body{ display: none; }
   .panel.collapsed .panel-header{ margin-bottom: 0; }
   .panel h3{
@@ -65,8 +63,11 @@
   }
   .panel h3:first-of-type{ margin-top: 0; }
 
+  /* Keep the player's name at the left of its panel header, ahead of the
+     Beanstalk girder stripe that the design system inserts there. */
+  .panel .panel-header > .player-head{ order: 0; margin-right: auto; }
   .player-name{
-    font-family: var(--serif); font-weight: 600; font-size: 21px;
+    font-family: var(--font-display); font-weight: 600; font-size: 21px;
     color: var(--text); margin: 0 0 4px;
   }
   .player-sub{ font-family: var(--mono); font-size: 11.5px; color: var(--dim); margin-bottom: 14px; }
@@ -74,37 +75,26 @@
   textarea{
     width: 100%; min-height: 220px; resize: vertical;
     background: var(--panel-2); color: var(--text);
-    border: 1px solid var(--line); border-radius: 4px;
+    border: 1px solid var(--line); border-radius: var(--radius-md);
     font-family: var(--mono); font-size: 12.5px; padding: 12px;
   }
   textarea:focus{ outline: none; border-color: var(--accent-dim); }
 
   .row{ display:flex; gap:10px; margin-top: 14px; flex-wrap: wrap; align-items:center; }
 
-  button{
-    font-family: var(--mono); font-size: 13px; cursor:pointer;
-    background: var(--accent); color: #06120d; border: none;
-    padding: 10px 18px; border-radius: 4px; font-weight: 600;
-    transition: background 0.15s ease;
-  }
-  button:hover{ background: #6ee6bc; }
-  button.secondary{
-    background: transparent; color: var(--dim);
-    border: 1px solid var(--line);
-    font-weight: 500; padding: 6px 12px; font-size: 12px;
-  }
-  button.secondary:hover{ color: var(--text); border-color: var(--accent-dim); }
+  /* Buttons are .btn / .btn.secondary from the design system (shared/jw/bundle.css). */
+  .btn:disabled{ cursor: default; opacity: 0.6; }
 
   a.bookmarklet-link{
     display: inline-flex; align-items: center; gap: 8px;
     font-family: var(--mono); font-size: 13px; font-weight: 600;
     cursor: grab; text-decoration: none;
-    background: var(--accent); color: #06120d;
-    padding: 10px 18px; border-radius: 4px;
-    transition: background 0.15s ease;
+    background: var(--accent); color: var(--on-accent);
+    padding: 10px 18px; border-radius: var(--radius-md);
+    box-shadow: var(--glow); transition: filter 0.15s;
   }
   a.bookmarklet-link:active{ cursor: grabbing; }
-  a.bookmarklet-link:hover{ background: #6ee6bc; }
+  a.bookmarklet-link:hover{ filter: brightness(1.15); }
 
   .status{ font-family: var(--mono); font-size: 12.5px; color: var(--dim); }
 
@@ -125,11 +115,25 @@
 
   .badges-row{ display:flex; gap: 24px; flex-wrap: wrap; border-top: 1px solid var(--line); padding-top: 14px; }
   .player-badges{ font-family: var(--mono); font-size: 12.5px; display:flex; align-items:center; gap: 8px; }
-  .badge{
-    display:inline-block; font-family: var(--mono); font-size: 10.5px;
-    border: 1px solid var(--accent-dim); color: var(--accent); border-radius: 3px;
-    padding: 2px 7px; letter-spacing: 0.03em;
+  /* .badge, .badge.corp/.runner and .badge.achievement come from shared/jw/bundle.css. */
+  .player-badges{ flex-wrap: wrap; }
+  .player-badges .badge-player.corp, .stat .num.corp{ color: var(--corp); }
+  .player-badges .badge-player.runner, .stat .num.runner{ color: var(--runner); }
+  .stat.corp{ border-left-color: var(--corp); }
+  .stat.runner{ border-left-color: var(--runner); }
+
+  .badge[data-desc]{ position: relative; cursor: help; }
+  .badge[data-desc]::after{
+    content: attr(data-desc);
+    position: absolute; left: 0; bottom: calc(100% + 6px);
+    width: max-content; max-width: 240px; white-space: normal; text-align: center;
+    background: var(--panel-2); color: var(--text);
+    border: 1px solid var(--line); border-radius: var(--radius-md); padding: 6px 9px;
+    font-weight: 400; letter-spacing: 0; line-height: 1.35;
+    opacity: 0; visibility: hidden; pointer-events: none; z-index: 20;
+    transition: opacity 0.12s ease;
   }
+  .badge[data-desc]:hover::after, .badge[data-desc]:focus::after{ opacity: 1; visibility: visible; }
 
   table{ width:100%; border-collapse: collapse; font-size: 13.5px; margin-bottom: 6px; }
   th, td{ text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); }
@@ -140,11 +144,11 @@
   th:hover{ color: var(--accent); }
   th.sorted::after{ content: " \2193"; color: var(--accent); }
   th.sorted-asc::after{ content: " \2191"; color: var(--accent); }
-  td.num, th.num{ text-align:right; font-family: var(--mono); }
+  td.num, th.num{ text-align:right; font-family: var(--mono); font-variant-numeric: tabular-nums; }
   td.card{ font-weight: 600; }
   .instance-tag{ font-weight: 400; font-family: var(--mono); font-size: 10.5px; color: var(--dim); }
   td.neg{ color: var(--neg); }
-  td.pos{ color: var(--accent); }
+  td.pos{ color: var(--pos); }
   tr:hover td{ background: var(--panel-2); }
   .empty-note{ color: var(--dim); font-size: 13px; font-family: var(--mono); padding: 8px 0 14px; }
 
@@ -181,20 +185,50 @@
   .caveats{ font-size: 13px; color: var(--dim); }
   .caveats li{ margin-bottom: 6px; }
 
-  .legend{ display:flex; gap: 18px; font-family: var(--mono); font-size: 12px; color: var(--dim); margin-bottom: 10px; }
-  .legend-item{ display:flex; align-items:center; gap: 6px; }
-  .legend-swatch{ width: 12px; height: 3px; display:inline-block; }
+  .legend{ margin-bottom: 10px; }
 
   footer{ text-align:center; color: var(--dim); font-family: var(--mono); font-size: 11.5px; margin-top: 40px; }
   footer a{ color: var(--accent); text-decoration: none; }
   footer a:hover{ text-decoration: underline; }
+
+  /* Reserves space for #results while a shared log is being decoded/parsed
+     from the URL hash, so revealing it doesn't produce a large, late layout
+     shift (this matters even though the overlay below hides it visually —
+     the CLS measurement doesn't care what's occluding what). */
+  #results.loading{ min-height: 640px; }
+
+  /* Full-page loading screen shown, as early as possible, while a shared
+     log from the URL hash is being decoded and parsed. Covers the normal
+     "paste a log" shell so visitors following a share/bookmarklet link see
+     one loading screen and then the finished result, not a flash of the
+     empty form followed by content popping in underneath it. */
+  #hashLoadOverlay{
+    display:none; position:fixed; inset:0; z-index:1000; background:var(--bg);
+    align-items:center; justify-content:center; flex-direction:column; gap:14px;
+    color:var(--dim); font-family:var(--mono); font-size:14px;
+  }
+  .spinner-ring{
+    width:28px; height:28px; border:2px solid var(--line); border-top-color: var(--accent);
+    border-radius:50%; animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin{ to{ transform: rotate(360deg); } }
 </style>
 </head>
-<body>
+<body class="jw-page">
+<div id="hashLoadOverlay"><div class="spinner-ring"></div><div>Parsing your shared game…</div></div>
+<script>
+  // Runs before the rest of the page's markup/script, so this is up at
+  // first paint for anyone arriving via a share or bookmarklet link
+  // (#log=...) rather than after the normal page has already rendered.
+  if (location.hash.startsWith('#log=')) document.getElementById('hashLoadOverlay').style.display = 'flex';
+</script>
 <div class="wrap">
 
   <header>
-    <div class="kicker"><a href="https://jinteki.win/">jinteki.win</a> / log analysis for jinteki.net</div>
+    <div class="header-top">
+      <div class="kicker"><a href="https://jinteki.win/">jinteki.win</a> / log analysis for jinteki.net</div>
+      <div class="jw-controls"><div id="themeSwitcher"></div><div id="modeToggle"></div></div>
+    </div>
     <p>Paste a game log copied from the jinteki.net chat panel.</p>
   </header>
 
@@ -232,20 +266,20 @@
     <div class="panel-body">
       <textarea id="logInput" placeholder="Paste the full jinteki.net game log here..."></textarea>
       <div class="row">
-        <button id="parseBtn">Parse log</button>
-        <button class="secondary" id="example1Btn">Log example 1</button>
-        <button class="secondary" id="example2Btn">Log example 2</button>
-        <button class="secondary" id="clearBtn">Clear</button>
-        <button class="secondary" id="permalinkBtn">Share link</button>
-        <button class="secondary" id="reportBugBtn" type="button">Report a bug</button>
-        <button class="secondary" id="skipCopyPasteBtn" type="button">How to skip copy-paste</button>
+        <button class="btn" id="parseBtn">Parse log</button>
+        <button class="btn secondary" id="example1Btn">Log example 1</button>
+        <button class="btn secondary" id="example2Btn">Log example 2</button>
+        <button class="btn secondary" id="clearBtn">Clear</button>
+        <button class="btn secondary" id="permalinkBtn">Share link</button>
+        <button class="btn secondary" id="reportBugBtn" type="button">Report a bug</button>
+        <button class="btn secondary" id="skipCopyPasteBtn" type="button">How to skip copy-paste</button>
         <span class="status" id="statusMsg"></span>
       </div>
       <div class="row" id="permalinkRow" style="display:none;">
         <input id="permalinkUrlInput" type="text" readonly
-          style="flex:1;min-width:200px;background:var(--panel-2);color:var(--text);border:1px solid var(--line);border-radius:4px;font-family:var(--mono);font-size:11.5px;padding:8px;">
-        <button class="secondary" id="copyPermalinkBtn">Copy</button>
-        <button class="secondary" id="shortenPermalinkBtn" type="button" title="Stores this log on jinteki.win to get a short link. Unlike the plain share link, the log data leaves your browser.">Shorten link</button>
+          style="flex:1;min-width:200px;background:var(--panel-2);color:var(--text);border:1px solid var(--line);border-radius:var(--radius-md);font-family:var(--mono);font-size:11.5px;padding:8px;">
+        <button class="btn secondary" id="copyPermalinkBtn">Copy</button>
+        <button class="btn secondary" id="shortenPermalinkBtn" type="button" title="Stores this log on jinteki.win to get a short link. Unlike the plain share link, the log data leaves your browser.">Shorten link</button>
       </div>
     </div>
   </div>
@@ -263,7 +297,7 @@
     </div>
 
     <div class="panel">
-      <div class="panel-header"><h2>Charts</h2><span class="collapse-icon">−</span></div>
+      <div class="panel-header"><h2>Charts</h2><div class="header-controls"><button type="button" class="btn chip value-labels-toggle" data-mode="none" aria-pressed="false" title="Show values on charts: none / changes only / all">values: none</button><span class="collapse-icon">−</span></div></div>
       <div class="panel-body">
 
         <div class="stat" style="margin-bottom:16px;"><span class="num" id="mainTotalTurnsNum">0</span><span class="label">Total turns played (Corp + Runner combined)</span></div>
@@ -313,7 +347,7 @@
     </div>
 
     <div class="panel collapsed">
-      <div class="panel-header"><h2>Alternative: shared turn order</h2><span class="collapse-icon">+</span></div>
+      <div class="panel-header"><h2>Alternative: shared turn order</h2><div class="header-controls"><button type="button" class="btn chip value-labels-toggle" data-mode="none" aria-pressed="false" title="Show values on charts: none / changes only / all">values: none</button><span class="collapse-icon">+</span></div></div>
       <div class="panel-body">
         <p style="font-size:12.5px;color:var(--dim);margin:-6px 0 12px;">
           The charts above plot each player against <em>their own</em> turn counter — but Corp's turn 3 and Runner's turn 3
@@ -392,7 +426,7 @@
           <li>Corp assets and ice are installed face-down, so the log doesn't reveal a name until they're rezzed. "In play from" for those cards is the turn they were rezzed, not the (unknown) turn they were actually installed.</li>
           <li>Credits are attributed to a card via its own "uses X to gain N" / "reveal ... and gain N" triggers, plus any "pays N from X" spend that draws from a card's hosted credits.</li>
           <li>Cost is the credits spent to install, rez, play, or activate a card — net credits is gained minus cost.</li>
-          <li>In the operations &amp; events table, "triggered" is the larger of how many times the card generated credits and how many times it cost credits — per-trigger figures divide by that.</li>
+          <li>In the operations &amp; events table, "triggered" counts each play separately (paying to play starts a new one, even on the same turn) — the expanded rows list every play.</li>
           <li>Identity abilities (cards with a "Faction: Title" name) are tracked as in play from turn 1 for the whole game.</li>
           <li>Click-for-credit is grouped separately per side rather than attributed to any card. When a card's "gain" line has no number (the credit icon was stripped from the log text), it's read as a click gain rather than a credit — 1 click by default, or a hardcoded amount for specific cards known to grant more (e.g. Nanomanagement grants 2).</li>
           <li>A card that shuffles itself away (e.g. Spin Doctor's "shuffle" ability) is treated as leaving play at that point, same as being trashed.</li>
@@ -727,6 +761,7 @@ Runner Player approaches Starlit Knight protecting HQ at position 0.
 Corp Player has no further action.
 Runner Player encounters Starlit Knight protecting HQ at position 0.
 Runner Player pays 2  from Debbie "Downtown" Moreira to increase the strength of Revolver to 4.
+[!] Runner uses the undo-click command
 Runner Player spends  to make a run on Archives.
 Corp Player uses Tiered Subscription to gain 1 .
 Corp Player uses Tiered Subscription to gain 1 .
@@ -1334,6 +1369,8 @@ Runner Player approaches Empiricist protecting HQ at position 1.
 Corp Player has no further action.
 Runner Player encounters Empiricist protecting HQ at position 1.
 Runner Player pays 2  to increase the strength of Unity to 7.
+Runner Player sets credit to 9 (+1).
+Runner Player sets credit to 10 (+1).
 Runner Player pays 5  to increase the strength of Carmen to 5 and break all 3 subroutines on Empiricist.
 Runner Player passes Empiricist protecting HQ at position 1.
 Runner Player will continue the run.
@@ -1508,11 +1545,30 @@ const AGENDA_POINTS = {
   'fujii asset retrieval': 3,
   'sisyphus protocol': 2
 };
-const COLORS = ['#4fd6a8', '#d6a84f', '#d97878', '#7fb0d6'];
-const NETRUNNER_COLORS = { corp: '#5b93d9', runner: '#e2585f' };
+// Series colours come from the current theme (design system tokens), so they are
+// resolved at draw time and charts are redrawn when the theme changes.
+function seriesColor(idx){
+  const colors = JW.chartColors();
+  return colors[idx % colors.length];
+}
+
+// Neutral colour for a value label shared by both players (same value, same point).
+const VALUE_LABEL_SHARED_COLOR = 'var(--dim)';
+
+// Value labels above chart points: 'none', 'changes' (only where a player's value
+// differs from their previous turn) or 'all'. One setting shared by every chart.
+const VALUE_LABEL_MODES = ['none', 'changes', 'all'];
+let valueLabelMode = 'none';
+try {
+  const saved = localStorage.getItem('valueLabelMode');
+  if (VALUE_LABEL_MODES.includes(saved)) valueLabelMode = saved;
+} catch (e) {}
 
 function getChartColors(data){
-  return data.players.map((p, idx) => NETRUNNER_COLORS[data.playerSide[p]] || COLORS[idx % COLORS.length]);
+  return data.players.map((p, idx) => {
+    const side = data.playerSide[p];
+    return (side === 'corp' || side === 'runner') ? JW.sideColor(side) : seriesColor(idx);
+  });
 }
 
 // Words that signal the start of appended ability/effect text rather than part of a
@@ -1572,13 +1628,16 @@ function extractChatBadges(lines){
   const GLHF_RE = /\b(glhf|gl\s*hf|good luck|have fun)\b/i;
   const GG_RE = /\bgg\b/i;
   const TY_RE = /\b(ty4tg|tftg|thank you for the game|thanks for the game|thank you)\b/i;
+  // Easter egg. No \b: it fails next to Polish letters, and the inflected
+  // forms (kurwy, kurwą, …) should count too.
+  const KURWA_RE = /kurw[aąeęioy]/i;
   // System command lines look like "!<player> uses a command: /save-replay" —
   // not a chat message, so it's matched against the raw line directly rather
   // than through the username-repeat chat pattern below.
   const SAVE_REPLAY_RE = /^!(.+?)\s+uses a command:\s*\/save-replay\b/i;
   const badges = {};
   function ensureBadge(player){
-    if (!badges[player]) badges[player] = { glhf: false, gg: false, ty: false, savedReplay: false };
+    if (!badges[player]) badges[player] = { glhf: false, gg: false, ty: false, savedReplay: false, kurwa: false };
     return badges[player];
   }
   for (let i = 0; i < lines.length - 2; i++){
@@ -1589,6 +1648,7 @@ function extractChatBadges(lines){
       if (GLHF_RE.test(text)) b.glhf = true;
       if (GG_RE.test(text)) b.gg = true;
       if (TY_RE.test(text)) b.ty = true;
+      if (KURWA_RE.test(text)) b.kurwa = true;
     }
   }
   for (const line of lines){
@@ -1654,15 +1714,151 @@ function reconstructTimestampedLog(text){
   return merged.join('\n');
 }
 
+// jinteki.net substitutes each player's chosen pronoun into its generated log
+// text ("X started <pronoun> turn 1 ...") — see select-pronoun in mtgred/netrunner
+// src/clj/game/core/say.clj. Every regex that matches a pronoun is built from this.
+const PRONOUN = '(?:his|her|their|its|faer|nir|vis|eir|hir|zir|xyr|xir)';
+
+// ---- Undo commands ----
+// jinteki.net's /undo-click and /undo-paid-ability reset the game to a saved
+// state, but the log keeps everything printed since. The lines describing
+// what was taken back (credits, draws, tags, or a whole run with its rezzes,
+// subroutines and credits) would otherwise all be counted. Where the undo
+// went back to isn't always visible, though: the undone action or ability
+// may have been cancelled mid-resolution, before it printed anything, and
+// then removing the previous logged action would be wrong. So every undo is
+// resolved by trying each reading of it (nothing taken back, or everything
+// from a candidate starting line), re-parsing, and keeping the reading whose
+// derived credit pools match the exact values printed at the next turn
+// boundary for both players. When the totals can't tell readings apart the
+// likeliest one is kept. Either way every undo is flagged.
+const UNDO_CLICK_RE = /^\[?!\]?\s*(Corp|Runner) uses the undo-click command\b/i;
+const UNDO_PAID_RE = /^\[?!\]?\s*(Corp|Runner) uses the undo-paid-ability command\b/i;
+
+// Applies one reading per undo and returns the remaining lines plus what
+// each undo did. decisions[i] is -1 for "nothing taken back" or the index of
+// the starting line among that undo's candidates (likeliest first).
+function applyUndos(lines, decisions){
+  const turnStartRe = new RegExp(String.raw`^(.+?)\s+started ${PRONOUN} turn (\d+) with\b`);
+  const turnEndRe = new RegExp(String.raw`^(.+?)\s+is ending ${PRONOUN} turn \d+ with\b`);
+  // A click action's first line: "X spends to ...", "X spends and pays N
+  // to ...", "X spends and spends 1 hosted ..." (the click icon itself is
+  // lost when the log is copied). A bare "spends 1 hosted counter" is a
+  // paid ability, not a click action. A run started by a click begins here
+  // too, so undoing that click takes back the whole run.
+  const clickActionRe = /^\s+spends\s+(?:to|and)\b/;
+  const players = new Set();
+  lines.forEach(l => { const m = l.match(turnStartRe); if (m) players.add(m[1].trim()); });
+  const byPlayer = l => [...players].some(p => l.startsWith(p + ' '));
+  const kept = [];
+  const undos = [];
+  let active = null;
+  let turn = 0;
+  let clickStarts = [];  // kept indices of this turn's click actions (the engine keeps the last 4)
+  let abilityFloor = 0;  // an ability undo can't reach back past the last action or turn boundary
+  for (let i = 0; i < lines.length; i++){
+    const line = lines[i];
+    let m;
+    const cm = line.match(UNDO_CLICK_RE);
+    const pm = cm ? null : line.match(UNDO_PAID_RE);
+    if (cm || pm){
+      const kind = cm ? 'click' : 'paid';
+      let candidates;
+      if (kind === 'click'){
+        candidates = clickStarts.length ? [clickStarts[clickStarts.length - 1]] : [];
+      } else {
+        // Any player line since the last action, nearest first; but if the
+        // player's next line repeats one of them (redoing that ability
+        // properly), that one is the likeliest start.
+        candidates = [];
+        for (let k = kept.length - 1; k >= abilityFloor && candidates.length < 8; k--){
+          if (byPlayer(kept[k])) candidates.push(k);
+        }
+        const redo = lines.slice(i + 1).find(byPlayer);
+        const r = candidates.findIndex(k => kept[k] === redo);
+        if (r > 0) candidates.unshift(candidates.splice(r, 1)[0]);
+      }
+      const d = decisions[undos.length] === undefined ? 0 : decisions[undos.length];
+      const from = d >= 0 && d < candidates.length ? candidates[d] : null;
+      const removed = from === null ? [] : kept.splice(from);
+      if (from !== null){
+        if (kind === 'click') clickStarts.pop();
+        clickStarts = clickStarts.filter(k => k < kept.length);
+        abilityFloor = Math.min(abilityFloor, kept.length);
+      }
+      undos.push({ kind, side: (cm || pm)[1], line, active, turn, at: kept.length,
+        candidates: candidates.length, decision: from === null ? -1 : d, removed });
+      continue;
+    }
+    if ((m = line.match(turnStartRe))){
+      active = m[1].trim();
+      turn = +m[2];
+      clickStarts = [];
+      abilityFloor = kept.length + 1;
+    } else if (turnEndRe.test(line)){
+      abilityFloor = kept.length + 1;
+    } else if (active && line.startsWith(active + ' ') && clickActionRe.test(line.slice(active.length))){
+      clickStarts.push(kept.length);
+      if (clickStarts.length > 4) clickStarts.shift();
+      abilityFloor = kept.length + 1;
+    }
+    kept.push(line);
+  }
+  return { lines: kept, undos };
+}
+
+// How well one reading of undo #i fits: the number of credit-pool stretches
+// spanning the undo (either player's, between the turn boundaries around it)
+// whose derived total misses the printed one. checked is false when no such
+// stretch closes before the game ends.
+function scoreUndoReading(applied, i){
+  const data = parseLines(applied.lines, {}, []);
+  const at = applied.undos[i].at;
+  let bad = 0, checked = false;
+  Object.values(data.poolSegments).forEach(segs => segs.forEach(seg => {
+    if (seg.startLine < at && (seg.endLine === null || at <= seg.endLine) && seg.ok !== null){
+      checked = true;
+      if (!seg.ok) bad++;
+    }
+  }));
+  return { bad, checked };
+}
+
+function resolveUndos(lines){
+  const decisions = applyUndos(lines, []).undos.map(() => 0);
+  const verdicts = decisions.map((_, i) => {
+    const count = applyUndos(lines, decisions).undos[i].candidates;
+    const options = [...Array(count).keys(), -1];
+    const scored = options.map(opt => {
+      decisions[i] = opt;
+      return Object.assign({ opt }, scoreUndoReading(applyUndos(lines, decisions), i));
+    });
+    const best = scored.reduce((a, b) => (b.bad < a.bad ? b : a));
+    decisions[i] = best.opt;
+    if (!best.checked) return 'unverifiable';
+    if (best.bad > 0) return 'unresolved';
+    const rivals = scored.filter(s => s.bad === best.bad && (s.opt === -1) !== (best.opt === -1));
+    return rivals.length ? 'ambiguous' : 'confirmed';
+  });
+  const result = applyUndos(lines, decisions);
+  result.undos.forEach((u, i) => { u.verdict = verdicts[i]; });
+  return result;
+}
+
 function parseLog(text){
   text = stripInlineTimestamps(text);
   text = reconstructTimestampedLog(text);
-  const rawLines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-  const chatBadges = extractChatBadges(rawLines);
+  const allLines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  const chatBadges = extractChatBadges(allLines);
+  const { lines, undos } = resolveUndos(allLines);
+  return parseLines(lines, chatBadges, undos);
+}
 
+function parseLines(rawLines, chatBadges, undos){
   const VERBS = ['spends','pays','uses','installs','approaches','encounters','breaches',
     'accesses','steals','trashes','is','started','makes','declines','has','will',
-    'resolves','indicates','passes','discards','scores','wins','must','jacks','sets'];
+    'resolves','indicates','passes','discards','scores','wins','must','jacks','sets',
+    'forfeits','takes'];
   const playerRe = new RegExp('^(.+?)\\s+(?:' + VERBS.join('|') + ')\\b');
 
   // Jinteki's own generated log text is consistently lowercase ("to gain N"),
@@ -1683,7 +1879,7 @@ function parseLog(text){
   // gain", e.g. "Knickknack" O'Brian ("...to trash Coalescence to gain 2 and
   // draw a card."). Same name-capture guard as gainDirectRe above.
   const gainMidActionRe = /\buses?\s+((?:(?!\sto\s).)+)\s+to\s+.+?\bto\s+gain\s*(\d+)?\b/i;
-  const payFromRe = /\bpays\s+(\d+)\s+from\s+(?:his|her|their|the)?\s*(.+?)(?=\s+and\s+|\s+to\s+|\.$|$)/g;
+  const payFromRe = new RegExp(String.raw`\bpays\s+(\d+)\s+from\s+(?:${PRONOUN}|the)?\s*(.+?)(?=\s+and\s+|\s+to\s+|\.$|$)`, 'g');
   const installRe = /\bto install (.+)$/;
   const installCostRe = /pays\s+(.+?)\s+to\s+install\b/;
   // "Uses <card> to install ..." / "pays N to use <card> to install ..." is an
@@ -1700,8 +1896,8 @@ function parseLog(text){
   const leftPlayRe = /^(.+?)\s+has left play/;
   const shuffleRemoveRe = /\buses?\s+(.+?)\s+to\s+shuffle\b/i;
   const selfTrashRe = /\buses?\s+(.+?)\s+to\s+.*?\btrash(?:es)?\s+itself\b/i;
-  const turnStartRe = /^(.+?)\s+started (?:his|her|their) turn (\d+) with (\d+)\s+and (\d+) cards? in/;
-  const turnEndRe = /^(.+?)\s+is ending (?:his|her|their) turn (\d+) with (\d+)\s+and (\d+) cards? in/;
+  const turnStartRe = new RegExp(String.raw`^(.+?)\s+started ${PRONOUN} turn (\d+) with (\d+)\s+and (\d+) cards? in`);
+  const turnEndRe = new RegExp(String.raw`^(.+?)\s+is ending ${PRONOUN} turn (\d+) with (\d+)\s+and (\d+) cards? in`);
   const winRe = /^(.+?)\s+wins the game\.?/;
   const drawClickRe = /to use (Corp|Runner) Basic Action Card to draw 1 card/;
   const tagRemovalRe = /pays\s+(\d+)\s+to use Runner Basic Action Card to remove 1 tag/;
@@ -1712,13 +1908,41 @@ function parseLog(text){
   // phrasing used by the other basic-action lines above; adjust if a real
   // logged purge line turns out to read differently.
   const purgeRe = /\bto use Corp Basic Action Card to purge virus counters\b/i;
-  const stealRe = /\bsteals\s+.+?\s+and\s+gains\s+(\d+)\s+agenda\s+points?/;
-  const scoreRe = /\bscores\s+.+?\s+and\s+gains\s+(\d+)\s+agenda\s+points?/;
+  const stealRe = /\bsteals\s+(.+?)\s+and\s+gains\s+(-?\d+)\s+agenda\s+points?/;
+  const scoreRe = /\bscores\s+(.+?)\s+and\s+gains\s+(-?\d+)\s+agenda\s+points?/;
+  // A card that turns itself into an agenda in its player's score area, e.g.
+  // "Plukind uses Myōshu to add itself to their score area as an Agenda worth
+  // 2 points." (an operation, so it never shows up as a "scores" line).
+  const selfToScoreAreaRe = /\buses?\s+(.+?)\s+to\s+add\s+itself\s+to\s+\S+\s+score\s+area\s+as\s+an\s+agenda\s+worth\s+(-?\d+)(?:\s+agenda)?\s+points?/i;
+  // "forfeits <agenda>" — as a cost or an effect; takes that agenda's points
+  // back out of the forfeiting player's score.
+  // Manual corrections with jinteki.net's /agenda-point and /tag commands:
+  // "X sets their agenda points to 3 (+1).", "X sets Tags to 2 (+1)."
+  const agendaSetRe = new RegExp(String.raw`\bsets ${PRONOUN} agenda points? to (-?\d+) \(([+-]?\d+)\)`, 'i');
+  const tagSetRe = /\bsets tags to (\d+) \(([+-]?\d+)\)/i;
+  const forfeitRe = /\bforfeits\s+(?:\d+\s+agendas?\s+\()?(.+?)\)?(?=\s+to\s+|\.?$)/i;
+  // Game-end and pre-game system lines (wording from jinteki.net's own
+  // message strings: "<player> is flatlined.", "<player> is decked.",
+  // "<player> takes a mulligan.").
+  const flatlinedRe = /^(.+?)\s+is flatlined\.?$/;
+  const deckedRe = /^(.+?)\s+is decked\.?$/;
+  const mulliganRe = /^(.+?)\s+takes a mulligan\.?$/;
+  // Cards discarded from the grip by damage: one line per damage event,
+  // listing every card lost ("trashes Curupira and Pennyshaver due to net
+  // damage"; the list is empty when the grip already was).
+  const damageDiscardRe = /\btrashes\s*(.*?)\s*due\s+to\s+(?:net|meat|core|brain)\s+damage\b/i;
+  // Tested on the text right after trashRe's card name: a Runner trashing a
+  // card that sits in a Corp server or central ("pays 4 to trash La Costa
+  // Grid from Server 1", "...from the root of R&D", "...from HQ") — always a
+  // Corp card, even if it was never rezzed. Anchored so a later, unrelated
+  // "from HQ" ("trashes Cupellation to use Cupellation to access 2
+  // additional cards from HQ") doesn't count.
+  const trashFromCorpZoneRe = /^\s+(?:from|in)\s+(?:the\s+root\s+of\s+)?(?:Server\s+\d+|HQ|R&D|Archives)\b/i;
   const concedeRe = /^(.+?)\s+concedes?\b/i;
-  const revealToScoreAreaRe = /\buses?\s+.+?\s+to\s+reveal\s+(.+?)\s+(?:from\s+.+?\s+)?and\s+add\s+it\s+to\s+(?:their|his|her)\s+score\s+area/i;
+  const revealToScoreAreaRe = new RegExp(String.raw`\buses?\s+.+?\s+to\s+reveal\s+(.+?)\s+(?:from\s+.+?\s+)?and\s+add\s+it\s+to\s+${PRONOUN}\s+score\s+area`, 'i');
   const anyDrawRe = /\bdraws?\s+(\d+)\s+cards?\b/i;
   const cardDrawRe = /\buses?\s+(.+?)\s+to\s+.*?\bdraws?\s+(\d+)\s+cards?\b/i;
-  const mandatoryDrawRe = /\bmakes (?:his|her|their) mandatory start of turn draw\b/;
+  const mandatoryDrawRe = new RegExp(String.raw`\bmakes ${PRONOUN} mandatory start of turn draw\b`);
   const genericGainRe = /\bgains?\s+(\d+)(?!\s*agenda)/gi;
   // Forced credit loss — "Corp Player uses Artificial Cryptocrash to make the
   // Runner lose 7." / "...force the Corp to lose 3, and then gain 6." — is a
@@ -1741,6 +1965,9 @@ function parseLog(text){
   // to the end of the line (optional trailing whitespace/period only) so it
   // can't fire on "...to take 1 tag and force the Corp to lose 3..." (Transfer
   // of Wealth), which has plenty of text after the number.
+  // "X sets credit to 9 (+1)." — the /credit command (see change-msg in
+  // mtgred/netrunner src/clj/game/core/change_vals.clj).
+  const creditSetRe = /\bsets credits? to (-?\d+) \(([+-]?\d+)\)/i;
   const takeCreditRe = /\buses?\s+.+?\s+to\s+take\s+(\d+)\s*\.?\s*$/i;
   const giveTagRe = /\bgives?\s+the Runner (\d+) tags?/i;
   const takeTagRe = /\btakes?\s+(\d+)\s+tags?/i;
@@ -1768,6 +1995,24 @@ function parseLog(text){
   const instances = [];
   const operations = new Map();
   const flagged = [];
+  if (undos.length){
+    const clicks = undos.filter(u => u.kind === 'click').length;
+    flagged.push({ reason: `This game has ${undos.length} undo command${undos.length === 1 ? '' : 's'} (${clicks} undo-click, ${undos.length - clicks} undo-paid-ability). The log keeps what was undone, so each one is resolved as listed below; stats around them can be off.`, line: '(see the undo lines below)' });
+  }
+  const UNDO_VERDICTS = {
+    confirmed: 'Confirmed by the credit totals at the next turn boundary.',
+    ambiguous: 'The credit totals at the next turn boundary fit either reading, so this is a best guess; draws, runs and tags around it may be off.',
+    unresolved: 'No reading matches the credit totals at the next turn boundary; credits and other stats around it may be off.',
+    unverifiable: 'The game ended before the next turn boundary, so this could not be checked; stats after it may be off.'
+  };
+  undos.forEach(u => {
+    const name = u.kind === 'click' ? 'Undo-click' : 'Undo-paid-ability';
+    const when = u.active ? ` (${u.side}, during ${u.active}'s turn ${u.turn})` : ` (${u.side})`;
+    const what = u.removed.length
+      ? `ignored ${u.removed.length} line${u.removed.length === 1 ? '' : 's'} it took back, starting with “${u.removed[0].replace(/\.$/, '')}”`
+      : `nothing ignored; the undone ${u.kind === 'click' ? 'action' : 'ability'} seems to have been cancelled before it was logged`;
+    flagged.push({ reason: `${name}${when} — ${what}. ${UNDO_VERDICTS[u.verdict] || ''}`, line: u.line });
+  });
   const drawClicks = {};
   const tagRemovals = {};
   const trashResources = {};
@@ -1794,6 +2039,13 @@ function parseLog(text){
   const clicksGained = {};
   let winner = null;
   let concededPlayer = null;
+  let flatlinedPlayer = null;
+  let deckedPlayer = null;
+  const mulligans = new Set();
+  const damageTaken = {};       // player -> cards lost to damage
+  const opposingTrashes = {};   // player -> opponent's cards they trashed
+  const installedBy = {};       // card name -> Set of players who installed/rezzed it
+  const agendaTitlePoints = {}; // player::agenda -> points it was scored/stolen for
   // Shared turn-order timeline (see turnStartRe handling below): globalTurnSeq
   // increments once per "started turn N" line of either player, seqOfTurn maps
   // player+turn -> that shared index, turnSeqLog keeps the raw order for the
@@ -1821,6 +2073,59 @@ function parseLog(text){
     if (!zone) return;
     if (!obj[player]) obj[player] = { HQ: 0, RD: 0, Archives: 0, remote: 0 };
     obj[player][zone] = (obj[player][zone] || 0) + amt;
+  }
+
+  // Live credit pool per player, updated line by line as credits are gained,
+  // spent or lost, and re-anchored to the exact value printed on every
+  // "started/ending turn N with X" line. Anchoring means a missed or misread
+  // credit event can only skew the pool until the next turn boundary, never
+  // for the rest of the game (the old derived chart series accumulated every
+  // such error forever). poolSegments keeps, per player, each stretch between
+  // two anchors: the derived values in between and whether the derived value
+  // at the closing anchor matched the printed one — a mismatch means some
+  // credit event in that stretch wasn't parsed correctly, and is flagged.
+  const creditPool = {};    // player -> current derived pool (absent until first anchor)
+  const poolBySeq = {};     // player -> {seq: pool after the last change in that slot}
+  const poolSegments = {};  // player -> [{fromTurn, fromKind, start, values, end, expected, ok}]
+  function recordPool(p){
+    if (!poolBySeq[p]) poolBySeq[p] = {};
+    poolBySeq[p][currentGlobalSeq] = creditPool[p];
+    const segs = poolSegments[p];
+    if (segs && segs.length) segs[segs.length - 1].values.push(creditPool[p]);
+  }
+  function anchorPool(p, credits, kind, turnNum, line){
+    const segs = poolSegments[p] || (poolSegments[p] = []);
+    const open = segs[segs.length - 1];
+    if (open && open.end === null){
+      open.endLine = lineNo;
+      open.end = creditPool[p];
+      open.expected = credits;
+      open.ok = open.end === credits;
+      if (!open.ok){
+        flagged.push({ reason: `Credit tracking (${p}) — log shows ${credits} at the ${kind} of turn ${turnNum}, but the parsed credit events since the previous turn boundary add up to ${open.end}; some gain/spend in between wasn't read correctly`, line });
+      }
+    }
+    segs.push({ fromTurn: turnNum, fromKind: kind, start: credits, values: [], end: null, expected: null, ok: null, startLine: lineNo, endLine: null });
+    creditPool[p] = credits;
+    if (!poolBySeq[p]) poolBySeq[p] = {};
+    poolBySeq[p][currentGlobalSeq] = credits;
+  }
+  function gainCredits(p, amt){
+    bump(totalGained, p, amt);
+    bumpTurn(creditsGainedByTurn, p, currentTurn[p] || 0, amt);
+    bumpTurn(creditsGainedBySeq, p, currentGlobalSeq, amt);
+    if (p in creditPool){ creditPool[p] += amt; recordPool(p); }
+  }
+  // `forced`: a loss imposed by the opponent ("make the Runner lose 7"). The
+  // game caps it at whatever the player actually has, so only that much is
+  // really lost — a voluntary payment can never exceed the pool in the first
+  // place, so it isn't capped (if it would go negative, a gain was missed).
+  function spendCredits(p, amt, forced){
+    if (forced && p in creditPool) amt = Math.min(amt, Math.max(0, creditPool[p]));
+    bump(totalSpent, p, amt);
+    bumpTurn(creditsSpentByTurn, p, currentTurn[p] || 0, amt);
+    bumpTurn(creditsSpentBySeq, p, currentGlobalSeq, amt);
+    if (p in creditPool){ creditPool[p] -= amt; recordPool(p); }
   }
 
   function sumDigits(str){
@@ -1862,7 +2167,7 @@ function parseLog(text){
       return bare ? +bare[1] : null;
     }
     let total = 0;
-    const clauseRe = /(\d+)\s+from\s+((?:his|her|their|the)?\s*credit pool|[^,]+?)(?=\s+and\s+\d|\.$|$|\s+to\s+)/gi;
+    const clauseRe = new RegExp(String.raw`(\d+)\s+from\s+((?:${PRONOUN}|the)?\s*credit pool|[^,]+?)(?=\s+and\s+\d|\.$|$|\s+to\s+)`, 'gi');
     let cm;
     while ((cm = clauseRe.exec(costSpan))){
       if (/credit pool/i.test(cm[2])) total += +cm[1];
@@ -1956,10 +2261,21 @@ function parseLog(text){
     return null;
   }
 
-  function addPerTurn(op, turn, gainAmt, costAmt){
-    const pt = op.perTurn.get(turn) || { turn, gain: 0, cost: 0 };
-    pt.gain += gainAmt; pt.cost += costAmt;
-    op.perTurn.set(turn, pt);
+  // Each play of an event/operation is its own trigger, even when several land on the
+  // same turn (e.g. two Bravados). Paying "to play" always opens a new trigger; any other
+  // cost (e.g. Oppo Research's extra 5 to "use" it) adds to the latest trigger that turn;
+  // a gain settles the earliest trigger on that turn that hasn't gained yet (plays resolve
+  // in order). Either opens a new trigger when there's nothing to attach to.
+  function addTrigger(op, turn, kind, amount, rawLine){
+    let t = null;
+    if (kind === 'gain') t = op.triggers.find(x => x.turn === turn && !x.gained);
+    else if (!/ to play /i.test(rawLine || '')){
+      const last = op.triggers[op.triggers.length - 1];
+      if (last && last.turn === turn) t = last;
+    }
+    if (!t){ t = { turn, gain: 0, cost: 0, gained: false }; op.triggers.push(t); }
+    if (kind === 'gain'){ t.gain += amount; t.gained = true; }
+    else t.cost += amount;
   }
 
   function logCardDraw(player, rawName, amount, turn){
@@ -2015,11 +2331,11 @@ function parseLog(text){
 
     const key = player + '::' + name;
     let op = operations.get(key);
-    if (!op){ op = { player, name, gain: 0, cost: 0, gainCount: 0, costCount: 0, turns: new Set(), perTurn: new Map() }; operations.set(key, op); }
+    if (!op){ op = { player, name, gain: 0, cost: 0, triggers: [] }; operations.set(key, op); }
     if (kind === 'gain'){
-      op.gain += amount; op.gainCount++; op.turns.add(turn); addPerTurn(op, turn, amount, 0);
+      op.gain += amount; addTrigger(op, turn, 'gain', amount, rawLine);
     } else {
-      op.cost += amount; op.costCount++; op.turns.add(turn); addPerTurn(op, turn, 0, amount);
+      op.cost += amount; addTrigger(op, turn, 'cost', amount, rawLine);
     }
   }
 
@@ -2047,13 +2363,19 @@ function parseLog(text){
     return inst;
   }
 
+  let lineNo = -1; // index into rawLines of the line being parsed (see poolSegments)
   for (const line of rawLines){
+    lineNo++;
     let m;
     lineInstanceCache = {};
 
     if ((m = line.match(turnStartRe))){
       const p = m[1].trim(), t = +m[2], credits = +m[3], hand = +m[4];
       ensurePlayer(p);
+      // Fallback side detection for players who never use a basic action
+      // (which is what normally sets playerSide): the Corp's hand is HQ, the
+      // Runner's is the Grip.
+      if (!playerSide[p]) playerSide[p] = /\bcards? in HQ\b/.test(line) ? 'corp' : 'runner';
       currentTurn[p] = t;
       maxTurn[p] = Math.max(maxTurn[p] || 0, t);
       creditPoolByTurn[p] = creditPoolByTurn[p] || {};
@@ -2071,18 +2393,25 @@ function parseLog(text){
       if (!seqOfTurn[p]) seqOfTurn[p] = {};
       seqOfTurn[p][t] = globalTurnSeq;
       turnSeqLog.push({ player: p, turn: t, seq: globalTurnSeq });
+      anchorPool(p, credits, 'start', t, line);
       continue;
     }
     if ((m = line.match(turnEndRe))){
       const p = m[1].trim(), t = +m[2];
       ensurePlayer(p);
       maxTurn[p] = Math.max(maxTurn[p] || 0, t);
+      anchorPool(p, +m[3], 'end', t, line);
       continue;
     }
     if ((m = line.match(winRe))){
       winner = m[1].trim();
       continue;
     }
+    if ((m = line.match(flatlinedRe))){ flatlinedPlayer = m[1].trim(); continue; }
+    if ((m = line.match(deckedRe))){ deckedPlayer = m[1].trim(); continue; }
+    // Mulligans happen before either player's first turn line, so before
+    // the "known player" check below.
+    if ((m = line.match(mulliganRe))){ mulligans.add(m[1].trim()); continue; }
 
     const pm = line.match(playerRe);
     const player = pm ? pm[1].trim() : null;
@@ -2108,6 +2437,7 @@ function parseLog(text){
         const name = cleanCardName(raw);
         if (name){
           const inst = { name, player, turnInstalled: turn, turnLeft: null, credits: 0, cost: 0, events: 0, triggerLog: [], server: null };
+          (installedBy[name] || (installedBy[name] = new Set())).add(player);
           const cm = line.match(installCostRe);
           if (cm) inst.cost = sumDigits(cm[1]);
           instances.push(inst);
@@ -2119,6 +2449,7 @@ function parseLog(text){
       const name = cleanCardName(m[1]);
       const server = m[2] ? m[2].trim() : null;
       bump(cardsRezzed, player, 1);
+      (installedBy[name] || (installedBy[name] = new Set())).add(player);
       // Each rez is a distinct physical copy — always open a new instance,
       // even if another copy of the same card is already in play unrezzed/rezzed elsewhere.
       const inst = { name, player, turnInstalled: turn, turnLeft: null, credits: 0, cost: 0, events: 0, triggerLog: [], server };
@@ -2156,8 +2487,19 @@ function parseLog(text){
     const isDamageDiscard = /\bdue\s+to\s+(?:net|meat|core)\s+damage\b/i.test(line);
     if (!isDamageDiscard && (m = line.match(trashRe))){
       const serverRef = (line.match(trashServerRefRe) || [])[1] || null;
+      const fromCorpZone = playerSide[player] === 'runner'
+        && trashFromCorpZoneRe.test(line.slice(m.index + m[0].length));
       m[1].split(/\s+and\s+/).forEach(raw => {
         const name = cleanCardName(raw);
+        // Count cards trashed that belong to the opponent: known either from
+        // where the card was (a Runner trashing from a Corp server/central),
+        // or from who installed/rezzed a card of that name earlier. Generic
+        // placeholders ("a card from HQ", "itself") never count.
+        if (name && !/^(?:a card|an? (?:installed|facedown|hosted)|hosted|itself|the top|all)\b/i.test(name)){
+          const owners = installedBy[name];
+          const opponentOwned = owners && !owners.has(player) && owners.size > 0;
+          if (fromCorpZone || opponentOwned) bump(opposingTrashes, player, 1);
+        }
         const recent = lastCreditedInstance[player + '::' + name];
         const inst = findInstanceByServerAnyPlayer(name, serverRef)
           || (recent && recent.player === player && recent.turnLeft === null ? recent : null)
@@ -2244,19 +2586,14 @@ function parseLog(text){
         const corpP = Object.keys(maxTurn).find(pl => playerSide[pl] === 'corp');
         if (corpP) recipient = corpP;
       }
-      bump(totalGained, recipient, amt);
-      bumpTurn(creditsGainedByTurn, recipient, currentTurn[recipient] || 0, amt);
-      bumpTurn(creditsGainedBySeq, recipient, currentGlobalSeq, amt);
+      gainCredits(recipient, amt);
     }
     // "uses <card> to take N ." — a hosted credit moved onto the player's own
     // pool; always self-directed (the line's actor is always the recipient),
     // unlike genericGainRe's "let the Runner gain..." redirect cases.
     const tkm = creditScanLine.match(takeCreditRe);
     if (tkm){
-      const amt = +tkm[1];
-      bump(totalGained, player, amt);
-      bumpTurn(creditsGainedByTurn, player, turn, amt);
-      bumpTurn(creditsGainedBySeq, player, currentGlobalSeq, amt);
+      gainCredits(player, +tkm[1]);
     }
     // total credits lost (forced, e.g. traces/taxes — the losing side is named
     // explicitly in the text, so this reduces that side's pool the same way a
@@ -2267,18 +2604,12 @@ function parseLog(text){
       const side = lm[1].toLowerCase();
       const amt = +lm[2];
       const targetPlayer = Object.keys(maxTurn).find(pl => playerSide[pl] === side) || player;
-      bump(totalSpent, targetPlayer, amt);
-      bumpTurn(creditsSpentByTurn, targetPlayer, currentTurn[targetPlayer] || 0, amt);
-      bumpTurn(creditsSpentBySeq, targetPlayer, currentGlobalSeq, amt);
+      spendCredits(targetPlayer, amt, true);
     }
     // Only the portion of a "pays ..." clause that actually came out of the
     // player's credit pool counts here — see computePoolSpend above.
     const spentAmt = computePoolSpend(creditScanLine);
-    if (spentAmt !== null){
-      bump(totalSpent, player, spentAmt);
-      bumpTurn(creditsSpentByTurn, player, turn, spentAmt);
-      bumpTurn(creditsSpentBySeq, player, currentGlobalSeq, spentAmt);
-    }
+    if (spentAmt !== null) spendCredits(player, spentAmt, false);
     // "uses <card> to pay N" / "force the Runner|Corp to pay N" — bare
     // infinitive "pay" cost, never matched by the "pays"-anchored scan above
     // (see forcedPayRe/selfPayRe declarations). Checked as its own line so it
@@ -2287,18 +2618,21 @@ function parseLog(text){
     if (fpm){
       const side = fpm[1].toLowerCase();
       const targetPlayer = Object.keys(maxTurn).find(pl => playerSide[pl] === side) || player;
-      const amt = +fpm[2];
-      bump(totalSpent, targetPlayer, amt);
-      bumpTurn(creditsSpentByTurn, targetPlayer, currentTurn[targetPlayer] || 0, amt);
-      bumpTurn(creditsSpentBySeq, targetPlayer, currentGlobalSeq, amt);
+      spendCredits(targetPlayer, +fpm[2], false);
     } else {
       const spm = creditScanLine.match(selfPayRe);
-      if (spm){
-        const amt = +spm[1];
-        bump(totalSpent, player, amt);
-        bumpTurn(creditsSpentByTurn, player, turn, amt);
-        bumpTurn(creditsSpentBySeq, player, currentGlobalSeq, amt);
-      }
+      if (spm) spendCredits(player, +spm[1], false);
+    }
+
+    // Manual correction with jinteki.net's /credit command, e.g. "X sets
+    // credit to 9 (+1)." after a misclick. The delta is applied like any
+    // other gain/spend, so the credit-tracking check still catches anything
+    // else that was missed in the same turn.
+    if ((m = line.match(creditSetRe))){
+      const delta = +m[2];
+      if (delta > 0) gainCredits(player, delta);
+      else if (delta < 0) spendCredits(player, -delta, false);
+      flagged.push({ reason: `Manual credit adjustment (${player}) — set to ${m[1]} with the /credit command; applied to the credit pool and totals`, line });
     }
 
     // draws
@@ -2314,11 +2648,23 @@ function parseLog(text){
       bumpTurn(drawsBySeq, player, currentGlobalSeq, n);
     }
 
-    // tags
-    if ((m = line.match(giveTagRe))){
+    // damage (always the Runner's grip, whichever side's line it is)
+    if ((m = line.match(damageDiscardRe))){
+      const runnerP = Object.keys(maxTurn).find(pl => playerSide[pl] === 'runner');
+      const listed = m[1].trim();
+      // An empty list is damage taken with an empty grip (the flatline hit).
+      const n = listed ? listed.split(/\s*,\s*(?:and\s+)?|\s+and\s+/).filter(Boolean).length : 1;
+      if (runnerP) bump(damageTaken, runnerP, n);
+    }
+
+    // tags — scanned on the quote-stripped text, so subroutine text echoed
+    // in quotes (`resolves 2 unbroken subroutines on Starlit Knight (" Give
+    // the Runner 1 tag" ...)`) isn't counted as another tag on top of the
+    // real "uses Starlit Knight to give the Runner 1 tag" lines.
+    if ((m = creditScanLine.match(giveTagRe))){
       rawTagEvents.push({ kind: 'give', amount: +m[1] });
     }
-    if ((m = line.match(takeTagRe))){
+    if ((m = creditScanLine.match(takeTagRe))){
       rawTagEvents.push({ kind: 'take', actor: player, amount: +m[1] });
     }
 
@@ -2346,17 +2692,39 @@ function parseLog(text){
       }
     }
 
-    if ((m = line.match(stealRe))){
-      agendaEvents.push({ player, turn, seq: currentGlobalSeq, points: +m[1] });
+    if ((m = line.match(stealRe)) || (m = line.match(scoreRe)) || (m = line.match(selfToScoreAreaRe))){
+      const title = cleanCardName(m[1]);
+      agendaEvents.push({ player, turn, seq: currentGlobalSeq, points: +m[2] });
+      agendaTitlePoints[player + '::' + title.toLowerCase()] = +m[2];
     }
-    if ((m = line.match(scoreRe))){
-      agendaEvents.push({ player, turn, seq: currentGlobalSeq, points: +m[1] });
+    if ((m = line.match(agendaSetRe))){
+      agendaEvents.push({ player, turn, seq: currentGlobalSeq, points: +m[2] });
+      flagged.push({ reason: `Manual agenda point adjustment (${player}) — set to ${m[1]} with the /agenda-point command; applied to the score`, line });
+    }
+    // Tags set by hand aren't counted as given or taken (it's not clear which
+    // a correction stands for); flagged so the tag totals can be checked.
+    if (tagSetRe.test(line)){
+      flagged.push({ reason: `Manual tag adjustment (${player}) — not counted in the tag totals`, line });
+    }
+    if ((m = line.match(forfeitRe))){
+      m[1].split(/\s*,\s*(?:and\s+)?|\s+and\s+/).filter(Boolean).forEach(raw => {
+        const title = cleanCardName(raw);
+        const key = player + '::' + title.toLowerCase();
+        const pts = key in agendaTitlePoints ? agendaTitlePoints[key] : AGENDA_POINTS[title.toLowerCase()];
+        if (pts !== undefined){
+          agendaEvents.push({ player, turn, seq: currentGlobalSeq, points: -pts });
+          delete agendaTitlePoints[key];
+        } else {
+          flagged.push({ reason: `${title} (${player}) — forfeited, but its agenda point value isn't known, so the score isn't reduced`, line });
+        }
+      });
     }
     if ((m = line.match(revealToScoreAreaRe))){
       const revealedName = cleanCardName(m[1]);
       const pts = AGENDA_POINTS[revealedName.toLowerCase()];
       if (pts !== undefined){
         agendaEvents.push({ player, turn, seq: currentGlobalSeq, points: pts });
+        agendaTitlePoints[player + '::' + revealedName.toLowerCase()] = pts;
       } else {
         flagged.push({ reason: `${revealedName} (${player}) — added to score area by another card's effect, but its agenda point value isn't in the lookup table, so it's not counted in the agenda chart`, line });
       }
@@ -2415,10 +2783,16 @@ function parseLog(text){
   }
 
   const opsRows = Array.from(operations.values()).map(op => {
-    const triggered = Math.max(op.gainCount, op.costCount);
-    const perTurnRows = Array.from(op.perTurn.values())
-      .map(pt => ({ turn: pt.turn, cost: pt.cost, gain: pt.gain, net: pt.gain - pt.cost }))
-      .sort((a, b) => a.turn - b.turn);
+    const triggered = op.triggers.length;
+    const perTurnCount = {};
+    op.triggers.forEach(t => { perTurnCount[t.turn] = (perTurnCount[t.turn] || 0) + 1; });
+    const seenPerTurn = {};
+    const perTurnRows = op.triggers
+      .map(t => {
+        const nth = perTurnCount[t.turn] > 1 ? (seenPerTurn[t.turn] = (seenPerTurn[t.turn] || 0) + 1) : null;
+        return { turn: t.turn, nth, cost: t.cost, gain: t.gain, net: t.gain - t.cost };
+      })
+      .sort((a, b) => a.turn - b.turn || (a.nth || 0) - (b.nth || 0));
     return {
       name: op.name,
       player: op.player,
@@ -2426,7 +2800,7 @@ function parseLog(text){
       totalCost: op.cost,
       totalGain: op.gain,
       totalNet: op.gain - op.cost,
-      turnsList: Array.from(op.turns).sort((a,b)=>a-b).join(', '),
+      turnsList: op.triggers.map(t => t.turn).sort((a,b)=>a-b).join(', '),
       perTurnRows
     };
   });
@@ -2530,28 +2904,23 @@ function parseLog(text){
   players.forEach(p => {
     creditsNetSeqSeries[p] = creditsGainedSeqSeries[p].map((v, i) => v - (creditsSpentSeqSeries[p][i] || 0));
   });
-  // Credit pool here is DERIVED (running total of creditsGained/SpentSeqSeries,
-  // starting from the 5cr baseline) rather than reindexed from the "started
-  // turn N with Xcr" snapshot lines. Those snapshots are only printed at the
-  // start of a player's *own* turn, so reindexing them left a stale value
-  // sitting in every seq slot until that player's next turn began — e.g. Corp
-  // paying 4 to rez ice mid-Runner's-turn wouldn't show up until Corp's next
-  // turn started, several slots later. The derived series updates the moment
-  // the spend/gain actually happens, which is the whole point of this view.
+  // Credit pool here is the live per-line pool tracked during parsing (see
+  // creditPool/anchorPool above): it changes the moment a gain/spend actually
+  // happens, e.g. Corp paying 4 to rez ice mid-Runner's-turn shows up in the
+  // Runner's slot, and it's reset to the exact printed value at every turn
+  // boundary so parsing gaps can't drift it for the rest of the game. Each
+  // slot shows the pool as it stood at the end of that slot.
   const creditPoolSeqSeries = {};
   players.forEach(p => {
     const arr = new Array(totalSeq + 1).fill(0);
+    const bySeq = poolBySeq[p] || {};
     let running = 5;
     arr[0] = running;
     for (let s = 1; s <= totalSeq; s++){
-      running += (creditsGainedSeqSeries[p][s] || 0) - (creditsSpentSeqSeries[p][s] || 0);
-      // Credits can never go below 0 — the game itself caps a forced loss at
-      // whatever the player actually has (e.g. a card's printed "lose 7" only
-      // takes a player down to 0 if they only had 6). This is a safety-net
-      // floor for that case and for any remaining event-tracking imprecision,
-      // not a substitute for tracking the real amount lost.
-      if (running < 0) running = 0;
-      arr[s] = running;
+      if (bySeq[s] !== undefined) running = bySeq[s];
+      // Only reachable when a missed gain made a payment look unaffordable;
+      // the real pool can never be negative.
+      arr[s] = Math.max(0, running);
     }
     creditPoolSeqSeries[p] = arr;
   });
@@ -2590,6 +2959,24 @@ function parseLog(text){
     });
     tagsGained[runnerPlayer] = total;
   }
+  const corpPlayer = players.find(p => playerSide[p] === 'corp');
+  const tagsGiven = {};
+  if (corpPlayer){
+    tagsGiven[corpPlayer] = rawTagEvents.filter(e => e.kind === 'give').reduce((a, e) => a + e.amount, 0);
+  }
+
+  // Final score per player, in log order (includes forfeits and negative
+  // agendas), used to tell an agenda win from anything else.
+  const finalScore = {};
+  players.forEach(p => { finalScore[p] = 0; });
+  agendaEvents.forEach(e => { if (e.player in finalScore) finalScore[e.player] += e.points; });
+  let winReason = null;
+  if (winner){
+    if (flatlinedPlayer && flatlinedPlayer !== winner) winReason = 'flatline';
+    else if (deckedPlayer && deckedPlayer !== winner) winReason = 'decked';
+    else if (concededPlayer && concededPlayer !== winner) winReason = 'concede';
+    else if ((finalScore[winner] || 0) >= 7) winReason = 'agenda';
+  }
 
   return {
     installedRows, opsRows, flagged, maxTurn, rounds, winner, concededPlayer, players, playerCountError,
@@ -2599,8 +2986,155 @@ function parseLog(text){
     cardsAccessed, breachCounts, clicksGained,
     creditsGainedSeries, creditsNetSeries, creditPoolSeries, handSizeSeries, cardsDrawnSeries,
     totalSeq, seqAxisLabels, agendaSeqSeries, creditsNetSeqSeries, creditPoolSeqSeries,
+    poolSegments, finalCreditPool: creditPool, undos,
+    agendaEvents, finalScore, winReason, flatlinedPlayer, deckedPlayer,
+    mulligans: players.filter(p => mulligans.has(p)),
+    damageTaken, opposingTrashes, tagsGiven,
     handSizeSeqSeries, cardsDrawnSeqSeries
   };
+}
+
+// ---- Achievements ----
+// Each entry is evaluated per player, only for the side it belongs to. A
+// check gets the context built by achievementContext() below and returns
+// true when earned. To add one, append an entry here — nothing else needs
+// changing.
+const ACHIEVEMENTS = [
+  { id: 'no-click-credit', side: 'corp', name: 'Off the Books',
+    description: 'Won without ever clicking for a credit.',
+    check: c => c.won && c.clickCreditCount === 0 },
+  { id: 'no-click-credit', side: 'runner', name: 'No Day Job',
+    description: 'Won without ever clicking for a credit.',
+    check: c => c.won && c.clickCreditCount === 0 },
+  { id: 'no-click-draw', side: 'corp', name: 'Mandatory Minimum',
+    description: 'Won without ever clicking to draw.',
+    check: c => c.won && c.clickDrawCount === 0 },
+  { id: 'no-click-draw', side: 'runner', name: 'A Diesel a Day',
+    description: 'Won without ever clicking to draw.',
+    check: c => c.won && c.clickDrawCount === 0 },
+  { id: 'rich', side: 'corp', name: 'Too Big to Fail',
+    description: 'Had 30 or more credits in the pool at once.',
+    check: c => c.peakPool >= 30 },
+  { id: 'rich', side: 'runner', name: 'Savvy Investor',
+    description: 'Had 30 or more credits in the pool at once.',
+    check: c => c.peakPool >= 30 },
+  { id: 'broke-win', side: 'corp', name: 'Unhedged',
+    description: 'Won with 0 credits in the pool at the end of the game.',
+    check: c => c.won && c.finalPool === 0 },
+  { id: 'broke-win', side: 'runner', name: 'Sure Gamble',
+    description: 'Won with 0 credits in the pool at the end of the game.',
+    check: c => c.won && c.finalPool === 0 },
+  { id: 'flatline-win', side: 'corp', name: 'Boom!',
+    description: 'Won by flatlining the Runner.',
+    check: c => c.won && c.winReason === 'flatline' },
+  { id: 'flatlined-at-six', side: 'runner', name: 'One Step From Freedom',
+    description: 'Got flatlined while sitting on 6 agenda points.',
+    check: c => c.data.flatlinedPlayer === c.player && c.finalScore === 6 },
+  { id: 'mill-win', side: 'runner', name: 'Keyhole',
+    description: 'Won by milling the Corp: they had to draw from an empty R&D.',
+    check: c => c.won && c.winReason === 'decked' },
+  { id: 'mill-win-no-points', side: 'runner', name: 'Apocalypse',
+    description: 'Won by mill with 0 or fewer agenda points.',
+    check: c => c.won && c.winReason === 'decked' && c.finalScore <= 0 },
+  { id: 'shutout', side: 'corp', name: 'Government Takeover',
+    description: 'Won on agenda points while the Runner stole none.',
+    check: c => c.won && c.winReason === 'agenda' && c.oppPointsGained === 0 },
+  { id: 'shutout', side: 'runner', name: 'Inside Job',
+    description: 'Won on agenda points while the Corp scored none.',
+    check: c => c.won && c.winReason === 'agenda' && c.oppPointsGained === 0 },
+  { id: 'comeback', side: 'corp', name: 'Crisis Management',
+    description: 'Won after trailing 0–6 on agenda points.',
+    check: c => c.won && c.trailedZeroSix },
+  { id: 'comeback', side: 'runner', name: 'Out of the Ashes',
+    description: 'Won after trailing 0–6 on agenda points.',
+    check: c => c.won && c.trailedZeroSix },
+  { id: 'fast-win', side: 'corp', name: 'Fast Advance',
+    description: 'Won on agenda points by the end of turn 6.',
+    check: c => c.won && c.winReason === 'agenda' && c.data.rounds <= 6 },
+  { id: 'fast-win', side: 'runner', name: 'Early Bird',
+    description: 'Won on agenda points by the end of turn 6.',
+    check: c => c.won && c.winReason === 'agenda' && c.data.rounds <= 6 },
+  { id: 'tags', side: 'corp', name: 'Public Enemy Made',
+    description: 'Won after giving the Runner 10 or more tags over the game.',
+    check: c => c.won && (c.data.tagsGiven[c.player] || 0) >= 10 },
+  { id: 'tags', side: 'runner', name: 'Most Wanted',
+    description: 'Won after taking 10 or more tags over the game.',
+    check: c => c.won && (c.data.tagsGained[c.player] || 0) >= 10 },
+  { id: 'trasher', side: 'corp', name: 'Asset Seizure',
+    description: 'Trashed 5 or more of the Runner’s cards.',
+    check: c => (c.data.opposingTrashes[c.player] || 0) >= 5 },
+  { id: 'trasher', side: 'runner', name: 'Demolition Run',
+    description: 'Trashed 5 or more of the Corp’s cards.',
+    check: c => (c.data.opposingTrashes[c.player] || 0) >= 5 },
+  { id: 'attrition-win', side: 'corp', name: 'Acceptable Losses',
+    description: 'Won after the Runner trashed 5 or more of your cards.',
+    check: c => c.won && (c.data.opposingTrashes[c.opp] || 0) >= 5 },
+  { id: 'attrition-win', side: 'runner', name: 'Scar Tissue',
+    description: 'Won after taking 5 or more damage.',
+    check: c => c.won && (c.data.damageTaken[c.player] || 0) >= 5 },
+  { id: 'mulligan-win', side: 'corp', name: 'Board Restructure',
+    description: 'Won after taking a mulligan.',
+    check: c => c.won && c.data.mulligans.includes(c.player) },
+  { id: 'mulligan-win', side: 'runner', name: 'Fresh Identity',
+    description: 'Won after taking a mulligan.',
+    check: c => c.won && c.data.mulligans.includes(c.player) }
+];
+
+// Highest credit pool a player held at any moment, from the line-by-line
+// pool tracked during parsing. Values printed on turn start/end lines are
+// exact. Values in between are derived; where a stretch between two turn
+// lines didn't add up to the printed value at its end (see poolSegments),
+// they're corrected downward by the overshoot, so a misread gain can't
+// award the achievement on its own.
+function peakCreditPool(data, player){
+  let peak = 0;
+  (data.poolSegments[player] || []).forEach(seg => {
+    peak = Math.max(peak, seg.start);
+    if (seg.expected !== null) peak = Math.max(peak, seg.expected);
+    const correction = seg.ok === false ? Math.min(0, seg.expected - seg.end) : 0;
+    seg.values.forEach(v => { peak = Math.max(peak, v + correction); });
+  });
+  return peak;
+}
+
+function achievementContext(data, player){
+  const opp = data.players.find(p => p !== player) || null;
+  // Replay agenda events in log order to see whether the player was ever
+  // behind 0–6 (current score, so forfeits and negative agendas count).
+  const score = {};
+  data.players.forEach(p => { score[p] = 0; });
+  let trailedZeroSix = false;
+  let oppPointsGained = 0;
+  data.agendaEvents.forEach(e => {
+    if (!(e.player in score)) return;
+    score[e.player] += e.points;
+    if (e.player === opp && e.points > 0) oppPointsGained += e.points;
+    if (opp && score[player] <= 0 && score[opp] >= 6) trailedZeroSix = true;
+  });
+  const finalPool = data.finalCreditPool[player];
+  return {
+    data, player, opp,
+    side: data.playerSide[player],
+    won: data.winner === player,
+    winReason: data.winReason,
+    finalScore: data.finalScore[player] || 0,
+    oppPointsGained,
+    trailedZeroSix,
+    clickCreditCount: (data.clickCredits[player] || { count: 0 }).count,
+    clickDrawCount: data.drawClicks[player] || 0,
+    peakPool: peakCreditPool(data, player),
+    finalPool: finalPool === undefined ? null : finalPool
+  };
+}
+
+function evaluateAchievements(data){
+  const earned = {};
+  data.players.forEach(p => {
+    const side = data.playerSide[p];
+    const ctx = achievementContext(data, p);
+    earned[p] = ACHIEVEMENTS.filter(a => a.side === side && a.check(ctx));
+  });
+  return earned;
 }
 
 // ---- UI wiring ----
@@ -2614,36 +3148,55 @@ const hideZeroState = {};
 
 function fmt(n){ return (typeof n === 'number') ? n.toLocaleString() : n; }
 
+// Easter egg: jinteki.net usernames (lowercase) of Netrunner content creators.
+const NET_CELEBRITIES = new Set(['amavric', 'dull_bulb']);
+
 function renderSummary(data){
   const grid = document.getElementById('summaryGrid');
   grid.innerHTML = '';
   const stats = [
-    { label: 'Winner', num: data.winner || '—' },
+    { label: 'Winner', num: data.winner || '—', side: data.playerSide[data.winner] },
     { label: 'Rounds', num: data.rounds || 0 }
   ];
+  if (data.undos.length) stats.push({ label: 'Undo commands (see flagged lines)', num: data.undos.length });
   data.players.forEach(p => {
-    stats.push({ label: `${p} — turns taken`, num: data.maxTurn[p] || 0 });
+    stats.push({ label: `${p} — turns taken`, num: data.maxTurn[p] || 0, side: data.playerSide[p] });
   });
   stats.forEach(s => {
+    const side = s.side || '';
     const div = document.createElement('div');
-    div.className = 'stat';
-    div.innerHTML = `<span class="num">${s.num}</span><span class="label">${s.label}</span>`;
+    div.className = `stat ${side}`;
+    div.innerHTML = `<span class="num ${side}">${s.num}</span><span class="label">${s.label}</span>`;
     grid.appendChild(div);
   });
 
   const badgesRow = document.getElementById('badgesRow');
   badgesRow.innerHTML = '';
+  const earned = evaluateAchievements(data);
   data.players.forEach(p => {
     const b = data.chatBadges[p] || {};
+    const side = data.playerSide[p] || '';
     const chips = [];
-    if (b.glhf) chips.push('<span class="badge">GLHF</span>');
-    if (b.gg) chips.push('<span class="badge">GG</span>');
-    if (b.ty) chips.push('<span class="badge">TY4TG</span>');
-    if (b.savedReplay) chips.push('<span class="badge" title="Saved a replay of this game">💾 SAVED</span>');
-    if (data.concededPlayer === p) chips.push('<span class="badge" style="border-color:var(--neg);color:var(--neg);">CONCEDE</span>');
+    const chip = (label, desc, extra = '') =>
+      chips.push(`<span class="badge ${side}" tabindex="0" data-desc="${desc}"${extra}>${label}</span>`);
+    if (b.glhf) chip('GLHF', 'Wished good luck / have fun in chat.');
+    if (b.gg) chip('GG', 'Said “good game” in chat.');
+    if (b.ty) chip('TY4TG', 'Thanked the opponent for the game in chat.');
+    if (b.kurwa) chip('Bober *****', 'The player is probably Polish');
+    if (b.savedReplay) chip('💾 SAVED', 'Saved a replay of this game.');
+    if (data.concededPlayer === p) chip('CONCEDE', 'Conceded the game.', ' style="border-color:var(--neg);color:var(--neg);"');
+    if (!chips.length){
+      if (side === 'runner') chip('Silencer', 'No chat detected from this player.');
+      else if (side === 'corp') chip('Subliminal Messaging', 'No chat detected from this player.');
+      else chips.push('<span style="color:var(--dim);">no chat detected</span>');
+    }
+    if (NET_CELEBRITIES.has(p.toLowerCase())) chip('Net Celebrity', 'Twitch/YouTube content creator.');
+    (earned[p] || []).forEach(a => {
+      chips.push(`<span class="badge achievement ${a.side}" tabindex="0" data-desc="${a.description}">${a.name}</span>`);
+    });
     const div = document.createElement('div');
     div.className = 'player-badges';
-    div.innerHTML = `<strong>${p}</strong>${chips.length ? chips.join('') : '<span style="color:var(--dim);">no chat detected</span>'}`;
+    div.innerHTML = `<strong class="badge-player ${side}">${p}</strong>${chips.join('')}`;
     badgesRow.appendChild(div);
   });
 }
@@ -2731,7 +3284,7 @@ function renderInstalledTable(tableId, tbody, rows, hideZero){
       `<td class="num">${fmt(r.gained)}</td>` +
       `<td class="num">${fmt(r.cost)}</td>` +
       netCell(r.net) +
-      `<td class="num"><button class="secondary" data-expand-toggle="${rowKey}">${expanded ? '\u2212' : '+'}</button></td>`;
+      `<td class="num"><button class="btn secondary" data-expand-toggle="${rowKey}">${expanded ? '\u2212' : '+'}</button></td>`;
     tbody.appendChild(tr);
 
     if (expanded){
@@ -2775,7 +3328,7 @@ function renderOpsTable(tableId, tbody, rows, hideZero){
       `<td class="num">${fmt(r.totalGain)}</td>` +
       netCell(r.totalNet) +
       `<td>${r.turnsList}</td>` +
-      `<td class="num"><button class="secondary" data-expand-toggle="${rowKey}">${expanded ? '\u2212' : '+'}</button></td>`;
+      `<td class="num"><button class="btn secondary" data-expand-toggle="${rowKey}">${expanded ? '\u2212' : '+'}</button></td>`;
     tbody.appendChild(tr);
 
     if (expanded){
@@ -2783,7 +3336,7 @@ function renderOpsTable(tableId, tbody, rows, hideZero){
         const sub = document.createElement('tr');
         sub.style.background = 'var(--panel-2)';
         sub.innerHTML =
-          `<td style="padding-left:28px;color:var(--dim);">turn ${pt.turn}</td>` +
+          `<td style="padding-left:28px;color:var(--dim);">turn ${pt.turn}${pt.nth ? ` #${pt.nth}` : ''}</td>` +
           `<td></td>` +
           `<td class="num">${fmt(pt.cost)}</td>` +
           `<td class="num">${fmt(pt.gain)}</td>` +
@@ -2837,7 +3390,7 @@ function buildPlayerSections(data){
 
     panel.innerHTML = `
       <div class="panel-header">
-        <div>
+        <div class="player-head">
           <div class="player-name">${player}</div>
           <div class="player-sub">${data.maxTurn[player] || 0} turns taken</div>
         </div>
@@ -2860,7 +3413,7 @@ function buildPlayerSections(data){
         <h3>${permTitle}</h3>
         <div class="controls">
           <label class="toggle"><input type="checkbox" data-hidezero="${instTableId}" checked> Hide cards that gained no credits</label>
-          <button class="secondary" data-export="${instTableId}">Export CSV</button>
+          <button class="btn secondary" data-export="${instTableId}">Export CSV</button>
         </div>
       </div>
       <div class="table-scroll"><table id="${instTableId}">
@@ -2885,7 +3438,7 @@ function buildPlayerSections(data){
         <h3>${opsTitle}</h3>
         <div class="controls">
           <label class="toggle"><input type="checkbox" data-hidezero="${opsTableId}" checked> Hide cards that gained no credits</label>
-          <button class="secondary" data-export="${opsTableId}">Export CSV</button>
+          <button class="btn secondary" data-export="${opsTableId}">Export CSV</button>
         </div>
       </div>
       <div class="table-scroll"><table id="${opsTableId}">
@@ -2987,7 +3540,7 @@ function renderFlagged(flagged){
   empty.style.display = 'none';
   const details = document.createElement('details');
   const summary = document.createElement('summary');
-  summary.textContent = `${flagged.length} line(s) had a credit trigger with no readable amount`;
+  summary.textContent = `${flagged.length} flagged line(s): parsing gaps, credit-tracking mismatches and undo commands`;
   details.appendChild(summary);
   flagged.forEach(f => {
     const div = document.createElement('div');
@@ -3021,8 +3574,13 @@ function renderLineChart(ids, series, players, rounds, opts){
   if (opts.referenceLines) maxVal = Math.max(maxVal, ...opts.referenceLines) * 1.05;
   if (maxVal === minVal) maxVal = minVal + 1;
 
-  const W = 900, H = 240, padL = 40, padR = 20, padT = 16, padB = 30;
+  // Value labels need room above the top point and below the lowest one, so the
+  // plot keeps its height and the canvas grows around it when they're shown.
+  const labelsOn = valueLabelMode !== 'none';
+  const W = 900, padL = 40, padR = 20, padT = labelsOn ? 30 : 16, padB = labelsOn ? 42 : 30;
+  const H = 194 + padT + padB;
   const plotW = W - padL - padR, plotH = H - padT - padB;
+  const tickY = padT + plotH + (labelsOn ? 28 : 16);
   // t now ranges 0..rounds (turn 0 = game start), so a single-turn game (rounds=1)
   // still spans two x positions (0 and 1) instead of collapsing to one dead center point.
   const xFor = t => padL + (rounds > 0 ? (t / rounds) * plotW : plotW / 2);
@@ -3031,7 +3589,7 @@ function renderLineChart(ids, series, players, rounds, opts){
   let svg = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;font-family:var(--mono);">`;
   svg += `<line x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT+plotH}" stroke="var(--line)" />`;
   svg += `<line x1="${padL}" y1="${padT+plotH}" x2="${padL+plotW}" y2="${padT+plotH}" stroke="var(--line)" />`;
-  svg += `<text x="${padL+plotW}" y="${padT-4}" font-size="10" fill="var(--dim)" text-anchor="end">Last turn: ${rounds}</text>`;
+  svg += `<text x="${padL+plotW}" y="${labelsOn ? 12 : padT-4}" font-size="10" fill="var(--dim)" text-anchor="end">Last turn: ${rounds}</text>`;
 
   let tickVals;
   if (opts.cappedTicks){
@@ -3049,6 +3607,9 @@ function renderLineChart(ids, series, players, rounds, opts){
     tickVals = [];
     for (let i = 0; i <= 4; i++) tickVals.push(Math.round(minVal + ((maxVal - minVal) / 4) * i));
   }
+  // yStep rounds the first tick down (e.g. -5 when the lowest value is -3),
+  // which would land below the plot area; skip ticks outside the plotted range.
+  tickVals = tickVals.filter(v => v >= minVal);
   tickVals.forEach(v => {
     const y = yFor(v);
     svg += `<text x="${padL - 8}" y="${y + 3}" font-size="9" fill="var(--dim)" text-anchor="end">${v}</text>`;
@@ -3079,23 +3640,23 @@ function renderLineChart(ids, series, players, rounds, opts){
   let xTickStep = Math.max(1, Math.ceil(rounds / 12));
   if (opts.xLabels && xTickStep % 2 === 0) xTickStep += 1;
   for (let t = 0; t <= rounds; t += xTickStep){
-    svg += `<text x="${xFor(t)}" y="${padT+plotH+16}" font-size="9" fill="var(--dim)" text-anchor="middle">${xLabel(t)}</text>`;
+    svg += `<text x="${xFor(t)}" y="${tickY}" font-size="9" fill="var(--dim)" text-anchor="middle">${xLabel(t)}</text>`;
   }
   if (rounds % xTickStep !== 0){
-    svg += `<text x="${xFor(rounds)}" y="${padT+plotH+16}" font-size="9" fill="var(--accent)" text-anchor="middle">${xLabel(rounds)}</text>`;
+    svg += `<text x="${xFor(rounds)}" y="${tickY}" font-size="9" fill="var(--accent)" text-anchor="middle">${xLabel(rounds)}</text>`;
   }
   // Always show the very first turn pair (C1/R1) on the shared-order axis,
   // even if the step above would otherwise skip past it.
   if (opts.xLabels){
     [1, 2].forEach(t => {
       if (t <= rounds && t % xTickStep !== 0){
-        svg += `<text x="${xFor(t)}" y="${padT+plotH+16}" font-size="9" fill="var(--dim)" text-anchor="middle">${xLabel(t)}</text>`;
+        svg += `<text x="${xFor(t)}" y="${tickY}" font-size="9" fill="var(--dim)" text-anchor="middle">${xLabel(t)}</text>`;
       }
     });
   }
 
   players.forEach((p, idx) => {
-    const color = (opts.colors && opts.colors[idx]) || COLORS[idx % COLORS.length];
+    const color = (opts.colors && opts.colors[idx]) || seriesColor(idx);
     const s = series[p];
     if (!s) return;
     if (opts.style === 'bar'){
@@ -3120,11 +3681,13 @@ function renderLineChart(ids, series, players, rounds, opts){
     }
   });
 
+  svg += renderValueLabels(series, players, rounds, opts, xFor, yFor, plotW);
+
   svg += `</svg>`;
   chartDiv.innerHTML = svg;
 
   players.forEach((p, idx) => {
-    const color = (opts.colors && opts.colors[idx]) || COLORS[idx % COLORS.length];
+    const color = (opts.colors && opts.colors[idx]) || seriesColor(idx);
     const div = document.createElement('div');
     div.className = 'legend-item';
     div.innerHTML = `<span class="legend-swatch" style="background:${color};"></span>${p}`;
@@ -3143,6 +3706,61 @@ function renderLineChart(ids, series, players, rounds, opts){
     tbl += '</tbody></table></div>';
     tableWrap.innerHTML = tbl;
   }
+}
+
+// Small value numbers above each point, per valueLabelMode. Uses each player's
+// chart colour; when both players sit on the same point (line charts, same value)
+// a single grey label is drawn instead of two overlapping ones.
+function renderValueLabels(series, players, rounds, opts, xFor, yFor, plotW){
+  if (valueLabelMode === 'none') return '';
+  const colorOf = idx => (opts.colors && opts.colors[idx]) || seriesColor(idx);
+  const isBar = opts.style === 'bar';
+  const startT = isBar ? 1 : 0;
+  const shows = (s, t) => valueLabelMode === 'all' || t === startT || s[t] !== s[t - 1];
+  const label = (x, y, v, color) =>
+    `<text x="${x}" y="${y}" font-size="9" fill="${color}" text-anchor="middle" ` +
+    `stroke="var(--panel)" stroke-width="3" paint-order="stroke" stroke-linejoin="round">${v}</text>`;
+  let out = '';
+  for (let t = startT; t <= rounds; t++){
+    const pts = [];
+    players.forEach((p, idx) => {
+      const s = series[p];
+      if (s && s[t] !== undefined) pts.push({ idx, v: s[t], show: shows(s, t) });
+    });
+    if (!pts.some(pt => pt.show)) continue;
+    if (isBar){
+      const barW = Math.max(2, (plotW / (rounds + 1)) / (players.length + 1));
+      pts.forEach(pt => {
+        if (!pt.show) return;
+        const x = xFor(t) - barW * (players.length / 2) + barW * pt.idx + barW / 2;
+        const y = pt.v < 0 ? yFor(pt.v) + 10 : yFor(pt.v) - 4;
+        out += label(x, y, pt.v, colorOf(pt.idx));
+      });
+      continue;
+    }
+    const x = xFor(t);
+    if (pts.length > 1 && pts.every(pt => pt.v === pts[0].v)){
+      out += label(x, yFor(pts[0].v) - 6, pts[0].v, VALUE_LABEL_SHARED_COLOR);
+      continue;
+    }
+    // Different values at the same turn: the highest goes above its dot, the
+    // others below theirs, so close values don't print on top of each other.
+    const maxV = Math.max(...pts.map(pt => pt.v));
+    pts.forEach(pt => {
+      if (!pt.show) return;
+      const above = pts.length === 1 || pt.v === maxV;
+      out += label(x, above ? yFor(pt.v) - 6 : yFor(pt.v) + 13, pt.v, colorOf(pt.idx));
+    });
+  }
+  return out;
+}
+
+function syncValueLabelToggles(){
+  document.querySelectorAll('.value-labels-toggle').forEach(btn => {
+    btn.dataset.mode = valueLabelMode;
+    btn.setAttribute('aria-pressed', String(valueLabelMode !== 'none'));
+    btn.textContent = 'values: ' + valueLabelMode;
+  });
 }
 
 function renderAllCharts(data){
@@ -3255,7 +3873,20 @@ function runParse(){
   statusMsg.textContent = `Parsed ${text.trim().split(/\r?\n/).length} lines. Players: ${currentData.players.join(', ')}`;
 }
 
+JW.mountThemeSwitcher(document.getElementById('themeSwitcher'));
+JW.mountModeToggle(document.getElementById('modeToggle'));
+document.addEventListener('jw:themechange', () => {
+  if (currentData && !currentData.playerCountError) renderAllCharts(currentData);
+});
+
 document.addEventListener('click', (e) => {
+  if (e.target.closest('.value-labels-toggle')){
+    valueLabelMode = VALUE_LABEL_MODES[(VALUE_LABEL_MODES.indexOf(valueLabelMode) + 1) % VALUE_LABEL_MODES.length];
+    try { localStorage.setItem('valueLabelMode', valueLabelMode); } catch (err) {}
+    syncValueLabelToggles();
+    if (currentData && !currentData.playerCountError) renderAllCharts(currentData);
+    return;
+  }
   const header = e.target.closest('.panel-header');
   if (!header) return;
   const panel = header.closest('.panel');
@@ -3271,6 +3902,19 @@ function warnAgainstBookmarkletClick(e){
   return false;
 }
 
+// The bookmarklet's href hardcodes https://jinteki.win/ as its target. When
+// the page is served from somewhere else over http(s) — e.g. the test Worker
+// on workers.dev — point it at that origin instead, so a bookmark dragged
+// from the test site opens games in the test site rather than production.
+// Opened as a local file, there's no origin to point at, so it keeps prod.
+(function retargetBookmarklet(){
+  if (!/^https?:$/.test(location.protocol) || location.hostname === 'jinteki.win') return;
+  const btn = document.getElementById('bookmarkletBtn');
+  const prod = encodeURIComponent('"https://jinteki.win/#log="');
+  const here = encodeURIComponent('"' + location.origin + '/#log="');
+  btn.setAttribute('href', btn.getAttribute('href').replace(prod, here));
+})();
+
 document.getElementById('skipCopyPasteBtn').addEventListener('click', () => {
   const section = document.getElementById('bookmarkSection');
   const btn = document.getElementById('skipCopyPasteBtn');
@@ -3278,6 +3922,8 @@ document.getElementById('skipCopyPasteBtn').addEventListener('click', () => {
   section.style.display = showing ? 'none' : 'block';
   btn.textContent = showing ? 'How to skip copy-paste' : 'Hide Bookmark info';
 });
+
+syncValueLabelToggles();
 
 document.getElementById('parseBtn').addEventListener('click', runParse);
 document.getElementById('example1Btn').addEventListener('click', () => {
@@ -3482,6 +4128,12 @@ document.getElementById('shortenPermalinkBtn').addEventListener('click', async (
   const hash = location.hash;
   if (!hash.startsWith('#log=')) return;
   const encoded = hash.slice(5);
+  // Reserve #results' space up front (synchronously, before the await below
+  // yields) so revealing it after decode/parse doesn't cause a large CLS hit.
+  // The overlay hides this from view entirely; it's still worth doing so the
+  // shift doesn't get measured, since CLS doesn't know it was occluded.
+  results.classList.add('loading');
+  results.style.display = 'block';
   try {
     statusMsg.textContent = 'Decoding shared log…';
     const text = await decodeLogFromUrl(decodeURIComponent(encoded));
@@ -3489,7 +4141,13 @@ document.getElementById('shortenPermalinkBtn').addEventListener('click', async (
     runParse();
     statusMsg.textContent += ' Loaded from shared link.';
   } catch (e) {
+    results.style.display = 'none';
     statusMsg.textContent = 'Could not load the log from this link: ' + e.message;
+  } finally {
+    results.classList.remove('loading');
+    // Reveal the finished page (or the error state) in one go, rather than
+    // the overlay disappearing mid-render.
+    document.getElementById('hashLoadOverlay').style.display = 'none';
   }
 })();
 </script>

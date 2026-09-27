@@ -9,6 +9,7 @@ A single-page, client-side log analyzer for [jinteki.net](https://jinteki.net) N
 - **Log parsing** — paste the log text from the jinteki.net chat panel and parse it into structured turn-by-turn data.
 - **Browser bookmarklet** — drag a bookmarklet into your bookmarks bar; on any finished jinteki.net game, one click extracts the log and opens it here already parsed, no copy/paste.
 - **Game summary & stats** — turns played, credits, draws, runs, installs, and other per-player totals.
+- **Achievements** — per-player Corp/Runner achievements for the game (e.g. won without clicking for credits, flatline and mill wins, comebacks from 0–6), shown as tags next to the chat badges in the game summary with the description on hover. Defined in one `ACHIEVEMENTS` list in `index.html`.
 - **Charts** — agenda points, net credits gained per turn, credit pool over time, cards in hand, and cumulative cards drawn, plotted both by each player's own turn number and on a shared/interleaved turn-order axis.
 - **Per-card tables** — credits gained/spent and net value attributed to each installed card, plus operations/events, with a flagged-lines list for anything the parser couldn't confidently resolve.
 - **Share link** — compresses the pasted log and encodes it into a URL fragment (`#log=...`) so a whole game can be shared as a link. The log never touches a server; only whoever has the link can decode it in their own browser.
@@ -23,7 +24,9 @@ Everything runs client-side. Nothing about a pasted log is uploaded anywhere unl
 
 This is a single static file — `index.html` — with no build step, no dependencies, and no package manager. To work on it locally, just open `index.html` in a browser, or serve the directory with any static file server.
 
-To test a change, paste one of the two built-in example logs (via the "Log example 1/2" buttons) and confirm the parsed output looks right, or use `/code-review` / `/simplify` if you're using Claude Code against this repo.
+The page's look comes from the jinteki.win design system, copied into `public/shared/jw/` (shared with the Market Research page): `tokens.css` (colours per theme, generated from `tokens.json` by `build-tokens.mjs`; don't edit it by hand), `bundle.css` (fonts, shapes and components) and `bundle.js` (`window.JW`: theme switching and resolved chart colours). The header offers four theme families (Beanstalk, Ice Wall, Console, Night City) and a separate Dark | Light toggle; the choices are saved in `localStorage['jw-theme']` and `localStorage['jw-mode']`, and with no saved mode the page follows the system's light/dark setting. Style new UI with the tokens (`var(--panel)`, `var(--accent)` …) and the `.btn` / `.btn.secondary` classes rather than hex values, so it follows the theme.
+
+Real and synthetic game logs with their expected results are in `test/` (see `test/README.md`). To test a change, paste one of those or one of the two built-in example logs (via the "Log example 1/2" buttons) and confirm the parsed output looks right, or use `/code-review` / `/simplify` if you're using Claude Code against this repo.
 
 ## Deployment
 
