@@ -224,14 +224,21 @@
   footer a{ color: var(--accent); text-decoration: none; }
   footer a:hover{ text-decoration: underline; }
 
-  /* Reserves space for #results while a shared log is being decoded/parsed from
-     the URL hash, so revealing it doesn't produce a large, late layout shift. */
-  #results.loading{ min-height: 640px; position: relative; }
-  #results.loading .panel{ visibility: hidden; }
-  .results-spinner{ display:none; }
-  #results.loading .results-spinner{
-    display:flex; position:absolute; inset:0; align-items:center; justify-content:center;
-    flex-direction:column; gap:10px; color: var(--dim); font-family: var(--mono); font-size:13px;
+  /* Reserves space for #results while a shared log is being decoded/parsed
+     from the URL hash, so revealing it doesn't produce a large, late layout
+     shift (this matters even though the overlay below hides it visually —
+     the CLS measurement doesn't care what's occluding what). */
+  #results.loading{ min-height: 640px; }
+
+  /* Full-page loading screen shown, as early as possible, while a shared
+     log from the URL hash is being decoded and parsed. Covers the normal
+     "paste a log" shell so visitors following a share/bookmarklet link see
+     one loading screen and then the finished result, not a flash of the
+     empty form followed by content popping in underneath it. */
+  #hashLoadOverlay{
+    display:none; position:fixed; inset:0; z-index:1000; background:var(--bg);
+    align-items:center; justify-content:center; flex-direction:column; gap:14px;
+    color:var(--dim); font-family:var(--mono); font-size:14px;
   }
   .spinner-ring{
     width:28px; height:28px; border:2px solid var(--line); border-top-color: var(--accent);
@@ -241,6 +248,13 @@
 </style>
 </head>
 <body>
+<div id="hashLoadOverlay"><div class="spinner-ring"></div><div>Parsing your shared game…</div></div>
+<script>
+  // Runs before the rest of the page's markup/script, so this is up at
+  // first paint for anyone arriving via a share or bookmarklet link
+  // (#log=...) rather than after the normal page has already rendered.
+  if (location.hash.startsWith('#log=')) document.getElementById('hashLoadOverlay').style.display = 'flex';
+</script>
 <div class="wrap">
 
   <header>
@@ -301,8 +315,6 @@
   </div>
 
   <div id="results" style="display:none;">
-
-    <div class="results-spinner"><div class="spinner-ring"></div><span>Loading shared game…</span></div>
 
     <div class="panel">
       <div class="panel-header"><h2>Game summary</h2><span class="collapse-icon">−</span></div>
@@ -4134,6 +4146,8 @@ document.getElementById('shortenPermalinkBtn').addEventListener('click', async (
   const encoded = hash.slice(5);
   // Reserve #results' space up front (synchronously, before the await below
   // yields) so revealing it after decode/parse doesn't cause a large CLS hit.
+  // The overlay hides this from view entirely; it's still worth doing so the
+  // shift doesn't get measured, since CLS doesn't know it was occluded.
   results.classList.add('loading');
   results.style.display = 'block';
   try {
@@ -4147,6 +4161,9 @@ document.getElementById('shortenPermalinkBtn').addEventListener('click', async (
     statusMsg.textContent = 'Could not load the log from this link: ' + e.message;
   } finally {
     results.classList.remove('loading');
+    // Reveal the finished page (or the error state) in one go, rather than
+    // the overlay disappearing mid-render.
+    document.getElementById('hashLoadOverlay').style.display = 'none';
   }
 })();
 </script>
