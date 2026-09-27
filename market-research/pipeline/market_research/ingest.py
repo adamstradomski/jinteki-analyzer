@@ -1,0 +1,815 @@
+"""Ingestion: discovery, the frontier loop and one handler per item kind.
+
+Hosts run concurrently (one worker per host), each at its own polite rate. The loop works in
+rounds: every round takes the items due now, per host in priority order, until the host's budget
+is spent or its breaker trips. Items created during a round (new deck references, say) are due in
+the next round.
+"""
+
+from __future__ import annotations
+
+import threading
+import time
+from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor
+from dataclasses import dataclass, field
+from datetime import date, datetime, timedelta
+from typing import Any
+
+from pydantic import ValidationError
+
+from market_research import logs
+from market_research.clock import Clock
+from market_research.config import Settings, tier_config
+from market_research.frontier import SIGNAL_BONUS, Frontier, Item, event_priority
+from market_research.http import (
+    BudgetExhausted,
+    FetchFailed,
+    HostTripped,
+    PoliteHttp,
+    RequestRefused,
+    ResponseTooLarge,
+)
+from market_research.records import (
+    AbrTournament,
+    CobraTournament,
+    NrdbByDate,
+    NrdbCatalog,
+    Record,
+    dump,
+)
+from market_research.scrub import IngestQuality
+from market_research.sources import abr, cobra, nrdb
+from market_research.sources.common import NotFound, ParseError, iso_now
+from market_research.storage import Stores
+
+log = logs.get("market_research.ingest")
+
+QUALITY_KEY = "state/ingest_quality.json"
+LINKS_KEY = "state/cobra_abr_codes.json"
+DISCOVERY_PRIORITY = 10_000_000.0
+BY_DATE_PRIORITY = 5_000_000.0
+BY_DATE_WINDOW = (-1, 14)  # days around an event in which its decklists are usually published
+
+SOURCE_GROUP = {"abr": "abr", "cobra": "cobra", "nrdb": "nrdb"}
+
+
+@dataclass
+class RunStats:
+    new_records: int = 0
+    decks_added: int = 0
+    items_done: int = 0
+    by_status: dict[str, int] = field(default_factory=dict)
+
+    def status(self, s: str) -> None:
+        self.by_status[s] = self.by_status.get(s, 0) + 1
+
+
+class Deferred(Exception):
+    """The item cannot be handled yet (it waits for another item)."""
+
+
+@dataclass
+class Plan:
+    """Collected in --plan mode instead of fetching."""
+
+    requests: dict[str, dict[int, int]] = field(default_factory=dict)
+
+    def add(self, group: str, phase: int, n: int = 1) -> None:
+        self.requests.setdefault(group, {}).setdefault(phase, 0)
+        self.requests[group][phase] += n
+
+
+class Ingestor:
+    def __init__(
+        self,
+        settings: Settings,
+        clock: Clock,
+        http: PoliteHttp,
+        stores: Stores,
+        *,
+        frontier: Frontier | None = None,
+        since: date | None = None,
+        backfill: bool = False,
+        parallel: bool = True,
+    ) -> None:
+        self.settings = settings
+        self.clock = clock
+        self.http = http
+        self.stores = stores
+        self.frontier = frontier if frontier is not None else Frontier.load(stores.canonical)
+        self.quality = IngestQuality()
+        self.stats = RunStats()
+        self.since = since
+        self.backfill = backfill
+        self.parallel = parallel
+        self.tiers = tier_config()
+        self._lock = threading.RLock()
+        self._cache: dict[str, Any] = {}
+        self._since_flush = 0
+        self._last_flush = time.monotonic()
+        self._stopped: set[str] = set()
+        links = stores.canonical.get_json(LINKS_KEY)
+        self.cobra_abr_codes: dict[str, str] = links if isinstance(links, dict) else {}
+        self.handlers: dict[str, Callable[[Item], None]] = {
+            "abr_list_recent": self.h_abr_list,
+            "abr_list_sweep": self.h_abr_list,
+            "abr_list_full": self.h_abr_list,
+            "abr_entries": self.h_abr_entries,
+            "cobra_catalog": self.h_cobra_catalog,
+            "cobra_index": self.h_cobra_index,
+            "cobra_tournament": self.h_cobra_tournament,
+            "cobra_deck": self.h_cobra_deck,
+            "cobra_settings": self.h_cobra_settings,
+            "nrdb_catalog": self.h_nrdb_catalog,
+            "nrdb_catalog_bulk": self.h_nrdb_catalog,
+            "nrdb_by_date": self.h_nrdb_by_date,
+            "nrdb_decklist": self.h_nrdb_decklist,
+            "nrdb_deck": self.h_nrdb_decklist,
+        }
+
+    # ------------------------------------------------------------------ helpers
+
+    @property
+    def now(self) -> datetime:
+        return self.clock.now()
+
+    @property
+    def today(self) -> date:
+        return self.now.date()
+
+    def fetched_at(self) -> str:
+        return iso_now(self.now)
+
+    def read(self, key: str) -> Any:
+        with self._lock:
+            if key in self._cache:
+                return self._cache[key]
+        v = self.stores.source.get_json(key)
+        with self._lock:
+            self._cache[key] = v
+        return v
+
+    def write(self, key: str, record: Record, known_hash: str | None = None) -> bool:
+        """Writes a record only when its hash changed. Returns True if written."""
+        h = record.compute_hash()
+        if known_hash is None:
+            existing = self.read(key)
+            known_hash = existing.get("record_hash") if isinstance(existing, dict) else None
+        if known_hash == h:
+            return False
+        obj = dump(record)
+        self.stores.source.put_json(key, obj)
+        with self._lock:
+            self._cache[key] = obj
+            self.stats.new_records += 1
+        return True
+
+    def enqueue(
+        self,
+        key: str,
+        source: str,
+        kind: str,
+        entity_id: str,
+        *,
+        priority: float,
+        event_date: str | None = None,
+    ) -> bool:
+        with self._lock:
+            _, created = self.frontier.upsert(
+                key,
+                source=source,
+                kind=kind,
+                entity_id=entity_id,
+                now=self.now,
+                priority=priority,
+                event_date=event_date,
+            )
+            return created
+
+    def seed(self) -> None:
+        """Discovery and reference items every run needs."""
+        pr = DISCOVERY_PRIORITY
+        for kind, key in (
+            ("abr_list_recent", "abr:list:recent"),
+            ("abr_list_sweep", "abr:list:sweep"),
+            ("abr_list_full", "abr:list:full"),
+        ):
+            self.enqueue(key, "abr", kind, key.rsplit(":", 1)[1], priority=pr)
+        for k in ("formats", "tournament_types", "deckbuilding_restrictions"):
+            self.enqueue(f"cobra:catalog:{k}", "cobra", "cobra_catalog", k, priority=pr + 1)
+        self.enqueue("cobra:index", "cobra", "cobra_index", "index", priority=pr)
+        for k in ("card_sets", "restrictions", "formats", "snapshots"):
+            self.enqueue(f"nrdb:catalog:{k}", "nrdb", "nrdb_catalog", k, priority=pr + 1)
+        for k in ("cards", "printings"):
+            self.enqueue(f"nrdb:catalog:{k}", "nrdb", "nrdb_catalog_bulk", k, priority=pr)
+        days = [self.today - timedelta(days=1), self.today]
+        if self.backfill and self.since:
+            days = [self.since + timedelta(days=i) for i in range((self.today - self.since).days + 1)]
+        for d in days:
+            self.enqueue_by_date(d, BY_DATE_PRIORITY + 1)
+
+    def enqueue_by_date(self, d: date, priority: float = BY_DATE_PRIORITY) -> None:
+        if d > self.today:
+            return
+        self.enqueue(
+            f"nrdb:by_date:{d.isoformat()}",
+            "nrdb",
+            "nrdb_by_date",
+            d.isoformat(),
+            priority=priority,
+            event_date=d.isoformat(),
+        )
+
+    def identity_printings(self) -> frozenset[str]:
+        cached = self._cache.get("__identity_printings")
+        if isinstance(cached, frozenset):
+            return cached
+        cards = self.read("nrdb/catalog/cards.json") or {}
+        printings = self.read("nrdb/catalog/printings.json") or {}
+        idents = {
+            c["id"] for c in cards.get("cards", []) if str(c.get("card_type_id", "")).endswith("identity")
+        }
+        out = frozenset(p["id"] for p in printings.get("printings", []) if p.get("card_id") in idents)
+        if out:
+            self._cache["__identity_printings"] = out
+        return out
+
+    def cobra_catalog(self, kind: str) -> dict[str, str]:
+        rec = self.read(f"cobra/catalog/{kind}.json") or {}
+        return {i["id"]: i["name"] for i in rec.get("items", [])}
+
+    def is_standard_cobra(self, format_id: int | None) -> bool:
+        if format_id is None:
+            return False
+        return self.cobra_catalog("formats").get(str(format_id), "").strip().lower() == "standard"
+
+    # ------------------------------------------------------------------ loop
+
+    def run(
+        self, *, sources: set[str] | None = None, accept: Callable[[Item], bool] | None = None
+    ) -> RunStats:
+        self.seed()
+        groups = sorted({SOURCE_GROUP[s] for s in (sources or {"abr", "cobra", "nrdb"})})
+        try:
+            while True:
+                work: dict[str, list[Item]] = {}
+                for g in groups:
+                    if g in self._stopped:
+                        continue
+                    items = [i for i in self.frontier.due(self.now, source=g) if accept is None or accept(i)]
+                    if items:
+                        work[g] = items
+                if not work:
+                    break
+                progressed = self._round(work)
+                if not progressed:
+                    break
+        finally:
+            self.flush()
+        return self.stats
+
+    def _round(self, work: dict[str, list[Item]]) -> bool:
+        if self.parallel and len(work) > 1:
+            with ThreadPoolExecutor(max_workers=len(work)) as ex:
+                results = list(ex.map(lambda kv: self._drain(kv[0], kv[1]), sorted(work.items())))
+        else:
+            results = [self._drain(g, items) for g, items in sorted(work.items())]
+        return any(results)
+
+    def _drain(self, group: str, items: list[Item]) -> bool:
+        progressed = False
+        for it in items:
+            if group in self._stopped:
+                break
+            if it.frozen or it.next_due > self.now:
+                continue
+            try:
+                self.handlers[it.kind](it)
+                progressed = True
+            except Deferred:
+                continue
+            except BudgetExhausted:
+                log.info("budget_exhausted", host_group=group)
+                self._stopped.add(group)
+            except HostTripped:
+                self._stopped.add(group)
+            except (FetchFailed, NotFound) as e:
+                with self._lock:
+                    self.frontier.fail(it, self.now, type(e).__name__)
+                progressed = True
+            except RequestRefused as e:
+                with self._lock:
+                    self.frontier.fail(it, self.now, "refused")
+                log.warning("request_refused", key=it.key, reason=str(e))
+                progressed = True
+            except (ParseError, ValidationError, ValueError, ResponseTooLarge) as e:
+                self.quality.add_quarantine(
+                    it.key, f"{type(e).__name__}: {str(e).splitlines()[0][:120]}", None
+                )
+                with self._lock:
+                    self.frontier.fail(it, self.now, "quarantined", retry_s=86400)
+                progressed = True
+            with self._lock:
+                self.stats.items_done += 1
+                self.stats.status(it.last_status or "none")
+                self._since_flush += 1
+            self.maybe_flush()
+        return progressed
+
+    def maybe_flush(self) -> None:
+        with self._lock:
+            due = self._since_flush >= self.settings.flush_every_items or (
+                time.monotonic() - self._last_flush >= self.settings.flush_every_s
+            )
+        if due:
+            self.flush()
+
+    def flush(self) -> None:
+        with self._lock:
+            self.frontier.save(self.stores.canonical)
+            self.stores.canonical.put_json(LINKS_KEY, self.cobra_abr_codes)
+            prev = self.stores.canonical.get_json(QUALITY_KEY) or {}
+            cur = self.quality.to_json()
+            drift = {
+                k: sorted(set(prev.get("drift", {}).get(k, [])) | set(v)) for k, v in cur["drift"].items()
+            }
+            for k, v in prev.get("drift", {}).items():
+                drift.setdefault(k, v)
+            q = {e["key"]: e for e in prev.get("quarantine", [])}
+            q.update({e["key"]: e for e in cur["quarantine"]})
+            self.stores.canonical.put_json(
+                QUALITY_KEY,
+                {
+                    "drift": dict(sorted(drift.items())),
+                    "quarantine": [q[k] for k in sorted(q)][-500:],
+                    "rejected_deck_refs": cur["rejected_deck_refs"]
+                    + int(prev.get("rejected_deck_refs_total", 0)),
+                    "rejected_deck_refs_total": cur["rejected_deck_refs"]
+                    + int(prev.get("rejected_deck_refs_total", 0)),
+                },
+            )
+            self._since_flush = 0
+            self._last_flush = time.monotonic()
+
+    # ------------------------------------------------------------------ ABR
+
+    def abr_list_urls(self, it: Item) -> list[str] | None:
+        t = self.today
+        if it.kind == "abr_list_recent":
+            return [abr.list_url(t - timedelta(days=60))]
+        if it.kind == "abr_list_sweep":
+            return [abr.list_url(t - timedelta(days=365), t - timedelta(days=60))]
+        return None  # full: paginated results
+
+    def h_abr_list(self, it: Item) -> None:
+        urls = self.abr_list_urls(it)
+        fetched = self.fetched_at()
+        events: list[AbrTournament] = []
+        if urls is not None:
+            for u in urls:
+                r = self.http.get(u)
+                if r.status != 200:
+                    raise NotFound(f"status {r.status}")
+                events += abr.parse_events(r.json(), self.quality, fetched)
+        else:
+            offset = 0
+            while True:
+                r = self.http.get(abr.results_url(offset, self.settings.abr_page_size))
+                if r.status != 200:
+                    raise NotFound(f"status {r.status}")
+                page = abr.parse_events(r.json(), self.quality, fetched)
+                events += page
+                if len(page) < self.settings.abr_page_size:
+                    break
+                if self.since and all(date.fromisoformat(e.date) < self.since for e in page):
+                    break
+                offset += self.settings.abr_page_size
+        for ev in events:
+            self.consider_abr_event(ev)
+        with self._lock:
+            self.frontier.complete(it, self.now, changed=True, status="ok")
+
+    def abr_eligible(self, ev: AbrTournament) -> str | None:
+        """Returns a skip reason, or None if the event is kept."""
+        if ev.format != "standard":
+            return "not_standard"
+        if ev.approved != 1:
+            return "unapproved"
+        if not ev.concluded:
+            return "not_concluded"
+        if ev.claim_conflict:
+            return "claim_conflict"
+        if ev.players_count < self.settings.thresholds.min_players:
+            return "too_small"
+        if self.since and date.fromisoformat(ev.date) < self.since:
+            return "before_window"
+        return None
+
+    def consider_abr_event(self, ev: AbrTournament) -> None:
+        reason = self.abr_eligible(ev)
+        key = f"abr:event:{ev.id}"
+        if reason:
+            log.debug("abr_event_skipped", abr_id=ev.id, reason=reason)
+            return
+        with self._lock:
+            prev = self.frontier.get(key)
+            prev_hash = prev.record_hash if prev else None
+        if prev_hash == ev.record_hash:
+            return
+        old = self.read(f"abr/tournament/{ev.id}.json")
+        old_fp = AbrTournament.model_validate(old).fingerprint() if isinstance(old, dict) else None
+        self.write(f"abr/tournament/{ev.id}.json", ev)
+        with self._lock:
+            self.frontier.mark_known(
+                key, source="abr", kind="abr_event", entity_id=str(ev.id), now=self.now, status="seen"
+            )
+            self.frontier.items[key].record_hash = ev.record_hash
+            self.frontier.items[key].event_date = ev.date
+        if old_fp == ev.fingerprint():
+            return
+        linked = str(ev.id) in set(self.cobra_abr_codes.values())
+        need_entries = ev.claim_count > 0 or (ev.matchdata and not linked)
+        if not need_entries:
+            return
+        _, group = self.tiers.abr_tier(ev.type_id)
+        pr = event_priority(
+            group, ev.players_count, recency_days=(self.today - date.fromisoformat(ev.date)).days
+        )
+        ekey = f"abr:entries:{ev.id}"
+        created = self.enqueue(ekey, "abr", "abr_entries", str(ev.id), priority=pr, event_date=ev.date)
+        if not created:
+            with self._lock:
+                self.frontier.signal(ekey, self.now)
+
+    def h_abr_entries(self, it: Item) -> None:
+        tid = int(it.entity_id)
+        r = self.http.get(abr.entries_url(tid))
+        if r.status != 200:
+            raise NotFound(f"status {r.status}")
+        rec = abr.parse_entries(tid, r.json(), self.quality)
+        changed = self.write(f"abr/entries/{tid}.json", rec, known_hash=it.record_hash)
+        base = it.priority % SIGNAL_BONUS
+        if changed:
+            ev_date = date.fromisoformat(it.event_date) if it.event_date else self.today
+            refs = [
+                (s.deck_ref.kind, s.deck_ref.id)
+                for e in rec.entries
+                for s in (e.corp, e.runner)
+                if s.deck_ref
+            ]
+            if any(k == "decklist" for k, _ in refs):
+                for off in range(BY_DATE_WINDOW[0], BY_DATE_WINDOW[1] + 1):
+                    self.enqueue_by_date(ev_date + timedelta(days=off))
+            for kind, ref in refs:
+                if kind == "decklist":
+                    self.enqueue(
+                        f"nrdb:decklist:{ref}",
+                        "nrdb",
+                        "nrdb_decklist",
+                        ref,
+                        priority=base,
+                        event_date=it.event_date,
+                    )
+                else:
+                    # Private shared decks can change after the event: fetch them first, then freeze.
+                    self.enqueue(
+                        f"nrdb:deck:{ref}",
+                        "nrdb",
+                        "nrdb_deck",
+                        ref,
+                        priority=base + SIGNAL_BONUS / 2,
+                        event_date=it.event_date,
+                    )
+        with self._lock:
+            self.frontier.complete(it, self.now, changed=changed, status="ok", record_hash=rec.record_hash)
+
+    # ------------------------------------------------------------------ Cobra
+
+    def h_cobra_catalog(self, it: Item) -> None:
+        kind = it.entity_id
+        got = cobra.fetch_catalog(self.http, kind, self.quality, etag=it.etag)
+        if got is None:
+            with self._lock:
+                self.frontier.complete(it, self.now, changed=False, status="not_modified")
+            return
+        rec, etag = got
+        changed = self.write(f"cobra/catalog/{kind}.json", rec, known_hash=it.record_hash)
+        with self._lock:
+            self.frontier.complete(
+                it, self.now, changed=changed, status="ok", record_hash=rec.record_hash, etag=etag
+            )
+
+    def h_cobra_index(self, it: Item) -> None:
+        if not self.cobra_catalog("formats"):
+            fmt = self.frontier.get("cobra:catalog:formats")
+            if fmt is not None and fmt.last_status is None:
+                raise Deferred
+        types = self.cobra_catalog("tournament_types")
+        page = 1
+        size = self.settings.cobra_page_size
+        fetched = self.fetched_at()
+        stop = False
+        first_etag = it.etag
+        while not stop:
+            r = self.http.get(
+                cobra.index_url(page, size),
+                etag=it.etag if page == 1 else None,
+                accept="application/vnd.api+json, application/json",
+            )
+            if r.not_modified:
+                break  # the newest page is unchanged: nothing new
+            if page == 1:
+                first_etag = r.etag
+            if r.status != 200:
+                raise NotFound(f"status {r.status}")
+            doc = r.json()
+            if not isinstance(doc, dict) or not isinstance(doc.get("data"), list):
+                raise ParseError("not a JSON:API document")
+            data = doc["data"]
+            for item in data:
+                meta, private = cobra.parse_index_item(item, self.quality, fetched)
+                key = f"cobra:tournament:{meta.id}"
+                if self.frontier.get(key) is not None:
+                    stop = True  # newest first: everything after this is known
+                    break
+                d = date.fromisoformat(meta.date)
+                if self.since and d < self.since:
+                    stop = True
+                    break
+                if d > self.today:
+                    continue  # not played yet; seen again next run
+                if private:
+                    with self._lock:
+                        self.frontier.mark_known(
+                            key,
+                            source="cobra",
+                            kind="cobra_tournament",
+                            entity_id=str(meta.id),
+                            now=self.now,
+                            status="skipped_private",
+                        )
+                    continue
+                if not self.is_standard_cobra(meta.format_id):
+                    with self._lock:
+                        self.frontier.mark_known(
+                            key,
+                            source="cobra",
+                            kind="cobra_tournament",
+                            entity_id=str(meta.id),
+                            now=self.now,
+                            status="skipped_not_standard",
+                        )
+                    continue
+                self.write(f"cobra/tournament/{meta.id}.json", meta)
+                if meta.abr_code:
+                    with self._lock:
+                        self.cobra_abr_codes[str(meta.id)] = meta.abr_code
+                _, group = self.tiers.cobra_tier(types.get(str(meta.type_id)))
+                pr = event_priority(group, meta.players_active, recency_days=(self.today - d).days)
+                self.enqueue(
+                    key, "cobra", "cobra_tournament", str(meta.id), priority=pr, event_date=meta.date
+                )
+            if len(data) < size:
+                break
+            page += 1
+        with self._lock:
+            self.frontier.complete(it, self.now, changed=True, status="ok", etag=first_etag)
+
+    def h_cobra_tournament(self, it: Item) -> None:
+        tid = int(it.entity_id)
+        key = f"cobra/tournament/{tid}.json"
+        stored = self.read(key)
+        if not isinstance(stored, dict):
+            raise ParseError("tournament metadata missing")
+        meta = CobraTournament.model_validate(stored)
+        fetched = self.fetched_at()
+        concluded_by_date = date.fromisoformat(meta.date) < self.today - timedelta(days=3)
+        if concluded_by_date and "public" not in (meta.deck_visibility.swiss, meta.deck_visibility.cut):
+            # Organisers often publish decks after the event: watch the tournament's settings.
+            self.enqueue(
+                f"cobra:settings:{tid}",
+                "cobra",
+                "cobra_settings",
+                str(tid),
+                priority=it.priority % SIGNAL_BONUS,
+                event_date=meta.date,
+            )
+        r = self.http.get(cobra.nrtm_url(tid), etag=it.etag if meta.results_fetched else None)
+        if r.not_modified:
+            rec = meta
+            etag = it.etag
+        elif r.status == 200:
+            rec = cobra.parse_nrtm(r.json(), meta, self.quality, fetched)
+            etag = r.etag
+        else:
+            raise NotFound(f"status {r.status}")
+        changed = self.write(key, rec, known_hash=stored.get("record_hash"))
+        live = not concluded_by_date or cobra.has_unreported(rec)
+        if not live:
+            self.enqueue_cobra_decks(rec, it.priority % SIGNAL_BONUS)
+        with self._lock:
+            self.frontier.complete(
+                it, self.now, changed=changed, status="ok", record_hash=rec.record_hash, etag=etag, live=live
+            )
+
+    def h_cobra_settings(self, it: Item) -> None:
+        """Re-reads a finished tournament's settings (conditional) to notice decks made public later."""
+        tid = int(it.entity_id)
+        r = self.http.get(
+            cobra.show_url(tid), etag=it.etag, accept="application/vnd.api+json, application/json"
+        )
+        if r.not_modified:
+            with self._lock:
+                self.frontier.complete(it, self.now, changed=False, status="not_modified")
+            return
+        if r.status != 200:
+            raise NotFound(f"status {r.status}")
+        fresh = cobra.parse_show(r.json(), self.quality, self.fetched_at())
+        key = f"cobra/tournament/{tid}.json"
+        stored = CobraTournament.model_validate(self.read(key))
+        changed = stored.deck_visibility != fresh.deck_visibility
+        if changed:
+            rec = stored.model_copy(update={"deck_visibility": fresh.deck_visibility}).hashed()
+            self.write(key, rec)
+            with self._lock:
+                self.frontier.signal(f"cobra:tournament:{tid}", self.now)
+        with self._lock:
+            self.frontier.complete(it, self.now, changed=changed, status="ok", etag=r.etag)
+            if "public" in (fresh.deck_visibility.swiss, fresh.deck_visibility.cut):
+                self.frontier.freeze(it, "public")
+
+    def enqueue_cobra_decks(self, t: CobraTournament, priority: float) -> None:
+        vis = t.deck_visibility
+        if vis.swiss == "public":
+            pids = [p.pid for p in t.players]
+        elif vis.cut == "public":
+            pids = [p.pid for p in t.players if p.cut_rank is not None]
+        else:
+            return  # open or private stages: identity-level data only, no deck pages
+        for pid in pids:
+            self.enqueue(
+                f"cobra:deck:{t.id}:{pid}",
+                "cobra",
+                "cobra_deck",
+                f"{t.id}:{pid}",
+                priority=priority,
+                event_date=t.date,
+            )
+
+    def h_cobra_deck(self, it: Item) -> None:
+        tid_s, pid_s = it.entity_id.split(":")
+        tid, pid = int(tid_s), int(pid_s)
+        t = CobraTournament.model_validate(self.read(f"cobra/tournament/{tid}.json"))
+        r = self.http.get(cobra.decks_url(tid, pid), accept="text/html")
+        if r.status in (401, 403, 404) or 300 <= r.status < 400:
+            with self._lock:
+                self.frontier.freeze(it, "not_visible")
+            return
+        if r.status != 200:
+            raise NotFound(f"status {r.status}")
+        decks = cobra.parse_view_decks(r.body.decode("utf-8", "replace"), tid, pid, t, self.quality)
+        added = 0
+        for d in decks:
+            if self.write(f"cobra/deck/{tid}/{pid}-{d.side}.json", d):
+                added += 1
+            if not d.cards and d.nrdb_uuid:
+                self.enqueue(
+                    f"nrdb:deck:{d.nrdb_uuid}",
+                    "nrdb",
+                    "nrdb_deck",
+                    d.nrdb_uuid,
+                    priority=it.priority + SIGNAL_BONUS / 2,
+                    event_date=t.date,
+                )
+        with self._lock:
+            self.stats.decks_added += added
+            self.frontier.complete(it, self.now, changed=added > 0, status="ok")
+
+    # ------------------------------------------------------------------ NetrunnerDB
+
+    def h_nrdb_catalog(self, it: Item) -> None:
+        kind = it.entity_id
+        if kind not in nrdb.CATALOG_KINDS:
+            raise ValueError(f"unknown catalog kind {kind}")
+        rec, etag, lm = nrdb.fetch_catalog(
+            self.http,
+            kind,
+            self.quality,
+            etag=it.etag,
+            last_modified=it.last_modified,
+        )
+        changed = False
+        if rec is not None:
+            old = self.read(f"nrdb/catalog/{kind}.json")
+            changed = self.write(f"nrdb/catalog/{kind}.json", rec, known_hash=it.record_hash)
+            if changed and kind in ("card_sets", "restrictions") and isinstance(old, dict):
+                old_ids = {x["id"] for x in old.get(kind, [])}
+                new_ids = {x.id for x in getattr(rec, kind)}
+                if new_ids - old_ids:
+                    log.info("catalog_new_entries", kind=kind, count=len(new_ids - old_ids))
+                    with self._lock:
+                        self.frontier.signal("nrdb:catalog:cards", self.now)
+                        self.frontier.signal("nrdb:catalog:printings", self.now)
+            if kind in ("cards", "printings"):
+                self._cache.pop("__identity_printings", None)
+        with self._lock:
+            self.frontier.complete(
+                it,
+                self.now,
+                changed=changed,
+                status="ok" if rec else "not_modified",
+                record_hash=rec.record_hash if rec else None,
+                etag=etag,
+                last_modified=lm,
+            )
+
+    def h_nrdb_by_date(self, it: Item) -> None:
+        d = date.fromisoformat(it.entity_id)
+        r = self.http.get(nrdb.by_date_url(d), last_modified=it.last_modified, etag=it.etag)
+        changed = False
+        rec: NrdbByDate | None = None
+        if r.status == 200:
+            rec = nrdb.parse_by_date(d, r.json(), self.quality, self.identity_printings())
+            changed = self.write(
+                f"nrdb/decklists/by_date/{d.isoformat()}.json", rec, known_hash=it.record_hash
+            )
+        elif not r.not_modified:
+            raise NotFound(f"status {r.status}")
+        with self._lock:
+            self.frontier.complete(
+                it,
+                self.now,
+                changed=changed,
+                status="ok" if rec else "not_modified",
+                record_hash=rec.record_hash if rec else None,
+                etag=r.etag or it.etag,
+                last_modified=r.last_modified or it.last_modified,
+            )
+            if d < self.today - timedelta(days=2):
+                self.frontier.freeze(it, it.last_status or "ok")  # a past day's published lists are settled
+
+    def in_bulk(self, it: Item) -> bool:
+        """True when the decklist is already in a stored by_date file. Defers while those are pending."""
+        ev = date.fromisoformat(it.event_date) if it.event_date else None
+        if ev is None:
+            return False
+        ref = it.entity_id
+        pending = False
+        for off in range(BY_DATE_WINDOW[0], BY_DATE_WINDOW[1] + 1):
+            d = ev + timedelta(days=off)
+            if d > self.today:
+                break
+            fi = self.frontier.get(f"nrdb:by_date:{d.isoformat()}")
+            if fi is not None and fi.last_status is None and fi.fail_count == 0:
+                pending = True
+                continue
+            rec = self.read(f"nrdb/decklists/by_date/{d.isoformat()}.json")
+            if isinstance(rec, dict) and any(
+                ref in (x.get("id"), x.get("uuid")) for x in rec.get("decklists", [])
+            ):
+                return True
+        if pending:
+            raise Deferred
+        return False
+
+    def h_nrdb_decklist(self, it: Item) -> None:
+        kind = "deck" if it.kind == "nrdb_deck" else "decklist"
+        if kind == "decklist" and self.in_bulk(it):
+            with self._lock:
+                self.frontier.complete(it, self.now, changed=False, status="in_bulk")
+            return
+        u = nrdb.deck_url(it.entity_id) if kind == "deck" else nrdb.decklist_url(it.entity_id)
+        r = self.http.get(u)
+        if r.status in (403, 404):
+            with self._lock:
+                self.frontier.freeze(it, "not_found")
+            return
+        if r.status != 200:
+            raise NotFound(f"status {r.status}")
+        try:
+            rec = nrdb.parse_single(
+                r.json(), self.quality, kind=kind, identity_printings=self.identity_printings()
+            )
+        except NotFound:
+            with self._lock:
+                self.frontier.freeze(it, "not_found")
+            return
+        rec = rec.model_copy(update={"id": it.entity_id}).hashed()
+        written = self.write(f"nrdb/{kind}/{it.entity_id}.json", rec)
+        with self._lock:
+            if written:
+                self.stats.decks_added += 1
+            self.frontier.complete(
+                it,
+                self.now,
+                changed=written,
+                status="ok",
+                record_hash=rec.record_hash,
+                last_modified=r.last_modified,
+            )
+
+
+def catalog_record(stores: Stores, kind: str) -> NrdbCatalog | None:
+    raw = stores.source.get_json(f"nrdb/catalog/{kind}.json")
+    return NrdbCatalog.model_validate(raw) if isinstance(raw, dict) else None

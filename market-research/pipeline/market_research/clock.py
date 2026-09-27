@@ -55,6 +55,7 @@ class FakeClock:
                 self._mono += seconds
 
     def advance(self, seconds: float) -> None:
+        """Moves wall time; the monotonic clock only moves forward."""
         with self._lock:
             self._now += timedelta(seconds=seconds)
-            self._mono += seconds
+            self._mono += max(seconds, 0.0)
