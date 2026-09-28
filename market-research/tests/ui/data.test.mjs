@@ -210,6 +210,18 @@ test('series, markers, scatter and table orders', () => {
   assert.ok(vals.indexOf(null) === -1 || vals.slice(vals.indexOf(null)).every((v) => v === null)); // nulls last
 });
 
+test('ban list options: all first, then newest first', () => {
+  const m = { restrictions: [
+    { id: 'all', name: 'All', date_start: null },
+    { id: 'old', name: 'Old', date_start: '2025-03-01' },
+    { id: 'new', name: 'New', date_start: '2026-08-01' },
+    { id: 'mid', name: 'Mid', date_start: '2026-01-15' },
+  ] };
+  assert.deepEqual(D.banlistOptions(m).map((r) => r.id), ['all', 'new', 'mid', 'old']);
+  assert.equal(D.banlistOptions(manifest)[0].id, 'all');
+  assert.equal(m.restrictions[1].id, 'old'); // the manifest itself is not reordered
+});
+
 test('scatter name filter and top points per axis', () => {
   const pts = [
     { card_id: 'a', x: 50, y: -1, games: 90 }, { card_id: 'b', x: 40, y: 8, games: 60 },

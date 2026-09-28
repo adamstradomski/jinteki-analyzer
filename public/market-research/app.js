@@ -172,7 +172,7 @@ function option(value, label, selected) {
 
 function setupFilters() {
   sideToggle = JW.mountSideToggle($('side-toggle'), state.side, (side) => { state.side = side; commit(); });
-  $('f-restriction').replaceChildren(...manifest.restrictions.map((r) => option(r.id, r.name, r.id === state.restriction)));
+  $('f-restriction').replaceChildren(...D.banlistOptions(manifest).map((r) => option(r.id, r.name, r.id === state.restriction)));
   $('f-tier').replaceChildren(...manifest.tier_groups.map((t) => option(t.id, t.name, t.id === state.tier)));
   for (const id of ['f-from', 'f-to']) {
     $(id).replaceChildren(...manifest.months.map((m) => option(m, monthName(m), false)));
