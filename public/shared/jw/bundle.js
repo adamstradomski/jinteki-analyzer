@@ -153,9 +153,11 @@
       var body = p.querySelector('.panel-body');
       if (!btn || !body) return;
       btn.setAttribute('aria-expanded', 'true');
+      btn.setAttribute('aria-label', 'Collapse section');
       btn.addEventListener('click', function () {
         var open = btn.getAttribute('aria-expanded') !== 'true';
         btn.setAttribute('aria-expanded', String(open));
+        btn.setAttribute('aria-label', (open ? 'Collapse' : 'Expand') + ' section');
         body.hidden = !open;
         btn.textContent = open ? '−' : '+';
       });

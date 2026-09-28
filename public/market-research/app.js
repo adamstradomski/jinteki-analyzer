@@ -158,16 +158,12 @@ async function boot() {
   setBusy([...DATA_PANELS, 'trends'], true);
   try {
     manifest = await getJson(D.joinUrl(base, 'manifest.json'));
+    catalog = await getJson(D.joinUrl(base, manifest.base_path + manifest.paths.catalog));
   } catch {
-    let last = null;
-    try { last = localStorage.getItem(LAST_SEEN_KEY); } catch { /* storage may be blocked */ }
-    $('app').hidden = true;
-    $('status').hidden = false;
-    $('status').textContent = `Market Research data is unavailable right now.${last ? ` Last updated ${last}.` : ''} Try again later.`;
+    showUnavailable();
     return;
   }
   try { localStorage.setItem(LAST_SEEN_KEY, manifest.data_as_of || manifest.generated_at); } catch { /* ignore */ }
-  catalog = await getJson(D.joinUrl(base, manifest.base_path + manifest.paths.catalog));
   cards = D.catalogIndex(catalog);
   state = D.parseHash(location.hash, manifest);
   setupFilters();
@@ -189,6 +185,15 @@ async function boot() {
   $('detail-close').addEventListener('click', () => { detailCard = null; $('detail').hidden = true; });
   await refresh();
   loadQuality();
+}
+
+/** Replaces the page with a notice when the data can't be loaded, instead of leaving it on placeholders. */
+function showUnavailable() {
+  let last = null;
+  try { last = localStorage.getItem(LAST_SEEN_KEY); } catch { /* storage may be blocked */ }
+  $('app').hidden = true;
+  $('status').hidden = false;
+  $('status').textContent = `Market Research data is unavailable right now.${last ? ` Last updated ${last}.` : ''} Try again later.`;
 }
 
 function debounce(fn, ms) {
@@ -987,4 +992,7 @@ async function loadQuality() {
   }
 }
 
-boot();
+boot().catch((e) => {
+  console.error(e);
+  showUnavailable();
+});

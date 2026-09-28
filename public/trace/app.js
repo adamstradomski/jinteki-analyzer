@@ -2739,7 +2739,7 @@ function renderSummary(data){
     const side = data.playerSide[p] || '';
     const chips = [];
     const chip = (label, desc, extra = '') =>
-      chips.push(`<span class="badge ${side}" tabindex="0" data-desc="${esc(desc)}"${extra}>${esc(label)}</span>`);
+      chips.push(`<span class="badge ${side}" tabindex="0" data-desc="${esc(desc)}"${extra}>${esc(label)}<span class="visually-hidden">: ${esc(desc)}</span></span>`);
     if (b.glhf) chip('GLHF', 'Wished good luck / have fun in chat.');
     if (b.gg) chip('GG', 'Said “good game” in chat.');
     if (b.ty) chip('TY4TG', 'Thanked the opponent for the game in chat.');
@@ -2753,7 +2753,7 @@ function renderSummary(data){
     }
     if (NET_CELEBRITIES.has(p.toLowerCase())) chip('Net Celebrity', 'Twitch/YouTube content creator.');
     (earned[p] || []).forEach(a => {
-      chips.push(`<span class="badge achievement ${a.side}" tabindex="0" data-desc="${esc(a.description)}">${esc(a.name)}</span>`);
+      chips.push(`<span class="badge achievement ${a.side}" tabindex="0" data-desc="${esc(a.description)}">${esc(a.name)}<span class="visually-hidden">: ${esc(a.description)}</span></span>`);
     });
     const div = document.createElement('div');
     div.className = 'player-badges';
@@ -2845,7 +2845,7 @@ function renderInstalledTable(tableId, tbody, rows, hideZero){
       `<td class="num">${fmt(r.gained)}</td>` +
       `<td class="num">${fmt(r.cost)}</td>` +
       netCell(r.net) +
-      `<td class="num"><button class="btn secondary" data-expand-toggle="${esc(rowKey)}">${expanded ? '\u2212' : '+'}</button></td>`;
+      `<td class="num"><button type="button" class="btn secondary" data-expand-toggle="${esc(rowKey)}" aria-expanded="${expanded}" aria-label="${expanded ? 'Hide' : 'Show'} details for ${esc(r.name)}">${expanded ? '\u2212' : '+'}</button></td>`;
     tbody.appendChild(tr);
 
     if (expanded){
@@ -2889,7 +2889,7 @@ function renderOpsTable(tableId, tbody, rows, hideZero){
       `<td class="num">${fmt(r.totalGain)}</td>` +
       netCell(r.totalNet) +
       `<td>${esc(r.turnsList)}</td>` +
-      `<td class="num"><button class="btn secondary" data-expand-toggle="${esc(rowKey)}">${expanded ? '\u2212' : '+'}</button></td>`;
+      `<td class="num"><button type="button" class="btn secondary" data-expand-toggle="${esc(rowKey)}" aria-expanded="${expanded}" aria-label="${expanded ? 'Hide' : 'Show'} details for ${esc(r.name)}">${expanded ? '\u2212' : '+'}</button></td>`;
     tbody.appendChild(tr);
 
     if (expanded){
@@ -2955,14 +2955,14 @@ function buildPlayerSections(data){
           <div class="player-name">${esc(player)}</div>
           <div class="player-sub">${data.maxTurn[player] || 0} turns taken</div>
         </div>
-        <span class="collapse-icon">−</span>
+        <button type="button" class="collapse-icon" aria-expanded="true" aria-label="Collapse section">−</button>
       </div>
       <div class="panel-body">
 
       <div class="table-actions">
         <h3>Basic Actions</h3>
         <div class="controls">
-          <label class="toggle"><input type="checkbox" data-hideuntriggered="${basicActionsTableId}" checked> Hide actions that not triggered</label>
+          <label class="toggle"><input type="checkbox" data-hideuntriggered="${basicActionsTableId}" checked> Hide actions that weren’t triggered</label>
         </div>
       </div>
       <div class="table-scroll"><table class="mini-table" id="${basicActionsTableId}">
@@ -2980,15 +2980,15 @@ function buildPlayerSections(data){
       <div class="table-scroll"><table id="${instTableId}">
         <thead>
           <tr>
-            <th data-key="name">Card</th>
-            <th class="num" data-key="turnInstalled">In play from</th>
-            <th class="num" data-key="turnLeftDisplay">Left play</th>
-            <th class="num" data-key="turnsInPlay">Turns in play</th>
-            <th class="num" data-key="events">Triggers</th>
-            <th class="num" data-key="gained">Gained</th>
-            <th class="num" data-key="cost">Cost</th>
-            <th class="num" data-key="net">Net credits</th>
-            <th class="num"></th>
+            <th data-key="name"><button type="button" class="th-sort">Card</button></th>
+            <th class="num" data-key="turnInstalled"><button type="button" class="th-sort">In play from</button></th>
+            <th class="num" data-key="turnLeftDisplay"><button type="button" class="th-sort">Left play</button></th>
+            <th class="num" data-key="turnsInPlay"><button type="button" class="th-sort">Turns in play</button></th>
+            <th class="num" data-key="events"><button type="button" class="th-sort">Triggers</button></th>
+            <th class="num" data-key="gained"><button type="button" class="th-sort">Gained</button></th>
+            <th class="num" data-key="cost"><button type="button" class="th-sort">Cost</button></th>
+            <th class="num sorted" data-key="net" aria-sort="descending"><button type="button" class="th-sort">Net credits</button></th>
+            <th class="num"><span class="visually-hidden">Details</span></th>
           </tr>
         </thead>
         <tbody></tbody>
@@ -3005,13 +3005,13 @@ function buildPlayerSections(data){
       <div class="table-scroll"><table id="${opsTableId}">
         <thead>
           <tr>
-            <th data-key="name">Card</th>
-            <th class="num" data-key="triggered">Triggered</th>
-            <th class="num" data-key="totalCost">Total cost</th>
-            <th class="num" data-key="totalGain">Total gain</th>
-            <th class="num" data-key="totalNet">Total net</th>
-            <th data-key="turnsList">Turns played</th>
-            <th class="num"></th>
+            <th data-key="name"><button type="button" class="th-sort">Card</button></th>
+            <th class="num" data-key="triggered"><button type="button" class="th-sort">Triggered</button></th>
+            <th class="num" data-key="totalCost"><button type="button" class="th-sort">Total cost</button></th>
+            <th class="num" data-key="totalGain"><button type="button" class="th-sort">Total gain</button></th>
+            <th class="num sorted" data-key="totalNet" aria-sort="descending"><button type="button" class="th-sort">Total net</button></th>
+            <th data-key="turnsList"><button type="button" class="th-sort">Turns played</button></th>
+            <th class="num"><span class="visually-hidden">Details</span></th>
           </tr>
         </thead>
         <tbody></tbody>
@@ -3076,8 +3076,9 @@ function wireAllSorts(){
         state.dir = (state.key === key && state.dir === 'desc') ? 'asc' : 'desc';
         state.key = key;
         state.rows = sortRows(state.rows, key, state.dir);
-        ths.forEach(t => t.classList.remove('sorted', 'sorted-asc'));
+        ths.forEach(t => { t.classList.remove('sorted', 'sorted-asc'); t.removeAttribute('aria-sort'); });
         th.classList.add(state.dir === 'desc' ? 'sorted' : 'sorted-asc');
+        th.setAttribute('aria-sort', state.dir === 'desc' ? 'descending' : 'ascending');
         renderAllTables();
       });
     });
@@ -3462,7 +3463,12 @@ document.addEventListener('click', (e) => {
   if (!panel) return;
   panel.classList.toggle('collapsed');
   const icon = header.querySelector('.collapse-icon');
-  if (icon) icon.textContent = panel.classList.contains('collapsed') ? '+' : '−';
+  if (icon){
+    const open = !panel.classList.contains('collapsed');
+    icon.textContent = open ? '−' : '+';
+    icon.setAttribute('aria-expanded', String(open));
+    icon.setAttribute('aria-label', (open ? 'Collapse' : 'Expand') + ' section');
+  }
 });
 
 function warnAgainstBookmarkletClick(e){
@@ -3491,6 +3497,7 @@ document.getElementById('skipCopyPasteBtn').addEventListener('click', () => {
   const showing = section.style.display !== 'none';
   section.style.display = showing ? 'none' : 'block';
   btn.textContent = showing ? 'How to skip copy-paste' : 'Hide Bookmark info';
+  btn.setAttribute('aria-expanded', String(!showing));
 });
 
 syncValueLabelToggles();
