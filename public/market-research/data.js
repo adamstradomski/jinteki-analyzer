@@ -287,14 +287,36 @@ export function movers(cards, n = 10) {
 
 // ---------------------------------------------------------------- series and views
 
-/** Monthly inclusion for one card: [{ month, popularity, decks, total }]. */
+/**
+ * Monthly figures for one card: inclusion ({ popularity, decks, total }), average copies, and
+ * game winrate with its 95% Wilson interval, both as a rate and against that month's baseline.
+ */
 export function monthlySeries(trends, cardId, range, restriction = 'all') {
   const months = trends.months.filter((m) => (!range || (m >= range.from && m <= range.to)));
   return months.map((m) => {
     const r = { from: m, to: m };
     const c = sumCard(trends, cardId, r, restriction);
     const b = sumBaseline(trends, r, restriction);
-    return { month: m, popularity: ratio(c.decks_with_card, b.side_decks), decks: c.decks_with_card, total: b.side_decks };
+    const wr = ratio(c.games_won, c.games_total);
+    const baseWr = ratio(b.side_wins, b.side_games);
+    const ci = wilson(c.games_won, c.games_total);
+    const vsBase = (v) => (v !== null && baseWr !== null ? (v - baseWr) * 100 : null);
+    return {
+      month: m,
+      popularity: ratio(c.decks_with_card, b.side_decks),
+      decks: c.decks_with_card,
+      total: b.side_decks,
+      avg_copies: ratio(c.copies_sum, c.decks_with_card),
+      games: c.games_total,
+      wins: c.games_won,
+      winrate: wr,
+      winrate_low: ci ? ci[0] : null,
+      winrate_high: ci ? ci[1] : null,
+      baseline_winrate: baseWr,
+      winrate_diff_pp: vsBase(wr),
+      wilson_low_pp: ci ? vsBase(ci[0]) : null,
+      wilson_high_pp: ci ? vsBase(ci[1]) : null,
+    };
   });
 }
 

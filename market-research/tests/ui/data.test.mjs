@@ -196,6 +196,15 @@ test('series, markers, scatter and table orders', () => {
   const series = D.monthlySeries(trends, top);
   assert.equal(series.length, trends.months.length);
   assert.ok(series.every((p) => p.popularity === null || (p.popularity >= 0 && p.popularity <= 1)));
+  // Monthly winrate, interval and copies agree with cardMetrics over the same single month.
+  for (const p of series) {
+    const r = { from: p.month, to: p.month };
+    const c = D.cardMetrics(D.sumCard(trends, top, r), D.sumBaseline(trends, r), null, null, T);
+    for (const k of ['avg_copies', 'winrate', 'winrate_diff_pp', 'wilson_low_pp', 'wilson_high_pp']) close(p[k], c[k], 1e-9, `${k} ${p.month}`);
+    if (p.games) assert.ok(p.winrate_low <= p.winrate && p.winrate <= p.winrate_high, `interval ${p.month}`);
+    else assert.equal(p.winrate_low, null);
+  }
+  assert.ok(series.some((p) => p.games > 0), 'fixture has monthly games');
   const markers = D.banlistMarkers(manifest, trends.months);
   assert.ok(markers.length >= 1 && markers.every((m) => trends.months.includes(m.month)));
   const pts = D.scatterPoints(summary.cards);
