@@ -9,4 +9,6 @@ body { margin: 0; background: var(--bg); }
 .home-apps { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-4); }
 .home-apps .panel-body p { color: var(--dim); margin: 0 0 var(--space-3); max-width: 60ch; }
 .home-apps .btn { text-decoration: none; display: inline-block; }
+/* A badge in a panel title takes the title's colour, so it stays readable on filled title bars. */
+.home-apps .panel h2 .badge { color: inherit; border-color: currentColor; vertical-align: middle; }
 .home-footer { margin-top: var(--space-5); }
