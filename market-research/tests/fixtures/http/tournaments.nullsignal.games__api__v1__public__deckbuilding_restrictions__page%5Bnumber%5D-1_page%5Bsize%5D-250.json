@@ -1,0 +1,58 @@
+{
+ "data": [
+  {
+   "id": "standard_balance_update_26_08",
+   "type": "deckbuilding_restrictions",
+   "attributes": {
+    "name": "Standard Balance Update 26.08",
+    "date_start": "2026-08-01",
+    "play_format_id": "standard",
+    "created_at": "2026-08-01T00:00:00Z",
+    "updated_at": "2026-08-01T00:00:00Z"
+   },
+   "links": {
+    "self": "https://tournaments.nullsignal.games/api/v1/public/deckbuilding_restrictions/standard_balance_update_26_08"
+   }
+  },
+  {
+   "id": "standard_ban_list_26_05",
+   "type": "deckbuilding_restrictions",
+   "attributes": {
+    "name": "Standard Ban List 26.05",
+    "date_start": "2026-05-01",
+    "play_format_id": "standard",
+    "created_at": "2026-08-01T00:00:00Z",
+    "updated_at": "2026-08-01T00:00:00Z"
+   },
+   "links": {
+    "self": "https://tournaments.nullsignal.games/api/v1/public/deckbuilding_restrictions/standard_ban_list_26_05"
+   }
+  },
+  {
+   "id": "standard_ban_list_26_03",
+   "type": "deckbuilding_restrictions",
+   "attributes": {
+    "name": "Standard Ban List 26.03",
+    "date_start": "2026-03-13",
+    "play_format_id": "standard",
+    "created_at": "2026-08-01T00:00:00Z",
+    "updated_at": "2026-08-01T00:00:00Z"
+   },
+   "links": {
+    "self": "https://tournaments.nullsignal.games/api/v1/public/deckbuilding_restrictions/standard_ban_list_26_03"
+   }
+  }
+ ],
+ "links": {
+  "self": "https://tournaments.nullsignal.games/api/v1/public/deckbuilding_restrictions",
+  "first": "https://tournaments.nullsignal.games/api/v1/public/deckbuilding_restrictions?page%5Bnumber%5D=1",
+  "last": "https://tournaments.nullsignal.games/api/v1/public/deckbuilding_restrictions?page%5Bnumber%5D=1"
+ },
+ "meta": {
+  "stats": {
+   "total": {
+    "count": 3
+   }
+  }
+ }
+}

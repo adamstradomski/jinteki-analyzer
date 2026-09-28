@@ -1,0 +1,100 @@
+{
+ "cards": [
+  {
+   "nrdb_card_id": "bigger_picture",
+   "nrdb_printing_id": "35065",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "chekist_scion",
+   "nrdb_printing_id": "33050",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "f2p",
+   "nrdb_printing_id": "26115",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "federal_fundraising",
+   "nrdb_printing_id": "34052",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "hedge_fund",
+   "nrdb_printing_id": "30075",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "ip_enforcement",
+   "nrdb_printing_id": "35066",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "janaina_jk_dumont_kindelan",
+   "nrdb_printing_id": "34115",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "oracle_thinktank",
+   "nrdb_printing_id": "34049",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "piranhas",
+   "nrdb_printing_id": "34117",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "remastered_edition",
+   "nrdb_printing_id": "26047",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "spin_doctor",
+   "nrdb_printing_id": "30053",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "superconducting_hub",
+   "nrdb_printing_id": "30070",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "sync_rerouting",
+   "nrdb_printing_id": "26118",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "tiered_subscription",
+   "nrdb_printing_id": "26049",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "tomorrows_headline",
+   "nrdb_printing_id": "30052",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "vladisibirsk_city_grid",
+   "nrdb_printing_id": "33056",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "witch_hunt",
+   "nrdb_printing_id": "36047",
+   "qty": 3
+  }
+ ],
+ "identity": {
+  "nrdb_card_id": "epiphany_analytica_nations_undivided",
+  "nrdb_printing_id": "34048"
+ },
+ "nrdb_uuid": null,
+ "pid": 59701,
+ "record_hash": "sha256:6f75cf401e0ba3c88ca60a8ec4b241802623dead6e02981824d4c3314ce78205",
+ "schema": "cobra.deck/1",
+ "side": "corp",
+ "stage_visibility": "public",
+ "tournament_id": 4990
+}

@@ -1,0 +1,100 @@
+{
+ "cards": [
+  {
+   "nrdb_card_id": "daily_quest",
+   "nrdb_printing_id": "26048",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "federal_fundraising",
+   "nrdb_printing_id": "34052",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "gaslight",
+   "nrdb_printing_id": "33114",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "hedge_fund",
+   "nrdb_printing_id": "30075",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "increased_drop_rates",
+   "nrdb_printing_id": "26054",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "ip_enforcement",
+   "nrdb_printing_id": "35066",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "janaina_jk_dumont_kindelan",
+   "nrdb_printing_id": "34115",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "let_them_dream",
+   "nrdb_printing_id": "36066",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "n_pot",
+   "nrdb_printing_id": "35064",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "oracle_thinktank",
+   "nrdb_printing_id": "34049",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "palisade",
+   "nrdb_printing_id": "30072",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "paywall",
+   "nrdb_printing_id": "36052",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "post_truth_dividend",
+   "nrdb_printing_id": "33113",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "shipment_from_vladisibirsk",
+   "nrdb_printing_id": "33119",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "tithe",
+   "nrdb_printing_id": "30073",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "tomorrows_headline",
+   "nrdb_printing_id": "30052",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "witch_hunt",
+   "nrdb_printing_id": "36047",
+   "qty": 3
+  }
+ ],
+ "identity": {
+  "nrdb_card_id": "epiphany_analytica_nations_undivided",
+  "nrdb_printing_id": "34048"
+ },
+ "nrdb_uuid": null,
+ "pid": 59693,
+ "record_hash": "sha256:6543e0d4ed7c7e4b6fd1d05601a36476a65dc2398138e7d19151f3733d968181",
+ "schema": "cobra.deck/1",
+ "side": "corp",
+ "stage_visibility": "public",
+ "tournament_id": 4990
+}

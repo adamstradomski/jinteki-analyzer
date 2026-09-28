@@ -1,0 +1,100 @@
+{
+ "cards": [
+  {
+   "nrdb_card_id": "abaasy",
+   "nrdb_printing_id": "33070",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "amanuensis",
+   "nrdb_printing_id": "34069",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "arruaceiras_crew",
+   "nrdb_printing_id": "34073",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "audrey_v2",
+   "nrdb_printing_id": "34004",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "buzzsaw",
+   "nrdb_printing_id": "30005",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "cacophony",
+   "nrdb_printing_id": "35010",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "demolisher",
+   "nrdb_printing_id": "26002",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "hannah_wheels_pilintra",
+   "nrdb_printing_id": "34008",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "hush",
+   "nrdb_printing_id": "33071",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "isolation",
+   "nrdb_printing_id": "26001",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "mayfly",
+   "nrdb_printing_id": "30032",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "mystic_maemi",
+   "nrdb_printing_id": "27001",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "num",
+   "nrdb_printing_id": "33073",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "sure_gamble",
+   "nrdb_printing_id": "30030",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "the_tungsten_tailor",
+   "nrdb_printing_id": "36003",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "trickster_taka",
+   "nrdb_printing_id": "26009",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "umbrella",
+   "nrdb_printing_id": "34027",
+   "qty": 3
+  }
+ ],
+ "identity": {
+  "nrdb_card_id": "topan_ormas_leader",
+  "nrdb_printing_id": "35002"
+ },
+ "nrdb_uuid": null,
+ "pid": 60206,
+ "record_hash": "sha256:baf0fdc0c3d858125e915b72b9e927a107f00078a30d86daccd5936ce8127459",
+ "schema": "cobra.deck/1",
+ "side": "runner",
+ "stage_visibility": "public",
+ "tournament_id": 5015
+}

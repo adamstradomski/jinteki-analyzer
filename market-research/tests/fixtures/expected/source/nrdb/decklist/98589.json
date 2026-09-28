@@ -1,0 +1,71 @@
+{
+ "cards": [
+  {
+   "printing_id": "26029",
+   "qty": 3
+  },
+  {
+   "printing_id": "30030",
+   "qty": 3
+  },
+  {
+   "printing_id": "30034",
+   "qty": 1
+  },
+  {
+   "printing_id": "33018",
+   "qty": 3
+  },
+  {
+   "printing_id": "33020",
+   "qty": 3
+  },
+  {
+   "printing_id": "33077",
+   "qty": 3
+  },
+  {
+   "printing_id": "33079",
+   "qty": 2
+  },
+  {
+   "printing_id": "34012",
+   "qty": 3
+  },
+  {
+   "printing_id": "34030",
+   "qty": 3
+  },
+  {
+   "printing_id": "34076",
+   "qty": 3
+  },
+  {
+   "printing_id": "34081",
+   "qty": 3
+  },
+  {
+   "printing_id": "34083",
+   "qty": 1
+  },
+  {
+   "printing_id": "35014",
+   "qty": 3
+  },
+  {
+   "printing_id": "35016",
+   "qty": 3
+  },
+  {
+   "printing_id": "35033",
+   "qty": 3
+  }
+ ],
+ "id": "98589",
+ "identity_printing_id": "30010",
+ "kind": "decklist",
+ "published": "2026-09-20",
+ "record_hash": "sha256:b63db5945e043e5dd30da17cadff20ebed092f470924aa35df9bf1322f6da004",
+ "schema": "nrdb.decklist/1",
+ "uuid": "0001811d-0000-4000-8000-00000001811d"
+}

@@ -1,0 +1,21 @@
+{
+ "approved": 1,
+ "cardpool": "Vantage Point",
+ "claim_conflict": false,
+ "claim_count": 0,
+ "concluded": true,
+ "country": "Poland",
+ "date": "2026-09-08",
+ "end_date": null,
+ "fetched_at": "2026-09-27T04:00:00Z",
+ "format": "standard",
+ "id": 5305,
+ "matchdata": false,
+ "players_count": 12,
+ "record_hash": "sha256:dbf04796da67043c504f8399fce339efdbd19eddb6d183d394fefbb07107a1d3",
+ "schema": "abr.tournament/1",
+ "top_count": 0,
+ "type_id": "1",
+ "winner_corp_identity": null,
+ "winner_runner_identity": null
+}

@@ -1,0 +1,100 @@
+{
+ "cards": [
+  {
+   "nrdb_card_id": "bring_them_home",
+   "nrdb_printing_id": "34112",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "hafrun",
+   "nrdb_printing_id": "33108",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "hedge_fund",
+   "nrdb_printing_id": "30075",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "hybrid_release",
+   "nrdb_printing_id": "33105",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "lotus_haze",
+   "nrdb_printing_id": "36037",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "moon_pool",
+   "nrdb_printing_id": "33042",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "project_yagi_uda",
+   "nrdb_printing_id": "26040",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "public_health_portal",
+   "nrdb_printing_id": "26042",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "reaper_function",
+   "nrdb_printing_id": "33107",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "regolith_mining_license",
+   "nrdb_printing_id": "30071",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "rime",
+   "nrdb_printing_id": "26065",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "sericulture_expansion",
+   "nrdb_printing_id": "35049",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "superconducting_hub",
+   "nrdb_printing_id": "30070",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "the_powers_that_be",
+   "nrdb_printing_id": "34130",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "unleash",
+   "nrdb_printing_id": "36044",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "vampyronassa",
+   "nrdb_printing_id": "33109",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "whitespace",
+   "nrdb_printing_id": "30074",
+   "qty": 3
+  }
+ ],
+ "identity": {
+  "nrdb_card_id": "a_teia_ip_recovery",
+  "nrdb_printing_id": "34039"
+ },
+ "nrdb_uuid": null,
+ "pid": 60204,
+ "record_hash": "sha256:5df5ef4764d63de0d225cfa4d3e719d82399ec7bb4b9ee3f698ba51e247bd748",
+ "schema": "cobra.deck/1",
+ "side": "corp",
+ "stage_visibility": "public",
+ "tournament_id": 5015
+}

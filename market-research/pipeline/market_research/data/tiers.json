@@ -1,0 +1,50 @@
+{
+  "_comment": "Tier mapping, the one place it lives. ABR type ids are unverified (see docs/market-research/sources.md); names are matched by keyword, first match wins.",
+  "groups": [
+    {"id": "gnk", "name": "GNK/CTK"},
+    {"id": "store", "name": "Store/District"},
+    {"id": "megacity", "name": "Megacity+"},
+    {"id": "online", "name": "Online/Community/Other"}
+  ],
+  "default_group": "online",
+  "abr_types": {
+    "1": "gnk / seasonal",
+    "2": "store championship",
+    "3": "regional championship",
+    "4": "national championship",
+    "5": "worlds championship",
+    "6": "casual",
+    "7": "online event",
+    "8": "continental championship",
+    "9": "team tournament",
+    "10": "circuit opener",
+    "11": "asynchronous tournament",
+    "12": "circuit breaker invitational",
+    "13": "community tournament",
+    "14": "intercontinental championship",
+    "15": "district championship",
+    "16": "character building",
+    "17": "megacity championship"
+  },
+  "online_types": ["7", "online event", "11", "asynchronous tournament"],
+  "type_keywords": [
+    ["online", "online"],
+    ["asynchronous", "online"],
+    ["community", "online"],
+    ["casual", "online"],
+    ["gnk", "gnk"],
+    ["game night", "gnk"],
+    ["ctk", "gnk"],
+    ["seasonal", "gnk"],
+    ["circuit breaker", "megacity"],
+    ["cbi", "megacity"],
+    ["megacity", "megacity"],
+    ["national", "megacity"],
+    ["continental", "megacity"],
+    ["world", "megacity"],
+    ["store", "store"],
+    ["district", "store"],
+    ["regional", "store"],
+    ["circuit opener", "store"]
+  ]
+}

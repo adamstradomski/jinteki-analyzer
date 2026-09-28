@@ -1,0 +1,129 @@
+{
+ "entries": [
+  {
+   "claimed": true,
+   "corp": {
+    "deck_ref": {
+     "id": "98596",
+     "kind": "decklist"
+    },
+    "identity": "34039"
+   },
+   "cut_rank": 0,
+   "runner": {
+    "deck_ref": {
+     "id": "98597",
+     "kind": "decklist"
+    },
+    "identity": "33001"
+   },
+   "swiss_rank": 1
+  },
+  {
+   "claimed": true,
+   "corp": {
+    "deck_ref": {
+     "id": "98598",
+     "kind": "decklist"
+    },
+    "identity": "30035"
+   },
+   "cut_rank": 0,
+   "runner": {
+    "deck_ref": {
+     "id": "98599",
+     "kind": "decklist"
+    },
+    "identity": "30010"
+   },
+   "swiss_rank": 2
+  },
+  {
+   "claimed": true,
+   "corp": {
+    "deck_ref": {
+     "id": "98600",
+     "kind": "decklist"
+    },
+    "identity": "30043"
+   },
+   "cut_rank": 0,
+   "runner": {
+    "deck_ref": {
+     "id": "98601",
+     "kind": "decklist"
+    },
+    "identity": "35024"
+   },
+   "swiss_rank": 3
+  },
+  {
+   "claimed": false,
+   "corp": {
+    "deck_ref": null,
+    "identity": "30059"
+   },
+   "cut_rank": 0,
+   "runner": {
+    "deck_ref": null,
+    "identity": "35002"
+   },
+   "swiss_rank": 4
+  },
+  {
+   "claimed": false,
+   "corp": {
+    "deck_ref": null,
+    "identity": "35058"
+   },
+   "cut_rank": 0,
+   "runner": {
+    "deck_ref": null,
+    "identity": "30019"
+   },
+   "swiss_rank": 5
+  },
+  {
+   "claimed": false,
+   "corp": {
+    "deck_ref": null,
+    "identity": "34048"
+   },
+   "cut_rank": 0,
+   "runner": {
+    "deck_ref": null,
+    "identity": "26019"
+   },
+   "swiss_rank": 6
+  },
+  {
+   "claimed": false,
+   "corp": {
+    "deck_ref": null,
+    "identity": "26120"
+   },
+   "cut_rank": 0,
+   "runner": {
+    "deck_ref": null,
+    "identity": "30001"
+   },
+   "swiss_rank": 7
+  },
+  {
+   "claimed": false,
+   "corp": {
+    "deck_ref": null,
+    "identity": "34096"
+   },
+   "cut_rank": 0,
+   "runner": {
+    "deck_ref": null,
+    "identity": "35012"
+   },
+   "swiss_rank": 8
+  }
+ ],
+ "record_hash": "sha256:91639e62a6d279f9c933717818d1232c923c4136bae68e24addc041bbac14401",
+ "schema": "abr.entries/1",
+ "tournament_id": 5310
+}

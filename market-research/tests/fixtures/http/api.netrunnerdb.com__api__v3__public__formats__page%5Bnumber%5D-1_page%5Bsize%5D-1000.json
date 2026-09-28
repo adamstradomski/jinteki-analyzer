@@ -1,0 +1,64 @@
+{
+ "data": [
+  {
+   "id": "standard",
+   "type": "formats",
+   "attributes": {
+    "name": "Standard",
+    "active_snapshot_id": "standard_36",
+    "snapshot_ids": [
+     "standard_31",
+     "standard_32",
+     "standard_33",
+     "standard_34",
+     "standard_35",
+     "standard_36"
+    ],
+    "restriction_ids": [
+     "standard_ban_list_25_08",
+     "standard_ban_list_25_10",
+     "standard_ban_list_25_12",
+     "standard_ban_list_26_03",
+     "standard_ban_list_26_05",
+     "standard_balance_update_26_08"
+    ],
+    "active_card_pool_id": "standard_2026_vantage_point",
+    "active_restriction_id": "standard_balance_update_26_08",
+    "updated_at": "2026-08-01T00:00:00Z"
+   },
+   "links": {
+    "self": "https://api.netrunnerdb.com/api/v3/public/formats/standard"
+   }
+  },
+  {
+   "id": "startup",
+   "type": "formats",
+   "attributes": {
+    "name": "Startup",
+    "active_snapshot_id": "startup_1",
+    "snapshot_ids": [
+     "startup_1"
+    ],
+    "restriction_ids": [],
+    "active_card_pool_id": "startup_2026",
+    "active_restriction_id": null,
+    "updated_at": "2026-08-01T00:00:00Z"
+   },
+   "links": {
+    "self": "https://api.netrunnerdb.com/api/v3/public/formats/startup"
+   }
+  }
+ ],
+ "links": {
+  "self": "https://api.netrunnerdb.com/api/v3/public/formats",
+  "first": "https://api.netrunnerdb.com/api/v3/public/formats?page%5Bnumber%5D=1",
+  "last": "https://api.netrunnerdb.com/api/v3/public/formats?page%5Bnumber%5D=1"
+ },
+ "meta": {
+  "stats": {
+   "total": {
+    "count": 2
+   }
+  }
+ }
+}

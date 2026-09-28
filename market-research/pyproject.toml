@@ -1,0 +1,89 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "market-research"
+version = "0.1.0"
+description = "Market Research: NSG Netrunner tournament card-meta pipeline for jinteki.win"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+license = { text = "MIT" }
+dependencies = [
+  "httpx>=0.28,<0.29",
+  "pydantic>=2.13,<3",
+  "selectolax>=0.4,<0.5",
+  "duckdb>=1.5,<2",
+  "boto3>=1.43,<2",
+  "typer>=0.27,<0.28",
+  "structlog>=26,<27",
+  "jsonschema>=4.26,<5",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=9,<10",
+  "pytest-cov>=7,<8",
+  "pytest-socket>=0.8,<0.9",
+  "respx>=0.23,<0.24",
+  "freezegun>=1.5,<2",
+  "hypothesis>=6,<7",
+  "ruff>=0.16,<0.17",
+  "mypy>=2.3,<3",
+  "types-jsonschema",
+  "boto3-stubs[s3]",
+  "pip-audit",
+]
+
+[project.scripts]
+market-research = "market_research.cli:main"
+
+[tool.setuptools]
+package-dir = { "" = "pipeline" }
+
+[tool.setuptools.packages.find]
+where = ["pipeline"]
+
+[tool.setuptools.package-data]
+market_research = ["data/*.json", "schemas/*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# Network is disabled for every test; any real socket use fails the test. Tests run in parallel
+# on every core (pytest-xdist); pass -n 0 to run them in one process, e.g. for pdb.
+addopts = "--disable-socket --allow-unix-socket -p no:cacheprovider -n auto"
+filterwarnings = ["error::pytest.PytestUnraisableExceptionWarning"]
+
+[tool.coverage.run]
+source = ["market_research"]
+omit = ["*/market_research/fixtures_refresh.py"]
+
+[tool.coverage.report]
+fail_under = 85
+show_missing = true
+skip_covered = true
+
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+src = ["pipeline", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "S", "SIM", "RUF", "PL", "C4"]
+ignore = ["E501", "PLR0913", "PLR2004", "PLR0912", "PLR0915", "PLR0911", "S101", "RUF001", "RUF002", "RUF003", "PLC0415", "PLR0917",
+  # DuckDB SQL is built only from constants, numbers and temp-file paths.
+  "S608"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S", "PLR", "B011", "RUF015", "PLW0603", "B023"]
+
+[tool.mypy]
+strict = true
+python_version = "3.12"
+mypy_path = "pipeline"
+packages = ["market_research"]
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = ["selectolax.*", "respx.*"]
+ignore_missing_imports = true

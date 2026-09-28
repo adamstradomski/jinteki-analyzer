@@ -1,0 +1,95 @@
+{
+ "cards": [
+  {
+   "nrdb_card_id": "bigger_picture",
+   "nrdb_printing_id": "35065",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "congratulations",
+   "nrdb_printing_id": "26050",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "corporate_hospitality",
+   "nrdb_printing_id": "34103",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "csr_campaign",
+   "nrdb_printing_id": "26064",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "digital_rights_management",
+   "nrdb_printing_id": "27006",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "embedded_reporting",
+   "nrdb_printing_id": "35059",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "focus_group",
+   "nrdb_printing_id": "26052",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "freedom_of_information",
+   "nrdb_printing_id": "33112",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "ganked",
+   "nrdb_printing_id": "26119",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "hedge_fund",
+   "nrdb_printing_id": "30075",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "klevetnik",
+   "nrdb_printing_id": "33116",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "ping",
+   "nrdb_printing_id": "30055",
+   "qty": 2
+  },
+  {
+   "nrdb_card_id": "remastered_edition",
+   "nrdb_printing_id": "26047",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "superconducting_hub",
+   "nrdb_printing_id": "30070",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "sync_rerouting",
+   "nrdb_printing_id": "26118",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "the_powers_that_be",
+   "nrdb_printing_id": "34130",
+   "qty": 1
+  }
+ ],
+ "identity": {
+  "nrdb_card_id": "epiphany_analytica_nations_undivided",
+  "nrdb_printing_id": "34048"
+ },
+ "nrdb_uuid": null,
+ "pid": 60201,
+ "record_hash": "sha256:d7bf0fe1feb7f3ad404de722acc05e42972498c4abb35d76b8c2d4ffc18c3776",
+ "schema": "cobra.deck/1",
+ "side": "corp",
+ "stage_visibility": "public",
+ "tournament_id": 5015
+}

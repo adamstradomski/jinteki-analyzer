@@ -1,0 +1,100 @@
+{
+ "cards": [
+  {
+   "nrdb_card_id": "bahia_bands",
+   "nrdb_printing_id": "34030",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "dreamnet",
+   "nrdb_printing_id": "26095",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "dzmz_optimizer",
+   "nrdb_printing_id": "30022",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "gamedragon_pro",
+   "nrdb_printing_id": "35027",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "gauss",
+   "nrdb_printing_id": "26024",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "living_mural",
+   "nrdb_printing_id": "34024",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "lobisomem",
+   "nrdb_printing_id": "34090",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "mayfly",
+   "nrdb_printing_id": "30032",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "nanuq",
+   "nrdb_printing_id": "33088",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "smartware_distributor",
+   "nrdb_printing_id": "30033",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "spark_of_inspiration",
+   "nrdb_printing_id": "33084",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "stowaway",
+   "nrdb_printing_id": "36024",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "sure_gamble",
+   "nrdb_printing_id": "30030",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "t400_memory_diamond",
+   "nrdb_printing_id": "30031",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "the_artist",
+   "nrdb_printing_id": "26027",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "valentina_ferreira_carvalho",
+   "nrdb_printing_id": "34095",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "whistleblower",
+   "nrdb_printing_id": "26030",
+   "qty": 1
+  }
+ ],
+ "identity": {
+  "nrdb_card_id": "lat_ethical_freelancer",
+  "nrdb_printing_id": "26019"
+ },
+ "nrdb_uuid": null,
+ "pid": 60201,
+ "record_hash": "sha256:ff2ba664a8b24eb193b8ae74565d074e6726959927a24572a420d11ac539eb6e",
+ "schema": "cobra.deck/1",
+ "side": "runner",
+ "stage_visibility": "public",
+ "tournament_id": 5015
+}

@@ -1,0 +1,152 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://data.jinteki.win/schemas/quality.schema.json",
+  "title": "Market Research data quality report (mr.quality/1)",
+  "description": "Coverage, unresolved cards, parser failures, link mismatches and drift warnings. Keys and counts only; no payloads or personal data.",
+  "type": "object",
+  "required": [
+    "schema",
+    "version",
+    "coverage",
+    "unresolved_cards",
+    "unresolved_identities",
+    "parser_failures",
+    "link_mismatches",
+    "links",
+    "drift_warnings",
+    "rejected_deck_refs",
+    "skipped_tournaments"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "const": "mr.quality/1"
+    },
+    "version": {
+      "type": "string"
+    },
+    "coverage": {
+      "type": "object",
+      "required": [
+        "tournaments",
+        "tournaments_with_games",
+        "tournaments_high_coverage",
+        "mean_decklist_coverage",
+        "entries",
+        "games",
+        "decks",
+        "legal_decks",
+        "illegal_decks",
+        "decks_by_source",
+        "deck_comparison"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "tournaments": {
+          "type": "integer"
+        },
+        "tournaments_with_games": {
+          "type": "integer"
+        },
+        "tournaments_high_coverage": {
+          "type": "integer"
+        },
+        "mean_decklist_coverage": {
+          "type": "number"
+        },
+        "entries": {
+          "type": "integer"
+        },
+        "games": {
+          "type": "integer"
+        },
+        "decks": {
+          "type": "integer"
+        },
+        "legal_decks": {
+          "type": "integer"
+        },
+        "illegal_decks": {
+          "type": "integer"
+        },
+        "decks_by_source": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer"
+          }
+        },
+        "deck_comparison": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer"
+          }
+        }
+      }
+    },
+    "unresolved_cards": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer"
+      }
+    },
+    "unresolved_identities": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer"
+      }
+    },
+    "parser_failures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "key",
+          "error",
+          "payload_sha256"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "error": {
+            "type": "string"
+          },
+          "payload_sha256": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "link_mismatches": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "links": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "drift_warnings": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "rejected_deck_refs": {
+      "type": "integer"
+    },
+    "skipped_tournaments": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer"
+      }
+    }
+  }
+}

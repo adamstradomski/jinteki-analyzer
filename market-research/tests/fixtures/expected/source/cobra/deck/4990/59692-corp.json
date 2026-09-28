@@ -1,0 +1,90 @@
+{
+ "cards": [
+  {
+   "nrdb_card_id": "bass_ch1r180g4",
+   "nrdb_printing_id": "26098",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "big_deal",
+   "nrdb_printing_id": "33038",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "bran_1_0",
+   "nrdb_printing_id": "30039",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "hedge_fund",
+   "nrdb_printing_id": "30075",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "humanoid_resources",
+   "nrdb_printing_id": "35039",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "let_them_dream",
+   "nrdb_printing_id": "36066",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "lightning_laboratory",
+   "nrdb_printing_id": "34097",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "lycian_multi_munition",
+   "nrdb_printing_id": "34100",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "mahkota_langit_grid",
+   "nrdb_printing_id": "35082",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "megaprix_qualifier",
+   "nrdb_printing_id": "27004",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "ontological_dependence",
+   "nrdb_printing_id": "33096",
+   "qty": 2
+  },
+  {
+   "nrdb_card_id": "otto_campaign",
+   "nrdb_printing_id": "35040",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "regolith_mining_license",
+   "nrdb_printing_id": "30071",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "scatter_field",
+   "nrdb_printing_id": "35042",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "whitespace",
+   "nrdb_printing_id": "30074",
+   "qty": 3
+  }
+ ],
+ "identity": {
+  "nrdb_card_id": "haas_bioroid_precision_design",
+  "nrdb_printing_id": "30035"
+ },
+ "nrdb_uuid": null,
+ "pid": 59692,
+ "record_hash": "sha256:6886e3080df993d70a16f8d39b113054502029b11da0893217e68a72f955bb6d",
+ "schema": "cobra.deck/1",
+ "side": "corp",
+ "stage_visibility": "public",
+ "tournament_id": 4990
+}

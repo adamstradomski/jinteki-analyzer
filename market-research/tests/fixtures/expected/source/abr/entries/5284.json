@@ -1,0 +1,242 @@
+{
+ "entries": [
+  {
+   "claimed": true,
+   "corp": {
+    "deck_ref": {
+     "id": "98588",
+     "kind": "decklist"
+    },
+    "identity": "34039"
+   },
+   "cut_rank": 2,
+   "runner": {
+    "deck_ref": {
+     "id": "98589",
+     "kind": "decklist"
+    },
+    "identity": "30010"
+   },
+   "swiss_rank": 1
+  },
+  {
+   "claimed": true,
+   "corp": {
+    "deck_ref": {
+     "id": "e0054f23-1dab-4f56-82e5-b3bdcb816af3",
+     "kind": "decklist"
+    },
+    "identity": "34096"
+   },
+   "cut_rank": 1,
+   "runner": {
+    "deck_ref": {
+     "id": "98591",
+     "kind": "decklist"
+    },
+    "identity": "35024"
+   },
+   "swiss_rank": 2
+  },
+  {
+   "claimed": true,
+   "corp": {
+    "deck_ref": {
+     "id": "4b2c9e1a-77d0-4c1b-9a51-2f0d3c6e8a10",
+     "kind": "deck"
+    },
+    "identity": "34039"
+   },
+   "cut_rank": 3,
+   "runner": {
+    "deck_ref": null,
+    "identity": "30010"
+   },
+   "swiss_rank": 3
+  },
+  {
+   "claimed": true,
+   "corp": {
+    "deck_ref": {
+     "id": "98592",
+     "kind": "decklist"
+    },
+    "identity": "35058"
+   },
+   "cut_rank": 4,
+   "runner": {
+    "deck_ref": null,
+    "identity": "26019"
+   },
+   "swiss_rank": 4
+  },
+  {
+   "claimed": false,
+   "corp": {
+    "deck_ref": null,
+    "identity": "34048"
+   },
+   "cut_rank": null,
+   "runner": {
+    "deck_ref": null,
+    "identity": "30019"
+   },
+   "swiss_rank": 5
+  },
+  {
+   "claimed": false,
+   "corp": {
+    "deck_ref": null,
+    "identity": "30043"
+   },
+   "cut_rank": null,
+   "runner": {
+    "deck_ref": null,
+    "identity": "35012"
+   },
+   "swiss_rank": 6
+  },
+  {
+   "claimed": true,
+   "corp": {
+    "deck_ref": {
+     "id": "98593",
+     "kind": "decklist"
+    },
+    "identity": "34096"
+   },
+   "cut_rank": null,
+   "runner": {
+    "deck_ref": {
+     "id": "98594",
+     "kind": "decklist"
+    },
+    "identity": "35024"
+   },
+   "swiss_rank": 7
+  },
+  {
+   "claimed": false,
+   "corp": {
+    "deck_ref": null,
+    "identity": "34048"
+   },
+   "cut_rank": null,
+   "runner": {
+    "deck_ref": null,
+    "identity": "30019"
+   },
+   "swiss_rank": 8
+  },
+  {
+   "claimed": false,
+   "corp": {
+    "deck_ref": null,
+    "identity": "30043"
+   },
+   "cut_rank": null,
+   "runner": {
+    "deck_ref": null,
+    "identity": "35012"
+   },
+   "swiss_rank": 9
+  },
+  {
+   "claimed": true,
+   "corp": {
+    "deck_ref": null,
+    "identity": "35058"
+   },
+   "cut_rank": null,
+   "runner": {
+    "deck_ref": {
+     "id": "98595",
+     "kind": "decklist"
+    },
+    "identity": "26019"
+   },
+   "swiss_rank": 10
+  },
+  {
+   "claimed": false,
+   "corp": {
+    "deck_ref": null,
+    "identity": "30035"
+   },
+   "cut_rank": null,
+   "runner": {
+    "deck_ref": null,
+    "identity": "33001"
+   },
+   "swiss_rank": 11
+  },
+  {
+   "claimed": false,
+   "corp": {
+    "deck_ref": null,
+    "identity": "30035"
+   },
+   "cut_rank": null,
+   "runner": {
+    "deck_ref": null,
+    "identity": "33001"
+   },
+   "swiss_rank": 12
+  },
+  {
+   "claimed": false,
+   "corp": {
+    "deck_ref": null,
+    "identity": "30059"
+   },
+   "cut_rank": null,
+   "runner": {
+    "deck_ref": null,
+    "identity": "30001"
+   },
+   "swiss_rank": 13
+  },
+  {
+   "claimed": false,
+   "corp": {
+    "deck_ref": null,
+    "identity": "26120"
+   },
+   "cut_rank": null,
+   "runner": {
+    "deck_ref": null,
+    "identity": "35002"
+   },
+   "swiss_rank": 14
+  },
+  {
+   "claimed": false,
+   "corp": {
+    "deck_ref": null,
+    "identity": "26120"
+   },
+   "cut_rank": null,
+   "runner": {
+    "deck_ref": null,
+    "identity": "35002"
+   },
+   "swiss_rank": 15
+  },
+  {
+   "claimed": false,
+   "corp": {
+    "deck_ref": null,
+    "identity": "30059"
+   },
+   "cut_rank": null,
+   "runner": {
+    "deck_ref": null,
+    "identity": "30001"
+   },
+   "swiss_rank": 16
+  }
+ ],
+ "record_hash": "sha256:1fd1999af18bc61aff6b160ea0974cc8b251a7727670289952b34b2f2001288e",
+ "schema": "abr.entries/1",
+ "tournament_id": 5284
+}

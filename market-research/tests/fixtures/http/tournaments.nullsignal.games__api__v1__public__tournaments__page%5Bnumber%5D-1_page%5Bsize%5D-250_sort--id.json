@@ -1,0 +1,332 @@
+{
+ "data": [
+  {
+   "id": "5025",
+   "type": "tournaments",
+   "attributes": {
+    "name": "PII_CANARY_TOURNAMENT_92",
+    "slug": "PII_CANARY_SLUG",
+    "abr_code": null,
+    "private": false,
+    "user_id": "PII_CANARY_USER_1234",
+    "tournament_organizer": "PII_CANARY_NAME_93",
+    "date": "2026-10-03",
+    "time_zone": "Europe/Warsaw",
+    "registration_starts": null,
+    "tournament_starts": null,
+    "organizer_contact": "PII_CANARY_CONTACT@example.invalid",
+    "event_link": "https://PII_CANARY_LINK.example/",
+    "stream_url": "https://PII_CANARY_STREAM.example/",
+    "description": "PII_CANARY_DESCRIPTION_94",
+    "additional_prizes_description": "PII_CANARY_DESCRIPTION_95",
+    "official_prize_kit_id": null,
+    "official_prize_kit_name": null,
+    "stage": "swiss",
+    "manual_seed": false,
+    "self_registration": true,
+    "nrdb_deck_registration": true,
+    "decklist_required": true,
+    "allow_self_reporting": true,
+    "allow_streaming_opt_out": true,
+    "all_players_unlocked": false,
+    "any_player_unlocked": false,
+    "registration_closed": true,
+    "swiss_deck_visibility": "swiss_decks_public",
+    "cut_deck_visibility": "cut_decks_public",
+    "swiss_format": "single_sided",
+    "tournament_type_id": 2,
+    "format_id": 1,
+    "format_name": "Standard",
+    "deckbuilding_restriction_id": "standard_balance_update_26_08",
+    "deckbuilding_restriction_name": null,
+    "card_set_id": "vantage_point",
+    "active_player_count": 0,
+    "dropped_player_count": 0,
+    "created_at": "2026-09-03T10:00:00Z",
+    "updated_at": "2026-10-03T22:00:00Z"
+   },
+   "relationships": {
+    "players": {
+     "links": {
+      "related": "/api/v1/public/tournaments/5025/players"
+     }
+    }
+   }
+  },
+  {
+   "id": "5021",
+   "type": "tournaments",
+   "attributes": {
+    "name": "PII_CANARY_TOURNAMENT_96",
+    "slug": "PII_CANARY_SLUG",
+    "abr_code": null,
+    "private": true,
+    "user_id": "PII_CANARY_USER_1234",
+    "tournament_organizer": "PII_CANARY_NAME_97",
+    "date": "2026-09-20",
+    "time_zone": "Europe/Warsaw",
+    "registration_starts": null,
+    "tournament_starts": null,
+    "organizer_contact": "PII_CANARY_CONTACT@example.invalid",
+    "event_link": "https://PII_CANARY_LINK.example/",
+    "stream_url": "https://PII_CANARY_STREAM.example/",
+    "description": "PII_CANARY_DESCRIPTION_98",
+    "additional_prizes_description": "PII_CANARY_DESCRIPTION_99",
+    "official_prize_kit_id": null,
+    "official_prize_kit_name": null,
+    "stage": "double_elim",
+    "manual_seed": false,
+    "self_registration": true,
+    "nrdb_deck_registration": true,
+    "decklist_required": true,
+    "allow_self_reporting": true,
+    "allow_streaming_opt_out": true,
+    "all_players_unlocked": false,
+    "any_player_unlocked": false,
+    "registration_closed": true,
+    "swiss_deck_visibility": "swiss_decks_public",
+    "cut_deck_visibility": "cut_decks_public",
+    "swiss_format": "single_sided",
+    "tournament_type_id": 1,
+    "format_id": 1,
+    "format_name": "Standard",
+    "deckbuilding_restriction_id": "standard_balance_update_26_08",
+    "deckbuilding_restriction_name": null,
+    "card_set_id": "vantage_point",
+    "active_player_count": 12,
+    "dropped_player_count": 0,
+    "created_at": "2026-08-21T10:00:00Z",
+    "updated_at": "2026-09-20T22:00:00Z"
+   },
+   "relationships": {
+    "players": {
+     "links": {
+      "related": "/api/v1/public/tournaments/5021/players"
+     }
+    }
+   }
+  },
+  {
+   "id": "5020",
+   "type": "tournaments",
+   "attributes": {
+    "name": "PII_CANARY_TOURNAMENT_100",
+    "slug": "PII_CANARY_SLUG",
+    "abr_code": null,
+    "private": false,
+    "user_id": "PII_CANARY_USER_1234",
+    "tournament_organizer": "PII_CANARY_NAME_101",
+    "date": "2026-09-13",
+    "time_zone": "Europe/Warsaw",
+    "registration_starts": null,
+    "tournament_starts": null,
+    "organizer_contact": "PII_CANARY_CONTACT@example.invalid",
+    "event_link": "https://PII_CANARY_LINK.example/",
+    "stream_url": "https://PII_CANARY_STREAM.example/",
+    "description": "PII_CANARY_DESCRIPTION_102",
+    "additional_prizes_description": "PII_CANARY_DESCRIPTION_103",
+    "official_prize_kit_id": null,
+    "official_prize_kit_name": null,
+    "stage": "double_elim",
+    "manual_seed": false,
+    "self_registration": true,
+    "nrdb_deck_registration": true,
+    "decklist_required": true,
+    "allow_self_reporting": true,
+    "allow_streaming_opt_out": true,
+    "all_players_unlocked": false,
+    "any_player_unlocked": false,
+    "registration_closed": true,
+    "swiss_deck_visibility": "swiss_decks_public",
+    "cut_deck_visibility": "cut_decks_public",
+    "swiss_format": "single_sided",
+    "tournament_type_id": 1,
+    "format_id": 2,
+    "format_name": "Startup",
+    "deckbuilding_restriction_id": null,
+    "deckbuilding_restriction_name": null,
+    "card_set_id": "vantage_point",
+    "active_player_count": 14,
+    "dropped_player_count": 0,
+    "created_at": "2026-08-14T10:00:00Z",
+    "updated_at": "2026-09-13T22:00:00Z"
+   },
+   "relationships": {
+    "players": {
+     "links": {
+      "related": "/api/v1/public/tournaments/5020/players"
+     }
+    }
+   }
+  },
+  {
+   "id": "5015",
+   "type": "tournaments",
+   "attributes": {
+    "name": "PII_CANARY_TOURNAMENT_104",
+    "slug": "PII_CANARY_SLUG",
+    "abr_code": null,
+    "private": false,
+    "user_id": "PII_CANARY_USER_1234",
+    "tournament_organizer": "PII_CANARY_NAME_105",
+    "date": "2026-08-22",
+    "time_zone": "Europe/Warsaw",
+    "registration_starts": null,
+    "tournament_starts": null,
+    "organizer_contact": "PII_CANARY_CONTACT@example.invalid",
+    "event_link": "https://PII_CANARY_LINK.example/",
+    "stream_url": "https://PII_CANARY_STREAM.example/",
+    "description": "PII_CANARY_DESCRIPTION_106",
+    "additional_prizes_description": "PII_CANARY_DESCRIPTION_107",
+    "official_prize_kit_id": null,
+    "official_prize_kit_name": null,
+    "stage": "swiss",
+    "manual_seed": false,
+    "self_registration": true,
+    "nrdb_deck_registration": true,
+    "decklist_required": true,
+    "allow_self_reporting": true,
+    "allow_streaming_opt_out": true,
+    "all_players_unlocked": false,
+    "any_player_unlocked": false,
+    "registration_closed": true,
+    "swiss_deck_visibility": "swiss_decks_public",
+    "cut_deck_visibility": "cut_decks_public",
+    "swiss_format": "single_sided",
+    "tournament_type_id": 1,
+    "format_id": 1,
+    "format_name": "Standard",
+    "deckbuilding_restriction_id": "standard_balance_update_26_08",
+    "deckbuilding_restriction_name": null,
+    "card_set_id": "vantage_point",
+    "active_player_count": 10,
+    "dropped_player_count": 0,
+    "created_at": "2026-07-23T10:00:00Z",
+    "updated_at": "2026-08-22T22:00:00Z"
+   },
+   "relationships": {
+    "players": {
+     "links": {
+      "related": "/api/v1/public/tournaments/5015/players"
+     }
+    }
+   }
+  },
+  {
+   "id": "5012",
+   "type": "tournaments",
+   "attributes": {
+    "name": "PII_CANARY_TOURNAMENT_108",
+    "slug": "PII_CANARY_SLUG",
+    "abr_code": null,
+    "private": false,
+    "user_id": "PII_CANARY_USER_1234",
+    "tournament_organizer": "PII_CANARY_NAME_109",
+    "date": "2026-09-12",
+    "time_zone": "Europe/Warsaw",
+    "registration_starts": null,
+    "tournament_starts": null,
+    "organizer_contact": "PII_CANARY_CONTACT@example.invalid",
+    "event_link": "https://PII_CANARY_LINK.example/",
+    "stream_url": "https://PII_CANARY_STREAM.example/",
+    "description": "PII_CANARY_DESCRIPTION_110",
+    "additional_prizes_description": "PII_CANARY_DESCRIPTION_111",
+    "official_prize_kit_id": null,
+    "official_prize_kit_name": null,
+    "stage": "swiss",
+    "manual_seed": false,
+    "self_registration": true,
+    "nrdb_deck_registration": true,
+    "decklist_required": true,
+    "allow_self_reporting": true,
+    "allow_streaming_opt_out": true,
+    "all_players_unlocked": false,
+    "any_player_unlocked": false,
+    "registration_closed": true,
+    "swiss_deck_visibility": "swiss_decks_open",
+    "cut_deck_visibility": "cut_decks_private",
+    "swiss_format": "double_sided",
+    "tournament_type_id": 2,
+    "format_id": 1,
+    "format_name": "Standard",
+    "deckbuilding_restriction_id": "standard_balance_update_26_08",
+    "deckbuilding_restriction_name": null,
+    "card_set_id": "vantage_point",
+    "active_player_count": 8,
+    "dropped_player_count": 0,
+    "created_at": "2026-08-13T10:00:00Z",
+    "updated_at": "2026-09-12T22:00:00Z"
+   },
+   "relationships": {
+    "players": {
+     "links": {
+      "related": "/api/v1/public/tournaments/5012/players"
+     }
+    }
+   }
+  },
+  {
+   "id": "4990",
+   "type": "tournaments",
+   "attributes": {
+    "name": "PII_CANARY_TOURNAMENT_112",
+    "slug": "PII_CANARY_SLUG",
+    "abr_code": "5284",
+    "private": false,
+    "user_id": "PII_CANARY_USER_1234",
+    "tournament_organizer": "PII_CANARY_NAME_113",
+    "date": "2026-09-19",
+    "time_zone": "Europe/Warsaw",
+    "registration_starts": null,
+    "tournament_starts": null,
+    "organizer_contact": "PII_CANARY_CONTACT@example.invalid",
+    "event_link": "https://PII_CANARY_LINK.example/",
+    "stream_url": "https://PII_CANARY_STREAM.example/",
+    "description": "PII_CANARY_DESCRIPTION_114",
+    "additional_prizes_description": "PII_CANARY_DESCRIPTION_115",
+    "official_prize_kit_id": null,
+    "official_prize_kit_name": null,
+    "stage": "double_elim",
+    "manual_seed": false,
+    "self_registration": true,
+    "nrdb_deck_registration": true,
+    "decklist_required": true,
+    "allow_self_reporting": true,
+    "allow_streaming_opt_out": true,
+    "all_players_unlocked": false,
+    "any_player_unlocked": false,
+    "registration_closed": true,
+    "swiss_deck_visibility": "swiss_decks_public",
+    "cut_deck_visibility": "cut_decks_public",
+    "swiss_format": "single_sided",
+    "tournament_type_id": 6,
+    "format_id": 1,
+    "format_name": "Standard",
+    "deckbuilding_restriction_id": "standard_balance_update_26_08",
+    "deckbuilding_restriction_name": null,
+    "card_set_id": "vantage_point",
+    "active_player_count": 16,
+    "dropped_player_count": 0,
+    "created_at": "2026-08-20T10:00:00Z",
+    "updated_at": "2026-09-19T22:00:00Z"
+   },
+   "relationships": {
+    "players": {
+     "links": {
+      "related": "/api/v1/public/tournaments/4990/players"
+     }
+    }
+   }
+  }
+ ],
+ "meta": {
+  "stats": {
+   "total": {
+    "count": 6
+   }
+  }
+ },
+ "links": {
+  "self": "https://tournaments.nullsignal.games/api/v1/public/tournaments?page[number]=1&page[size]=250"
+ }
+}

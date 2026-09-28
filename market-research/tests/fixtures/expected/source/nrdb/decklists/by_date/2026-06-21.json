@@ -1,0 +1,2399 @@
+{
+ "date": "2026-06-21",
+ "decklists": [
+  {
+   "cards": [
+    {
+     "printing_id": "26106",
+     "qty": 3
+    },
+    {
+     "printing_id": "27005",
+     "qty": 3
+    },
+    {
+     "printing_id": "30044",
+     "qty": 1
+    },
+    {
+     "printing_id": "30048",
+     "qty": 3
+    },
+    {
+     "printing_id": "30049",
+     "qty": 3
+    },
+    {
+     "printing_id": "30075",
+     "qty": 3
+    },
+    {
+     "printing_id": "33043",
+     "qty": 3
+    },
+    {
+     "printing_id": "33110",
+     "qty": 3
+    },
+    {
+     "printing_id": "34108",
+     "qty": 3
+    },
+    {
+     "printing_id": "35049",
+     "qty": 3
+    },
+    {
+     "printing_id": "35052",
+     "qty": 1
+    },
+    {
+     "printing_id": "35055",
+     "qty": 3
+    },
+    {
+     "printing_id": "36044",
+     "qty": 3
+    },
+    {
+     "printing_id": "36045",
+     "qty": 3
+    },
+    {
+     "printing_id": "36066",
+     "qty": 2
+    }
+   ],
+   "id": "98616",
+   "identity_printing_id": "30043",
+   "kind": "decklist",
+   "published": "2026-06-21",
+   "record_hash": "sha256:7bc4385cd66a0b299300655268169a0619d01c42d0e819e4405645552c455a4e",
+   "schema": "nrdb.decklist/1",
+   "uuid": "00018138-0000-4000-8000-000000018138"
+  },
+  {
+   "cards": [
+    {
+     "printing_id": "26020",
+     "qty": 3
+    },
+    {
+     "printing_id": "26022",
+     "qty": 3
+    },
+    {
+     "printing_id": "26027",
+     "qty": 1
+    },
+    {
+     "printing_id": "26092",
+     "qty": 1
+    },
+    {
+     "printing_id": "26095",
+     "qty": 3
+    },
+    {
+     "printing_id": "27003",
+     "qty": 1
+    },
+    {
+     "printing_id": "30027",
+     "qty": 3
+    },
+    {
+     "printing_id": "30028",
+     "qty": 3
+    },
+    {
+     "printing_id": "30029",
+     "qty": 3
+    },
+    {
+     "printing_id": "30030",
+     "qty": 3
+    },
+    {
+     "printing_id": "33023",
+     "qty": 3
+    },
+    {
+     "printing_id": "33030",
+     "qty": 3
+    },
+    {
+     "printing_id": "34025",
+     "qty": 3
+    },
+    {
+     "printing_id": "34027",
+     "qty": 1
+    },
+    {
+     "printing_id": "34029",
+     "qty": 3
+    },
+    {
+     "printing_id": "34089",
+     "qty": 3
+    },
+    {
+     "printing_id": "34093",
+     "qty": 1
+    },
+    {
+     "printing_id": "36020",
+     "qty": 1
+    },
+    {
+     "printing_id": "36022",
+     "qty": 3
+    }
+   ],
+   "id": "98617",
+   "identity_printing_id": "35024",
+   "kind": "decklist",
+   "published": "2026-06-21",
+   "record_hash": "sha256:6f6f34b62c94f036c7c63deb959e84514ded400038affca77451a42fa70bd916",
+   "schema": "nrdb.decklist/1",
+   "uuid": "00018139-0000-4000-8000-000000018139"
+  },
+  {
+   "cards": [
+    {
+     "printing_id": "30062",
+     "qty": 3
+    },
+    {
+     "printing_id": "30069",
+     "qty": 3
+    },
+    {
+     "printing_id": "30071",
+     "qty": 3
+    },
+    {
+     "printing_id": "30075",
+     "qty": 3
+    },
+    {
+     "printing_id": "33061",
+     "qty": 3
+    },
+    {
+     "printing_id": "33062",
+     "qty": 3
+    },
+    {
+     "printing_id": "33122",
+     "qty": 2
+    },
+    {
+     "printing_id": "33127",
+     "qty": 3
+    },
+    {
+     "printing_id": "34059",
+     "qty": 3
+    },
+    {
+     "printing_id": "34126",
+     "qty": 3
+    },
+    {
+     "printing_id": "35075",
+     "qty": 3
+    },
+    {
+     "printing_id": "35077",
+     "qty": 3
+    },
+    {
+     "printing_id": "36056",
+     "qty": 3
+    },
+    {
+     "printing_id": "36066",
+     "qty": 2
+    }
+   ],
+   "id": "98618",
+   "identity_printing_id": "30059",
+   "kind": "decklist",
+   "published": "2026-06-21",
+   "record_hash": "sha256:11526efa32d45b7976c2d94dc1cabdd17107d216af0df3e015ca2f40613d49a4",
+   "schema": "nrdb.decklist/1",
+   "uuid": "0001813a-0000-4000-8000-00000001813a"
+  },
+  {
+   "cards": [
+    {
+     "printing_id": "26007",
+     "qty": 3
+    },
+    {
+     "printing_id": "30004",
+     "qty": 3
+    },
+    {
+     "printing_id": "30009",
+     "qty": 3
+    },
+    {
+     "printing_id": "30013",
+     "qty": 3
+    },
+    {
+     "printing_id": "30028",
+     "qty": 3
+    },
+    {
+     "printing_id": "30029",
+     "qty": 3
+    },
+    {
+     "printing_id": "30030",
+     "qty": 3
+    },
+    {
+     "printing_id": "33005",
+     "qty": 3
+    },
+    {
+     "printing_id": "33007",
+     "qty": 3
+    },
+    {
+     "printing_id": "34003",
+     "qty": 1
+    },
+    {
+     "printing_id": "34005",
+     "qty": 3
+    },
+    {
+     "printing_id": "34072",
+     "qty": 3
+    },
+    {
+     "printing_id": "35008",
+     "qty": 3
+    },
+    {
+     "printing_id": "36004",
+     "qty": 3
+    },
+    {
+     "printing_id": "36005",
+     "qty": 3
+    },
+    {
+     "printing_id": "36007",
+     "qty": 1
+    },
+    {
+     "printing_id": "36008",
+     "qty": 1
+    }
+   ],
+   "id": "98619",
+   "identity_printing_id": "35002",
+   "kind": "decklist",
+   "published": "2026-06-21",
+   "record_hash": "sha256:1ed1b203e3d900743b26788c0f555fc548212e7933fb62d97234467008bd35d3",
+   "schema": "nrdb.decklist/1",
+   "uuid": "0001813b-0000-4000-8000-00000001813b"
+  },
+  {
+   "cards": [
+    {
+     "printing_id": "26037",
+     "qty": 3
+    },
+    {
+     "printing_id": "26104",
+     "qty": 3
+    },
+    {
+     "printing_id": "26130",
+     "qty": 3
+    },
+    {
+     "printing_id": "30069",
+     "qty": 3
+    },
+    {
+     "printing_id": "30070",
+     "qty": 3
+    },
+    {
+     "printing_id": "30073",
+     "qty": 3
+    },
+    {
+     "printing_id": "30075",
+     "qty": 3
+    },
+    {
+     "printing_id": "33098",
+     "qty": 3
+    },
+    {
+     "printing_id": "34038",
+     "qty": 3
+    },
+    {
+     "printing_id": "35037",
+     "qty": 3
+    },
+    {
+     "printing_id": "35038",
+     "qty": 3
+    },
+    {
+     "printing_id": "35039",
+     "qty": 3
+    },
+    {
+     "printing_id": "36029",
+     "qty": 3
+    },
+    {
+     "printing_id": "36032",
+     "qty": 3
+    },
+    {
+     "printing_id": "36033",
+     "qty": 3
+    }
+   ],
+   "id": "98620",
+   "identity_printing_id": "34096",
+   "kind": "decklist",
+   "published": "2026-06-21",
+   "record_hash": "sha256:0f715c2c35d7c751aaf87d4b20d4338cb697c0e69a30cb3608adcba77f51c7d4",
+   "schema": "nrdb.decklist/1",
+   "uuid": "0001813c-0000-4000-8000-00000001813c"
+  },
+  {
+   "cards": [
+    {
+     "printing_id": "26014",
+     "qty": 3
+    },
+    {
+     "printing_id": "26076",
+     "qty": 3
+    },
+    {
+     "printing_id": "26080",
+     "qty": 3
+    },
+    {
+     "printing_id": "26082",
+     "qty": 1
+    },
+    {
+     "printing_id": "26093",
+     "qty": 3
+    },
+    {
+     "printing_id": "26094",
+     "qty": 3
+    },
+    {
+     "printing_id": "30032",
+     "qty": 3
+    },
+    {
+     "printing_id": "30034",
+     "qty": 1
+    },
+    {
+     "printing_id": "33012",
+     "qty": 3
+    },
+    {
+     "printing_id": "33015",
+     "qty": 3
+    },
+    {
+     "printing_id": "33079",
+     "qty": 3
+    },
+    {
+     "printing_id": "34077",
+     "qty": 3
+    },
+    {
+     "printing_id": "35022",
+     "qty": 3
+    },
+    {
+     "printing_id": "36012",
+     "qty": 3
+    },
+    {
+     "printing_id": "36013",
+     "qty": 3
+    },
+    {
+     "printing_id": "36014",
+     "qty": 1
+    },
+    {
+     "printing_id": "36015",
+     "qty": 3
+    }
+   ],
+   "id": "98621",
+   "identity_printing_id": "35012",
+   "kind": "decklist",
+   "published": "2026-06-21",
+   "record_hash": "sha256:b6fadaed827d8446076c94d369ca771ff85dc1a9c7495e60dc6477750265d886",
+   "schema": "nrdb.decklist/1",
+   "uuid": "0001813d-0000-4000-8000-00000001813d"
+  },
+  {
+   "cards": [
+    {
+     "printing_id": "26065",
+     "qty": 3
+    },
+    {
+     "printing_id": "26126",
+     "qty": 3
+    },
+    {
+     "printing_id": "30071",
+     "qty": 3
+    },
+    {
+     "printing_id": "30072",
+     "qty": 3
+    },
+    {
+     "printing_id": "30075",
+     "qty": 3
+    },
+    {
+     "printing_id": "33124",
+     "qty": 3
+    },
+    {
+     "printing_id": "33126",
+     "qty": 1
+    },
+    {
+     "printing_id": "34123",
+     "qty": 2
+    },
+    {
+     "printing_id": "34130",
+     "qty": 1
+    },
+    {
+     "printing_id": "35071",
+     "qty": 3
+    },
+    {
+     "printing_id": "35072",
+     "qty": 3
+    },
+    {
+     "printing_id": "35082",
+     "qty": 3
+    },
+    {
+     "printing_id": "36061",
+     "qty": 3
+    },
+    {
+     "printing_id": "36063",
+     "qty": 3
+    },
+    {
+     "printing_id": "36066",
+     "qty": 3
+    }
+   ],
+   "id": "98622",
+   "identity_printing_id": "30059",
+   "kind": "decklist",
+   "published": "2026-06-21",
+   "record_hash": "sha256:27e3c2d89904fbdeb9a4ff5e990386f7563c106391a6119eef42293cde599220",
+   "schema": "nrdb.decklist/1",
+   "uuid": "0001813e-0000-4000-8000-00000001813e"
+  },
+  {
+   "cards": [
+    {
+     "printing_id": "26030",
+     "qty": 3
+    },
+    {
+     "printing_id": "26069",
+     "qty": 1
+    },
+    {
+     "printing_id": "26094",
+     "qty": 3
+    },
+    {
+     "printing_id": "30008",
+     "qty": 3
+    },
+    {
+     "printing_id": "30030",
+     "qty": 3
+    },
+    {
+     "printing_id": "33002",
+     "qty": 3
+    },
+    {
+     "printing_id": "33007",
+     "qty": 3
+    },
+    {
+     "printing_id": "33009",
+     "qty": 3
+    },
+    {
+     "printing_id": "33067",
+     "qty": 3
+    },
+    {
+     "printing_id": "33072",
+     "qty": 1
+    },
+    {
+     "printing_id": "34012",
+     "qty": 3
+    },
+    {
+     "printing_id": "34067",
+     "qty": 3
+    },
+    {
+     "printing_id": "34072",
+     "qty": 3
+    },
+    {
+     "printing_id": "34074",
+     "qty": 3
+    },
+    {
+     "printing_id": "35009",
+     "qty": 3
+    },
+    {
+     "printing_id": "36001",
+     "qty": 3
+    },
+    {
+     "printing_id": "36006",
+     "qty": 1
+    }
+   ],
+   "id": "98623",
+   "identity_printing_id": "35002",
+   "kind": "decklist",
+   "published": "2026-06-21",
+   "record_hash": "sha256:928e5762a6fde9463ed31443cb16c13851fdcf607f7ca9018236022f9ca9897f",
+   "schema": "nrdb.decklist/1",
+   "uuid": "0001813f-0000-4000-8000-00000001813f"
+  },
+  {
+   "cards": [
+    {
+     "printing_id": "26036",
+     "qty": 3
+    },
+    {
+     "printing_id": "26065",
+     "qty": 3
+    },
+    {
+     "printing_id": "30040",
+     "qty": 3
+    },
+    {
+     "printing_id": "30068",
+     "qty": 3
+    },
+    {
+     "printing_id": "30071",
+     "qty": 3
+    },
+    {
+     "printing_id": "30072",
+     "qty": 3
+    },
+    {
+     "printing_id": "30075",
+     "qty": 3
+    },
+    {
+     "printing_id": "33031",
+     "qty": 3
+    },
+    {
+     "printing_id": "33035",
+     "qty": 1
+    },
+    {
+     "printing_id": "33102",
+     "qty": 3
+    },
+    {
+     "printing_id": "34032",
+     "qty": 3
+    },
+    {
+     "printing_id": "34101",
+     "qty": 3
+    },
+    {
+     "printing_id": "35038",
+     "qty": 3
+    },
+    {
+     "printing_id": "36028",
+     "qty": 3
+    }
+   ],
+   "id": "98624",
+   "identity_printing_id": "30035",
+   "kind": "decklist",
+   "published": "2026-06-21",
+   "record_hash": "sha256:c092629681507b351a2c469f3494914b0a2cea847083c7895ed2007b0fa9a366",
+   "schema": "nrdb.decklist/1",
+   "uuid": "00018140-0000-4000-8000-000000018140"
+  },
+  {
+   "cards": [
+    {
+     "printing_id": "26029",
+     "qty": 3
+    },
+    {
+     "printing_id": "26030",
+     "qty": 3
+    },
+    {
+     "printing_id": "26076",
+     "qty": 1
+    },
+    {
+     "printing_id": "30013",
+     "qty": 3
+    },
+    {
+     "printing_id": "30015",
+     "qty": 3
+    },
+    {
+     "printing_id": "30030",
+     "qty": 3
+    },
+    {
+     "printing_id": "30031",
+     "qty": 3
+    },
+    {
+     "printing_id": "33014",
+     "qty": 3
+    },
+    {
+     "printing_id": "33019",
+     "qty": 3
+    },
+    {
+     "printing_id": "33076",
+     "qty": 3
+    },
+    {
+     "printing_id": "33083",
+     "qty": 3
+    },
+    {
+     "printing_id": "34081",
+     "qty": 3
+    },
+    {
+     "printing_id": "34095",
+     "qty": 3
+    },
+    {
+     "printing_id": "36016",
+     "qty": 3
+    }
+   ],
+   "id": "98625",
+   "identity_printing_id": "30010",
+   "kind": "decklist",
+   "published": "2026-06-21",
+   "record_hash": "sha256:63be9730d9a9945deb9b8427f39901922c0eaa31d27a72589afbc85959841971",
+   "schema": "nrdb.decklist/1",
+   "uuid": "00018141-0000-4000-8000-000000018141"
+  },
+  {
+   "cards": [
+    {
+     "printing_id": "26048",
+     "qty": 3
+    },
+    {
+     "printing_id": "26050",
+     "qty": 3
+    },
+    {
+     "printing_id": "26054",
+     "qty": 3
+    },
+    {
+     "printing_id": "26118",
+     "qty": 3
+    },
+    {
+     "printing_id": "26130",
+     "qty": 3
+    },
+    {
+     "printing_id": "30052",
+     "qty": 1
+    },
+    {
+     "printing_id": "30055",
+     "qty": 2
+    },
+    {
+     "printing_id": "30075",
+     "qty": 3
+    },
+    {
+     "printing_id": "33053",
+     "qty": 3
+    },
+    {
+     "printing_id": "34065",
+     "qty": 3
+    },
+    {
+     "printing_id": "34103",
+     "qty": 3
+    },
+    {
+     "printing_id": "34114",
+     "qty": 3
+    },
+    {
+     "printing_id": "34117",
+     "qty": 3
+    },
+    {
+     "printing_id": "35059",
+     "qty": 3
+    },
+    {
+     "printing_id": "36051",
+     "qty": 3
+    },
+    {
+     "printing_id": "36066",
+     "qty": 3
+    }
+   ],
+   "id": "98626",
+   "identity_printing_id": "35058",
+   "kind": "decklist",
+   "published": "2026-06-21",
+   "record_hash": "sha256:da36f95ac77d7070209bced2f66a1d7f729bde653275eb321be3c04fa4f0a27c",
+   "schema": "nrdb.decklist/1",
+   "uuid": "00018142-0000-4000-8000-000000018142"
+  },
+  {
+   "cards": [
+    {
+     "printing_id": "26020",
+     "qty": 3
+    },
+    {
+     "printing_id": "26086",
+     "qty": 3
+    },
+    {
+     "printing_id": "26089",
+     "qty": 3
+    },
+    {
+     "printing_id": "26092",
+     "qty": 1
+    },
+    {
+     "printing_id": "30021",
+     "qty": 3
+    },
+    {
+     "printing_id": "30027",
+     "qty": 3
+    },
+    {
+     "printing_id": "30030",
+     "qty": 3
+    },
+    {
+     "printing_id": "30033",
+     "qty": 3
+    },
+    {
+     "printing_id": "33022",
+     "qty": 3
+    },
+    {
+     "printing_id": "33030",
+     "qty": 3
+    },
+    {
+     "printing_id": "34093",
+     "qty": 3
+    },
+    {
+     "printing_id": "35025",
+     "qty": 3
+    },
+    {
+     "printing_id": "36018",
+     "qty": 3
+    },
+    {
+     "printing_id": "36022",
+     "qty": 3
+    }
+   ],
+   "id": "98627",
+   "identity_printing_id": "30019",
+   "kind": "decklist",
+   "published": "2026-06-21",
+   "record_hash": "sha256:f6e4fb05e64406c671cf56ad8d992c91f6f90dd56c75976d9a65001a9f0ab28e",
+   "schema": "nrdb.decklist/1",
+   "uuid": "00018143-0000-4000-8000-000000018143"
+  },
+  {
+   "cards": [
+    {
+     "printing_id": "26032",
+     "qty": 3
+    },
+    {
+     "printing_id": "26034",
+     "qty": 3
+    },
+    {
+     "printing_id": "30038",
+     "qty": 3
+    },
+    {
+     "printing_id": "30070",
+     "qty": 3
+    },
+    {
+     "printing_id": "30075",
+     "qty": 3
+    },
+    {
+     "printing_id": "33036",
+     "qty": 3
+    },
+    {
+     "printing_id": "34031",
+     "qty": 3
+    },
+    {
+     "printing_id": "34103",
+     "qty": 3
+    },
+    {
+     "printing_id": "34104",
+     "qty": 3
+    },
+    {
+     "printing_id": "35037",
+     "qty": 3
+    },
+    {
+     "printing_id": "35043",
+     "qty": 3
+    },
+    {
+     "printing_id": "35044",
+     "qty": 3
+    },
+    {
+     "printing_id": "36030",
+     "qty": 3
+    },
+    {
+     "printing_id": "36031",
+     "qty": 3
+    },
+    {
+     "printing_id": "36032",
+     "qty": 3
+    }
+   ],
+   "id": "98628",
+   "identity_printing_id": "34096",
+   "kind": "decklist",
+   "published": "2026-06-21",
+   "record_hash": "sha256:4bca51e01efb4aca191c416bc65cd8d8a9b7e0e2d3b1a010fe616eeb7276b5bf",
+   "schema": "nrdb.decklist/1",
+   "uuid": "00018144-0000-4000-8000-000000018144"
+  },
+  {
+   "cards": [
+    {
+     "printing_id": "26082",
+     "qty": 1
+    },
+    {
+     "printing_id": "30011",
+     "qty": 3
+    },
+    {
+     "printing_id": "30015",
+     "qty": 3
+    },
+    {
+     "printing_id": "30031",
+     "qty": 3
+    },
+    {
+     "printing_id": "30034",
+     "qty": 3
+    },
+    {
+     "printing_id": "33014",
+     "qty": 3
+    },
+    {
+     "printing_id": "33018",
+     "qty": 3
+    },
+    {
+     "printing_id": "33080",
+     "qty": 3
+    },
+    {
+     "printing_id": "33082",
+     "qty": 1
+    },
+    {
+     "printing_id": "34012",
+     "qty": 3
+    },
+    {
+     "printing_id": "34014",
+     "qty": 3
+    },
+    {
+     "printing_id": "34030",
+     "qty": 3
+    },
+    {
+     "printing_id": "34078",
+     "qty": 3
+    },
+    {
+     "printing_id": "34095",
+     "qty": 3
+    },
+    {
+     "printing_id": "35016",
+     "qty": 3
+    },
+    {
+     "printing_id": "35034",
+     "qty": 1
+    },
+    {
+     "printing_id": "36013",
+     "qty": 3
+    }
+   ],
+   "id": "98629",
+   "identity_printing_id": "35012",
+   "kind": "decklist",
+   "published": "2026-06-21",
+   "record_hash": "sha256:41894fd113faa28a61833250f90b5ead860e0d561a26603f7883c0cb1101c2b5",
+   "schema": "nrdb.decklist/1",
+   "uuid": "00018145-0000-4000-8000-000000018145"
+  },
+  {
+   "cards": [
+    {
+     "printing_id": "26065",
+     "qty": 3
+    },
+    {
+     "printing_id": "26110",
+     "qty": 3
+    },
+    {
+     "printing_id": "30044",
+     "qty": 1
+    },
+    {
+     "printing_id": "30070",
+     "qty": 3
+    },
+    {
+     "printing_id": "30071",
+     "qty": 3
+    },
+    {
+     "printing_id": "30075",
+     "qty": 3
+    },
+    {
+     "printing_id": "33039",
+     "qty": 2
+    },
+    {
+     "printing_id": "33041",
+     "qty": 3
+    },
+    {
+     "printing_id": "33107",
+     "qty": 3
+    },
+    {
+     "printing_id": "34042",
+     "qty": 3
+    },
+    {
+     "printing_id": "34044",
+     "qty": 3
+    },
+    {
+     "printing_id": "34106",
+     "qty": 3
+    },
+    {
+     "printing_id": "34108",
+     "qty": 3
+    },
+    {
+     "printing_id": "34112",
+     "qty": 3
+    },
+    {
+     "printing_id": "36037",
+     "qty": 3
+    },
+    {
+     "printing_id": "36039",
+     "qty": 3
+    }
+   ],
+   "id": "98630",
+   "identity_printing_id": "34039",
+   "kind": "decklist",
+   "published": "2026-06-21",
+   "record_hash": "sha256:cc840776bd9ba98e355058f58fb6b74a9708c1963284a57b4731c4242445774b",
+   "schema": "nrdb.decklist/1",
+   "uuid": "00018146-0000-4000-8000-000000018146"
+  },
+  {
+   "cards": [
+    {
+     "printing_id": "26006",
+     "qty": 1
+    },
+    {
+     "printing_id": "26007",
+     "qty": 2
+    },
+    {
+     "printing_id": "26068",
+     "qty": 1
+    },
+    {
+     "printing_id": "26070",
+     "qty": 3
+    },
+    {
+     "printing_id": "26071",
+     "qty": 3
+    },
+    {
+     "printing_id": "30003",
+     "qty": 3
+    },
+    {
+     "printing_id": "30004",
+     "qty": 3
+    },
+    {
+     "printing_id": "30007",
+     "qty": 3
+    },
+    {
+     "printing_id": "30028",
+     "qty": 3
+    },
+    {
+     "printing_id": "30030",
+     "qty": 3
+    },
+    {
+     "printing_id": "33004",
+     "qty": 3
+    },
+    {
+     "printing_id": "33006",
+     "qty": 1
+    },
+    {
+     "printing_id": "33007",
+     "qty": 3
+    },
+    {
+     "printing_id": "33066",
+     "qty": 3
+    },
+    {
+     "printing_id": "33070",
+     "qty": 3
+    },
+    {
+     "printing_id": "34005",
+     "qty": 3
+    },
+    {
+     "printing_id": "34069",
+     "qty": 1
+    },
+    {
+     "printing_id": "36001",
+     "qty": 3
+    }
+   ],
+   "id": "98631",
+   "identity_printing_id": "33001",
+   "kind": "decklist",
+   "published": "2026-06-21",
+   "record_hash": "sha256:bdd80a5c9aa5c6b409ad03842d8855e21f1ec09d84c6a6ee03a80abaddc14a6a",
+   "schema": "nrdb.decklist/1",
+   "uuid": "00018147-0000-4000-8000-000000018147"
+  },
+  {
+   "cards": [
+    {
+     "printing_id": "26045",
+     "qty": 3
+    },
+    {
+     "printing_id": "26063",
+     "qty": 3
+    },
+    {
+     "printing_id": "30047",
+     "qty": 1
+    },
+    {
+     "printing_id": "30071",
+     "qty": 3
+    },
+    {
+     "printing_id": "30073",
+     "qty": 3
+    },
+    {
+     "printing_id": "30075",
+     "qty": 3
+    },
+    {
+     "printing_id": "33045",
+     "qty": 3
+    },
+    {
+     "printing_id": "33109",
+     "qty": 3
+    },
+    {
+     "printing_id": "34040",
+     "qty": 2
+    },
+    {
+     "printing_id": "34041",
+     "qty": 3
+    },
+    {
+     "printing_id": "34065",
+     "qty": 3
+    },
+    {
+     "printing_id": "34107",
+     "qty": 3
+    },
+    {
+     "printing_id": "34108",
+     "qty": 3
+    },
+    {
+     "printing_id": "34130",
+     "qty": 3
+    },
+    {
+     "printing_id": "35048",
+     "qty": 3
+    },
+    {
+     "printing_id": "36040",
+     "qty": 3
+    }
+   ],
+   "id": "98632",
+   "identity_printing_id": "34039",
+   "kind": "decklist",
+   "published": "2026-06-21",
+   "record_hash": "sha256:cc8743bd50d56abe09e3fc75fe11ae6925a30ab410a88c1676ac154bc12c7d6b",
+   "schema": "nrdb.decklist/1",
+   "uuid": "00018148-0000-4000-8000-000000018148"
+  },
+  {
+   "cards": [
+    {
+     "printing_id": "26004",
+     "qty": 3
+    },
+    {
+     "printing_id": "26005",
+     "qty": 3
+    },
+    {
+     "printing_id": "26009",
+     "qty": 1
+    },
+    {
+     "printing_id": "26028",
+     "qty": 3
+    },
+    {
+     "printing_id": "26073",
+     "qty": 3
+    },
+    {
+     "printing_id": "26094",
+     "qty": 3
+    },
+    {
+     "printing_id": "30030",
+     "qty": 3
+    },
+    {
+     "printing_id": "30032",
+     "qty": 3
+    },
+    {
+     "printing_id": "30034",
+     "qty": 3
+    },
+    {
+     "printing_id": "33002",
+     "qty": 3
+    },
+    {
+     "printing_id": "33004",
+     "qty": 3
+    },
+    {
+     "printing_id": "33070",
+     "qty": 3
+    },
+    {
+     "printing_id": "34007",
+     "qty": 1
+    },
+    {
+     "printing_id": "34030",
+     "qty": 3
+    },
+    {
+     "printing_id": "35010",
+     "qty": 1
+    },
+    {
+     "printing_id": "36003",
+     "qty": 3
+    },
+    {
+     "printing_id": "36004",
+     "qty": 3
+    }
+   ],
+   "id": "98633",
+   "identity_printing_id": "33001",
+   "kind": "decklist",
+   "published": "2026-06-21",
+   "record_hash": "sha256:cd05389545140cc26aba38cdd1437d01bf49e45686944e4d517acda63fab9d59",
+   "schema": "nrdb.decklist/1",
+   "uuid": "00018149-0000-4000-8000-000000018149"
+  },
+  {
+   "cards": [
+    {
+     "printing_id": "26047",
+     "qty": 3
+    },
+    {
+     "printing_id": "26050",
+     "qty": 3
+    },
+    {
+     "printing_id": "26052",
+     "qty": 3
+    },
+    {
+     "printing_id": "26064",
+     "qty": 3
+    },
+    {
+     "printing_id": "26118",
+     "qty": 3
+    },
+    {
+     "printing_id": "26119",
+     "qty": 3
+    },
+    {
+     "printing_id": "27006",
+     "qty": 3
+    },
+    {
+     "printing_id": "30047",
+     "qty": 3
+    },
+    {
+     "printing_id": "30055",
+     "qty": 2
+    },
+    {
+     "printing_id": "30070",
+     "qty": 3
+    },
+    {
+     "printing_id": "30075",
+     "qty": 3
+    },
+    {
+     "printing_id": "33112",
+     "qty": 3
+    },
+    {
+     "printing_id": "33116",
+     "qty": 3
+    },
+    {
+     "printing_id": "34130",
+     "qty": 1
+    },
+    {
+     "printing_id": "35059",
+     "qty": 3
+    },
+    {
+     "printing_id": "35065",
+     "qty": 3
+    }
+   ],
+   "id": "98634",
+   "identity_printing_id": "34048",
+   "kind": "decklist",
+   "published": "2026-06-21",
+   "record_hash": "sha256:0a591840847fd00995ba565129c3edfc7a35f52df583f986d4de23305349a616",
+   "schema": "nrdb.decklist/1",
+   "uuid": "0001814a-0000-4000-8000-00000001814a"
+  },
+  {
+   "cards": [
+    {
+     "printing_id": "26024",
+     "qty": 3
+    },
+    {
+     "printing_id": "26027",
+     "qty": 1
+    },
+    {
+     "printing_id": "26030",
+     "qty": 1
+    },
+    {
+     "printing_id": "26095",
+     "qty": 1
+    },
+    {
+     "printing_id": "30022",
+     "qty": 3
+    },
+    {
+     "printing_id": "30030",
+     "qty": 3
+    },
+    {
+     "printing_id": "30031",
+     "qty": 3
+    },
+    {
+     "printing_id": "30032",
+     "qty": 3
+    },
+    {
+     "printing_id": "30033",
+     "qty": 3
+    },
+    {
+     "printing_id": "33084",
+     "qty": 3
+    },
+    {
+     "printing_id": "33088",
+     "qty": 3
+    },
+    {
+     "printing_id": "34024",
+     "qty": 3
+    },
+    {
+     "printing_id": "34030",
+     "qty": 3
+    },
+    {
+     "printing_id": "34090",
+     "qty": 3
+    },
+    {
+     "printing_id": "34095",
+     "qty": 3
+    },
+    {
+     "printing_id": "35027",
+     "qty": 3
+    },
+    {
+     "printing_id": "36024",
+     "qty": 3
+    }
+   ],
+   "id": "98635",
+   "identity_printing_id": "26019",
+   "kind": "decklist",
+   "published": "2026-06-21",
+   "record_hash": "sha256:bf232219d672fb5acfbbfcd0964e57d19674cbf2d7a1bbb60725b0a9bb7fb924",
+   "schema": "nrdb.decklist/1",
+   "uuid": "0001814b-0000-4000-8000-00000001814b"
+  },
+  {
+   "cards": [
+    {
+     "printing_id": "26064",
+     "qty": 1
+    },
+    {
+     "printing_id": "26124",
+     "qty": 3
+    },
+    {
+     "printing_id": "30062",
+     "qty": 3
+    },
+    {
+     "printing_id": "30071",
+     "qty": 3
+    },
+    {
+     "printing_id": "30075",
+     "qty": 3
+    },
+    {
+     "printing_id": "33058",
+     "qty": 3
+    },
+    {
+     "printing_id": "33062",
+     "qty": 3
+    },
+    {
+     "printing_id": "33064",
+     "qty": 3
+    },
+    {
+     "printing_id": "33123",
+     "qty": 3
+    },
+    {
+     "printing_id": "33125",
+     "qty": 3
+    },
+    {
+     "printing_id": "34057",
+     "qty": 3
+    },
+    {
+     "printing_id": "34130",
+     "qty": 3
+    },
+    {
+     "printing_id": "35071",
+     "qty": 3
+    },
+    {
+     "printing_id": "36058",
+     "qty": 3
+    }
+   ],
+   "id": "98636",
+   "identity_printing_id": "30059",
+   "kind": "decklist",
+   "published": "2026-06-21",
+   "record_hash": "sha256:fc06af3298d9c5841ef6770f8d1302a237c9d301a0bb548d8174af7dd082ec53",
+   "schema": "nrdb.decklist/1",
+   "uuid": "0001814c-0000-4000-8000-00000001814c"
+  },
+  {
+   "cards": [
+    {
+     "printing_id": "26001",
+     "qty": 3
+    },
+    {
+     "printing_id": "26002",
+     "qty": 1
+    },
+    {
+     "printing_id": "26009",
+     "qty": 3
+    },
+    {
+     "printing_id": "27001",
+     "qty": 1
+    },
+    {
+     "printing_id": "30005",
+     "qty": 3
+    },
+    {
+     "printing_id": "30030",
+     "qty": 3
+    },
+    {
+     "printing_id": "30032",
+     "qty": 3
+    },
+    {
+     "printing_id": "33070",
+     "qty": 3
+    },
+    {
+     "printing_id": "33071",
+     "qty": 3
+    },
+    {
+     "printing_id": "33073",
+     "qty": 3
+    },
+    {
+     "printing_id": "34004",
+     "qty": 3
+    },
+    {
+     "printing_id": "34008",
+     "qty": 1
+    },
+    {
+     "printing_id": "34069",
+     "qty": 3
+    },
+    {
+     "printing_id": "34073",
+     "qty": 3
+    },
+    {
+     "printing_id": "35010",
+     "qty": 3
+    },
+    {
+     "printing_id": "35027",
+     "qty": 3
+    },
+    {
+     "printing_id": "36003",
+     "qty": 3
+    }
+   ],
+   "id": "98637",
+   "identity_printing_id": "35002",
+   "kind": "decklist",
+   "published": "2026-06-21",
+   "record_hash": "sha256:72dd64ba58d9bb03ab6bae13bbef92bf64a2079c2f11a4d8e1a3d8db2a7b0291",
+   "schema": "nrdb.decklist/1",
+   "uuid": "0001814d-0000-4000-8000-00000001814d"
+  },
+  {
+   "cards": [
+    {
+     "printing_id": "26035",
+     "qty": 3
+    },
+    {
+     "printing_id": "27004",
+     "qty": 3
+    },
+    {
+     "printing_id": "30069",
+     "qty": 3
+    },
+    {
+     "printing_id": "30071",
+     "qty": 3
+    },
+    {
+     "printing_id": "30075",
+     "qty": 3
+    },
+    {
+     "printing_id": "33100",
+     "qty": 3
+    },
+    {
+     "printing_id": "33101",
+     "qty": 3
+    },
+    {
+     "printing_id": "33103",
+     "qty": 3
+    },
+    {
+     "printing_id": "34100",
+     "qty": 1
+    },
+    {
+     "printing_id": "35038",
+     "qty": 3
+    },
+    {
+     "printing_id": "35041",
+     "qty": 3
+    },
+    {
+     "printing_id": "35044",
+     "qty": 3
+    },
+    {
+     "printing_id": "36033",
+     "qty": 3
+    },
+    {
+     "printing_id": "36035",
+     "qty": 3
+    }
+   ],
+   "id": "98638",
+   "identity_printing_id": "30035",
+   "kind": "decklist",
+   "published": "2026-06-21",
+   "record_hash": "sha256:fe49ac10b0873104980e03c06340f7729d9f50adcc4dbdc5984f25a7a7a056b0",
+   "schema": "nrdb.decklist/1",
+   "uuid": "0001814e-0000-4000-8000-00000001814e"
+  },
+  {
+   "cards": [
+    {
+     "printing_id": "26014",
+     "qty": 1
+    },
+    {
+     "printing_id": "26029",
+     "qty": 3
+    },
+    {
+     "printing_id": "30012",
+     "qty": 3
+    },
+    {
+     "printing_id": "30014",
+     "qty": 3
+    },
+    {
+     "printing_id": "30029",
+     "qty": 2
+    },
+    {
+     "printing_id": "30030",
+     "qty": 3
+    },
+    {
+     "printing_id": "33014",
+     "qty": 1
+    },
+    {
+     "printing_id": "33078",
+     "qty": 1
+    },
+    {
+     "printing_id": "34014",
+     "qty": 3
+    },
+    {
+     "printing_id": "34015",
+     "qty": 3
+    },
+    {
+     "printing_id": "34030",
+     "qty": 3
+    },
+    {
+     "printing_id": "34079",
+     "qty": 1
+    },
+    {
+     "printing_id": "34080",
+     "qty": 3
+    },
+    {
+     "printing_id": "34083",
+     "qty": 1
+    },
+    {
+     "printing_id": "35022",
+     "qty": 3
+    },
+    {
+     "printing_id": "36013",
+     "qty": 3
+    },
+    {
+     "printing_id": "36016",
+     "qty": 3
+    }
+   ],
+   "id": "98639",
+   "identity_printing_id": "30010",
+   "kind": "decklist",
+   "published": "2026-06-21",
+   "record_hash": "sha256:ecc631c59edb7a90c91cdb48785c0e313583e299684414204f8fbbb684a806f2",
+   "schema": "nrdb.decklist/1",
+   "uuid": "0001814f-0000-4000-8000-00000001814f"
+  },
+  {
+   "cards": [
+    {
+     "printing_id": "26040",
+     "qty": 3
+    },
+    {
+     "printing_id": "26042",
+     "qty": 2
+    },
+    {
+     "printing_id": "30046",
+     "qty": 3
+    },
+    {
+     "printing_id": "30070",
+     "qty": 3
+    },
+    {
+     "printing_id": "30074",
+     "qty": 3
+    },
+    {
+     "printing_id": "30075",
+     "qty": 3
+    },
+    {
+     "printing_id": "33039",
+     "qty": 2
+    },
+    {
+     "printing_id": "34047",
+     "qty": 3
+    },
+    {
+     "printing_id": "35049",
+     "qty": 3
+    },
+    {
+     "printing_id": "35056",
+     "qty": 3
+    },
+    {
+     "printing_id": "35080",
+     "qty": 3
+    },
+    {
+     "printing_id": "36038",
+     "qty": 3
+    },
+    {
+     "printing_id": "36040",
+     "qty": 3
+    },
+    {
+     "printing_id": "36043",
+     "qty": 3
+    }
+   ],
+   "id": "98640",
+   "identity_printing_id": "30043",
+   "kind": "decklist",
+   "published": "2026-06-21",
+   "record_hash": "sha256:0790bffe42ddcadbeee3ff3f64ad69697c7d90e752b169b20b79f0f41b63027d",
+   "schema": "nrdb.decklist/1",
+   "uuid": "00018150-0000-4000-8000-000000018150"
+  },
+  {
+   "cards": [
+    {
+     "printing_id": "26022",
+     "qty": 3
+    },
+    {
+     "printing_id": "26025",
+     "qty": 3
+    },
+    {
+     "printing_id": "26083",
+     "qty": 3
+    },
+    {
+     "printing_id": "30023",
+     "qty": 3
+    },
+    {
+     "printing_id": "30024",
+     "qty": 3
+    },
+    {
+     "printing_id": "30030",
+     "qty": 3
+    },
+    {
+     "printing_id": "30034",
+     "qty": 1
+    },
+    {
+     "printing_id": "33024",
+     "qty": 3
+    },
+    {
+     "printing_id": "33026",
+     "qty": 3
+    },
+    {
+     "printing_id": "33028",
+     "qty": 3
+    },
+    {
+     "printing_id": "33029",
+     "qty": 1
+    },
+    {
+     "printing_id": "34021",
+     "qty": 3
+    },
+    {
+     "printing_id": "34088",
+     "qty": 3
+    },
+    {
+     "printing_id": "34089",
+     "qty": 3
+    },
+    {
+     "printing_id": "34095",
+     "qty": 3
+    },
+    {
+     "printing_id": "36020",
+     "qty": 1
+    },
+    {
+     "printing_id": "36023",
+     "qty": 3
+    }
+   ],
+   "id": "98641",
+   "identity_printing_id": "35024",
+   "kind": "decklist",
+   "published": "2026-06-21",
+   "record_hash": "sha256:ce7a1752671439b3aaf6c87e90660e498e2b423adeabd99aafbcf26c1f0f05d6",
+   "schema": "nrdb.decklist/1",
+   "uuid": "00018151-0000-4000-8000-000000018151"
+  },
+  {
+   "cards": [
+    {
+     "printing_id": "26052",
+     "qty": 3
+    },
+    {
+     "printing_id": "26118",
+     "qty": 3
+    },
+    {
+     "printing_id": "30069",
+     "qty": 3
+    },
+    {
+     "printing_id": "30072",
+     "qty": 3
+    },
+    {
+     "printing_id": "30075",
+     "qty": 3
+    },
+    {
+     "printing_id": "33049",
+     "qty": 3
+    },
+    {
+     "printing_id": "33053",
+     "qty": 3
+    },
+    {
+     "printing_id": "33112",
+     "qty": 3
+    },
+    {
+     "printing_id": "33119",
+     "qty": 3
+    },
+    {
+     "printing_id": "34050",
+     "qty": 3
+    },
+    {
+     "printing_id": "34116",
+     "qty": 3
+    },
+    {
+     "printing_id": "35054",
+     "qty": 3
+    },
+    {
+     "printing_id": "35061",
+     "qty": 3
+    },
+    {
+     "printing_id": "35066",
+     "qty": 3
+    },
+    {
+     "printing_id": "36049",
+     "qty": 3
+    }
+   ],
+   "id": "98642",
+   "identity_printing_id": "35058",
+   "kind": "decklist",
+   "published": "2026-06-21",
+   "record_hash": "sha256:8b9c5a5d48166b1f8249ab9b2cfdd4d9db1ba329c81fd6d262665059fe44385c",
+   "schema": "nrdb.decklist/1",
+   "uuid": "00018152-0000-4000-8000-000000018152"
+  },
+  {
+   "cards": [
+    {
+     "printing_id": "26020",
+     "qty": 3
+    },
+    {
+     "printing_id": "26027",
+     "qty": 2
+    },
+    {
+     "printing_id": "26092",
+     "qty": 3
+    },
+    {
+     "printing_id": "27003",
+     "qty": 3
+    },
+    {
+     "printing_id": "30030",
+     "qty": 3
+    },
+    {
+     "printing_id": "30032",
+     "qty": 3
+    },
+    {
+     "printing_id": "33022",
+     "qty": 3
+    },
+    {
+     "printing_id": "33026",
+     "qty": 3
+    },
+    {
+     "printing_id": "33027",
+     "qty": 3
+    },
+    {
+     "printing_id": "33086",
+     "qty": 3
+    },
+    {
+     "printing_id": "34028",
+     "qty": 3
+    },
+    {
+     "printing_id": "34086",
+     "qty": 3
+    },
+    {
+     "printing_id": "34089",
+     "qty": 3
+    },
+    {
+     "printing_id": "34095",
+     "qty": 1
+    },
+    {
+     "printing_id": "36025",
+     "qty": 1
+    }
+   ],
+   "id": "98643",
+   "identity_printing_id": "30019",
+   "kind": "decklist",
+   "published": "2026-06-21",
+   "record_hash": "sha256:35468ec6a0c39e5a32783fc88f0adc00d605a195be7ced89e8d6c4128d70a352",
+   "schema": "nrdb.decklist/1",
+   "uuid": "00018153-0000-4000-8000-000000018153"
+  },
+  {
+   "cards": [
+    {
+     "printing_id": "26040",
+     "qty": 3
+    },
+    {
+     "printing_id": "26042",
+     "qty": 3
+    },
+    {
+     "printing_id": "26065",
+     "qty": 3
+    },
+    {
+     "printing_id": "30070",
+     "qty": 3
+    },
+    {
+     "printing_id": "30071",
+     "qty": 3
+    },
+    {
+     "printing_id": "30074",
+     "qty": 3
+    },
+    {
+     "printing_id": "30075",
+     "qty": 3
+    },
+    {
+     "printing_id": "33042",
+     "qty": 3
+    },
+    {
+     "printing_id": "33105",
+     "qty": 3
+    },
+    {
+     "printing_id": "33107",
+     "qty": 1
+    },
+    {
+     "printing_id": "33108",
+     "qty": 3
+    },
+    {
+     "printing_id": "33109",
+     "qty": 3
+    },
+    {
+     "printing_id": "34112",
+     "qty": 3
+    },
+    {
+     "printing_id": "34130",
+     "qty": 1
+    },
+    {
+     "printing_id": "35049",
+     "qty": 3
+    },
+    {
+     "printing_id": "36037",
+     "qty": 1
+    },
+    {
+     "printing_id": "36044",
+     "qty": 3
+    }
+   ],
+   "id": "98644",
+   "identity_printing_id": "34039",
+   "kind": "decklist",
+   "published": "2026-06-21",
+   "record_hash": "sha256:755b49f7eab77721759fc2068c6272003a98fbd403c68dbd76e2ab5a50662545",
+   "schema": "nrdb.decklist/1",
+   "uuid": "00018154-0000-4000-8000-000000018154"
+  },
+  {
+   "cards": [
+    {
+     "printing_id": "26002",
+     "qty": 2
+    },
+    {
+     "printing_id": "26005",
+     "qty": 3
+    },
+    {
+     "printing_id": "26009",
+     "qty": 1
+    },
+    {
+     "printing_id": "26029",
+     "qty": 3
+    },
+    {
+     "printing_id": "26073",
+     "qty": 1
+    },
+    {
+     "printing_id": "30030",
+     "qty": 3
+    },
+    {
+     "printing_id": "33003",
+     "qty": 3
+    },
+    {
+     "printing_id": "33066",
+     "qty": 3
+    },
+    {
+     "printing_id": "33070",
+     "qty": 3
+    },
+    {
+     "printing_id": "33073",
+     "qty": 3
+    },
+    {
+     "printing_id": "34003",
+     "qty": 1
+    },
+    {
+     "printing_id": "34008",
+     "qty": 3
+    },
+    {
+     "printing_id": "34071",
+     "qty": 3
+    },
+    {
+     "printing_id": "34073",
+     "qty": 3
+    },
+    {
+     "printing_id": "35007",
+     "qty": 3
+    },
+    {
+     "printing_id": "35010",
+     "qty": 1
+    },
+    {
+     "printing_id": "36001",
+     "qty": 3
+    },
+    {
+     "printing_id": "36002",
+     "qty": 3
+    }
+   ],
+   "id": "98645",
+   "identity_printing_id": "33001",
+   "kind": "decklist",
+   "published": "2026-06-21",
+   "record_hash": "sha256:5cadfddd3ada3c171fdc299e039a0bba6944ebe8db64be38856811dd9ee8a674",
+   "schema": "nrdb.decklist/1",
+   "uuid": "00018155-0000-4000-8000-000000018155"
+  },
+  {
+   "cards": [
+    {
+     "printing_id": "26053",
+     "qty": 3
+    },
+    {
+     "printing_id": "26054",
+     "qty": 3
+    },
+    {
+     "printing_id": "26060",
+     "qty": 3
+    },
+    {
+     "printing_id": "30055",
+     "qty": 1
+    },
+    {
+     "printing_id": "30056",
+     "qty": 3
+    },
+    {
+     "printing_id": "30058",
+     "qty": 3
+    },
+    {
+     "printing_id": "30068",
+     "qty": 1
+    },
+    {
+     "printing_id": "30069",
+     "qty": 3
+    },
+    {
+     "printing_id": "30070",
+     "qty": 3
+    },
+    {
+     "printing_id": "30075",
+     "qty": 3
+    },
+    {
+     "printing_id": "33053",
+     "qty": 3
+    },
+    {
+     "printing_id": "33114",
+     "qty": 3
+    },
+    {
+     "printing_id": "34055",
+     "qty": 3
+    },
+    {
+     "printing_id": "34117",
+     "qty": 3
+    },
+    {
+     "printing_id": "34118",
+     "qty": 1
+    },
+    {
+     "printing_id": "35059",
+     "qty": 3
+    },
+    {
+     "printing_id": "35061",
+     "qty": 3
+    }
+   ],
+   "id": "98646",
+   "identity_printing_id": "35058",
+   "kind": "decklist",
+   "published": "2026-06-21",
+   "record_hash": "sha256:9ade1b8daf81ca82d6645cfd578878842299b9d55503b332c3b3060a99a0b3e9",
+   "schema": "nrdb.decklist/1",
+   "uuid": "00018156-0000-4000-8000-000000018156"
+  },
+  {
+   "cards": [
+    {
+     "printing_id": "26027",
+     "qty": 1
+    },
+    {
+     "printing_id": "26029",
+     "qty": 1
+    },
+    {
+     "printing_id": "30021",
+     "qty": 3
+    },
+    {
+     "printing_id": "30025",
+     "qty": 3
+    },
+    {
+     "printing_id": "30026",
+     "qty": 3
+    },
+    {
+     "printing_id": "30030",
+     "qty": 3
+    },
+    {
+     "printing_id": "33023",
+     "qty": 3
+    },
+    {
+     "printing_id": "33024",
+     "qty": 3
+    },
+    {
+     "printing_id": "33026",
+     "qty": 3
+    },
+    {
+     "printing_id": "33087",
+     "qty": 3
+    },
+    {
+     "printing_id": "34027",
+     "qty": 3
+    },
+    {
+     "printing_id": "34029",
+     "qty": 3
+    },
+    {
+     "printing_id": "34095",
+     "qty": 3
+    },
+    {
+     "printing_id": "35026",
+     "qty": 3
+    },
+    {
+     "printing_id": "35027",
+     "qty": 1
+    },
+    {
+     "printing_id": "35028",
+     "qty": 1
+    }
+   ],
+   "id": "98647",
+   "identity_printing_id": "30019",
+   "kind": "decklist",
+   "published": "2026-06-21",
+   "record_hash": "sha256:6f47248d51a3ea6175a1be3ab47e0d78d2713f471777757016b30eabed9dcf40",
+   "schema": "nrdb.decklist/1",
+   "uuid": "00018157-0000-4000-8000-000000018157"
+  }
+ ],
+ "record_hash": "sha256:10d5badcc50ac8b1f67f6e985bb292ae5651632b8d0124a0d75055485ad7ba98",
+ "schema": "nrdb.by_date/1"
+}

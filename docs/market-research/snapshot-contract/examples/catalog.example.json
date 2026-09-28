@@ -1,0 +1,52 @@
+{
+  "schema": "mr.catalog/1",
+  "version": "2026-09-27T040220Z",
+  "restrictions": [
+    "standard_ban_list_26_05",
+    "standard_balance_update_26_08"
+  ],
+  "cards": [
+    {
+      "id": "a_teia_ip_recovery",
+      "title": "A Teia: IP Recovery",
+      "side": "corp",
+      "type": "corp_identity",
+      "faction": "jinteki",
+      "printings": [
+        "34039"
+      ],
+      "legal_in": [
+        "standard_ban_list_26_05",
+        "standard_balance_update_26_08"
+      ]
+    },
+    {
+      "id": "abaasy",
+      "title": "Abaasy",
+      "side": "runner",
+      "type": "program",
+      "faction": "anarch",
+      "printings": [
+        "33070"
+      ],
+      "legal_in": [
+        "standard_ban_list_26_05",
+        "standard_balance_update_26_08"
+      ]
+    },
+    {
+      "id": "ablative_barrier",
+      "title": "Ablative Barrier",
+      "side": "corp",
+      "type": "ice",
+      "faction": "haas_bioroid",
+      "printings": [
+        "34034"
+      ],
+      "legal_in": [
+        "standard_ban_list_26_05",
+        "standard_balance_update_26_08"
+      ]
+    }
+  ]
+}

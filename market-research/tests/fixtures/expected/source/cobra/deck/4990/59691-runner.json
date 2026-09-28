@@ -1,0 +1,110 @@
+{
+ "cards": [
+  {
+   "nrdb_card_id": "coalescence",
+   "nrdb_printing_id": "34089",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "cybertrooper_talut",
+   "nrdb_printing_id": "27003",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "dreamnet",
+   "nrdb_printing_id": "26095",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "in_the_groove",
+   "nrdb_printing_id": "26020",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "into_the_depths",
+   "nrdb_printing_id": "33023",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "jailbreak",
+   "nrdb_printing_id": "30028",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "methuselah",
+   "nrdb_printing_id": "36020",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "overclock",
+   "nrdb_printing_id": "30029",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "paules_cafe",
+   "nrdb_printing_id": "26092",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "pichacao",
+   "nrdb_printing_id": "34025",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "pretty_mary_da_silva",
+   "nrdb_printing_id": "34093",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "read_write_share",
+   "nrdb_printing_id": "36022",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "spec_work",
+   "nrdb_printing_id": "26022",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "stoneship_chart_room",
+   "nrdb_printing_id": "33030",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "sure_gamble",
+   "nrdb_printing_id": "30030",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "telework_contract",
+   "nrdb_printing_id": "30027",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "the_artist",
+   "nrdb_printing_id": "26027",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "umbrella",
+   "nrdb_printing_id": "34027",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "urban_art_vernissage",
+   "nrdb_printing_id": "34029",
+   "qty": 3
+  }
+ ],
+ "identity": {
+  "nrdb_card_id": "magdalene_keino_chemutai_cryptarchitect",
+  "nrdb_printing_id": "35024"
+ },
+ "nrdb_uuid": null,
+ "pid": 59691,
+ "record_hash": "sha256:cc2518b0add348f278bcd2c8e068a49bdf93ec1c0cb8b8decd4b9730886ccdba",
+ "schema": "cobra.deck/1",
+ "side": "runner",
+ "stage_visibility": "public",
+ "tournament_id": 4990
+}

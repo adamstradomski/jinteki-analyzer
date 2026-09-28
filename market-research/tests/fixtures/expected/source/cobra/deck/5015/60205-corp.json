@@ -1,0 +1,100 @@
+{
+ "cards": [
+  {
+   "nrdb_card_id": "amaze_amusements",
+   "nrdb_printing_id": "30058",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "embedded_reporting",
+   "nrdb_printing_id": "35059",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "game_over",
+   "nrdb_printing_id": "26053",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "gaslight",
+   "nrdb_printing_id": "33114",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "hedge_fund",
+   "nrdb_printing_id": "30075",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "idiosyncresis",
+   "nrdb_printing_id": "35061",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "increased_drop_rates",
+   "nrdb_printing_id": "26054",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "kakurenbo",
+   "nrdb_printing_id": "26111",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "mestnichestvo",
+   "nrdb_printing_id": "33053",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "oppo_research",
+   "nrdb_printing_id": "34055",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "orbital_superiority",
+   "nrdb_printing_id": "30068",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "ping",
+   "nrdb_printing_id": "30055",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "piranhas",
+   "nrdb_printing_id": "34117",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "predictive_planogram",
+   "nrdb_printing_id": "30056",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "send_a_message",
+   "nrdb_printing_id": "30069",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "seraph",
+   "nrdb_printing_id": "34118",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "superconducting_hub",
+   "nrdb_printing_id": "30070",
+   "qty": 3
+  }
+ ],
+ "identity": {
+  "nrdb_card_id": "synapse_global_faster_than_thought",
+  "nrdb_printing_id": "35058"
+ },
+ "nrdb_uuid": null,
+ "pid": 60205,
+ "record_hash": "sha256:bd866bd10119265b8f4f9afb07713104f1f7c80bef849eb5c98854e4021fc2e6",
+ "schema": "cobra.deck/1",
+ "side": "corp",
+ "stage_visibility": "public",
+ "tournament_id": 5015
+}

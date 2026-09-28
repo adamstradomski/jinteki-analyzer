@@ -1,0 +1,95 @@
+{
+ "cards": [
+  {
+   "nrdb_card_id": "envelopment",
+   "nrdb_printing_id": "33060",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "government_subsidy",
+   "nrdb_printing_id": "30064",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "hedge_fund",
+   "nrdb_printing_id": "30075",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "hostile_architecture",
+   "nrdb_printing_id": "33122",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "let_them_dream",
+   "nrdb_printing_id": "36066",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "mahkota_langit_grid",
+   "nrdb_printing_id": "35082",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "measured_response",
+   "nrdb_printing_id": "35078",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "mutually_assured_destruction",
+   "nrdb_printing_id": "33064",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "napd_cordon",
+   "nrdb_printing_id": "26130",
+   "qty": 2
+  },
+  {
+   "nrdb_card_id": "palisade",
+   "nrdb_printing_id": "30072",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "pharos",
+   "nrdb_printing_id": "30063",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "regolith_mining_license",
+   "nrdb_printing_id": "30071",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "the_basalt_spire",
+   "nrdb_printing_id": "34123",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "tithe",
+   "nrdb_printing_id": "30073",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "transport_monopoly",
+   "nrdb_printing_id": "26121",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "trebuchet",
+   "nrdb_printing_id": "26060",
+   "qty": 3
+  }
+ ],
+ "identity": {
+  "nrdb_card_id": "earth_station_sea_headquarters",
+  "nrdb_printing_id": "26120"
+ },
+ "nrdb_uuid": null,
+ "pid": 60202,
+ "record_hash": "sha256:2ff3fbda770cefbd20122c8c2887e4eaf388e9a9bb857e395f2c03eaa42f0fba",
+ "schema": "cobra.deck/1",
+ "side": "corp",
+ "stage_visibility": "public",
+ "tournament_id": 5015
+}

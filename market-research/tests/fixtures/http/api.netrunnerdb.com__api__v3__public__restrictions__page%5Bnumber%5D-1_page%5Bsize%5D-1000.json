@@ -1,0 +1,334 @@
+{
+ "data": [
+  {
+   "id": "standard_ban_list_25_08",
+   "type": "restrictions",
+   "attributes": {
+    "name": "Standard Ban List 25.08",
+    "date_start": "2025-08-01",
+    "point_limit": null,
+    "format_id": "standard",
+    "verdicts": {
+     "banned": [
+      "bellona",
+      "bukhgalter",
+      "cayambe_grid",
+      "cleaver",
+      "creative_commission",
+      "cyberdex_sandbox",
+      "daily_casts",
+      "deep_dive",
+      "dr_vientiane_keeling",
+      "drago_ivanov",
+      "dreamnet",
+      "endurance",
+      "engram_flush",
+      "gold_farmer",
+      "info_bounty",
+      "k2cp_turbine",
+      "moshing",
+      "nanisivik_grid",
+      "nbn_reality_plus",
+      "project_vacheron",
+      "rezeki",
+      "tributary",
+      "trick_shot",
+      "tsakhia_bankhar_gantulga",
+      "world_tree"
+     ],
+     "restricted": [],
+     "universal_faction_cost": {},
+     "global_penalty": [],
+     "points": {}
+    },
+    "banned_subtypes": [],
+    "size": 25,
+    "updated_at": "2026-08-01T00:00:00Z"
+   },
+   "links": {
+    "self": "https://api.netrunnerdb.com/api/v3/public/restrictions/standard_ban_list_25_08"
+   }
+  },
+  {
+   "id": "standard_ban_list_25_10",
+   "type": "restrictions",
+   "attributes": {
+    "name": "Standard Ban List 25.10",
+    "date_start": "2025-10-03",
+    "point_limit": null,
+    "format_id": "standard",
+    "verdicts": {
+     "banned": [
+      "bellona",
+      "bukhgalter",
+      "cayambe_grid",
+      "cleaver",
+      "cyberdex_sandbox",
+      "cybersand_harvester",
+      "daily_casts",
+      "deep_dive",
+      "dr_vientiane_keeling",
+      "drago_ivanov",
+      "dreamnet",
+      "endurance",
+      "engram_flush",
+      "gold_farmer",
+      "info_bounty",
+      "k2cp_turbine",
+      "moshing",
+      "nanisivik_grid",
+      "nbn_reality_plus",
+      "project_vacheron",
+      "rezeki",
+      "sting",
+      "touch_ups",
+      "tributary",
+      "trick_shot",
+      "tsakhia_bankhar_gantulga",
+      "world_tree"
+     ],
+     "restricted": [],
+     "universal_faction_cost": {},
+     "global_penalty": [],
+     "points": {}
+    },
+    "banned_subtypes": [],
+    "size": 27,
+    "updated_at": "2026-08-01T00:00:00Z"
+   },
+   "links": {
+    "self": "https://api.netrunnerdb.com/api/v3/public/restrictions/standard_ban_list_25_10"
+   }
+  },
+  {
+   "id": "standard_ban_list_25_12",
+   "type": "restrictions",
+   "attributes": {
+    "name": "Standard Ban List 25.12",
+    "date_start": "2025-12-01",
+    "point_limit": null,
+    "format_id": "standard",
+    "verdicts": {
+     "banned": [
+      "bellona",
+      "bukhgalter",
+      "cayambe_grid",
+      "cleaver",
+      "cyberdex_sandbox",
+      "cybersand_harvester",
+      "daily_casts",
+      "deep_dive",
+      "dr_vientiane_keeling",
+      "drago_ivanov",
+      "dreamnet",
+      "endurance",
+      "engram_flush",
+      "false_lead",
+      "gold_farmer",
+      "info_bounty",
+      "k2cp_turbine",
+      "matryoshka",
+      "moshing",
+      "nanisivik_grid",
+      "nbn_reality_plus",
+      "project_vacheron",
+      "rezeki",
+      "sting",
+      "touch_ups",
+      "tributary",
+      "trick_shot",
+      "tsakhia_bankhar_gantulga",
+      "world_tree"
+     ],
+     "restricted": [],
+     "universal_faction_cost": {},
+     "global_penalty": [],
+     "points": {}
+    },
+    "banned_subtypes": [],
+    "size": 29,
+    "updated_at": "2026-08-01T00:00:00Z"
+   },
+   "links": {
+    "self": "https://api.netrunnerdb.com/api/v3/public/restrictions/standard_ban_list_25_12"
+   }
+  },
+  {
+   "id": "standard_ban_list_26_03",
+   "type": "restrictions",
+   "attributes": {
+    "name": "Standard Ban List 26.03",
+    "date_start": "2026-03-13",
+    "point_limit": null,
+    "format_id": "standard",
+    "verdicts": {
+     "banned": [
+      "bellona",
+      "bukhgalter",
+      "cayambe_grid",
+      "cleaver",
+      "cyberdex_sandbox",
+      "cybersand_harvester",
+      "dr_vientiane_keeling",
+      "drago_ivanov",
+      "endurance",
+      "engram_flush",
+      "false_lead",
+      "gold_farmer",
+      "hoshiko_shiro_untold_protagonist",
+      "k2cp_turbine",
+      "luminal_transubstantiation",
+      "matryoshka",
+      "moshing",
+      "nanisivik_grid",
+      "nbn_reality_plus",
+      "nyusha_sable_sintashta_symphonic_prodigy",
+      "project_vacheron",
+      "rezeki",
+      "sting",
+      "svyatogor_excavator",
+      "touch_ups",
+      "tributary",
+      "trick_shot",
+      "tsakhia_bankhar_gantulga",
+      "world_tree"
+     ],
+     "restricted": [],
+     "universal_faction_cost": {},
+     "global_penalty": [],
+     "points": {}
+    },
+    "banned_subtypes": [],
+    "size": 29,
+    "updated_at": "2026-08-01T00:00:00Z"
+   },
+   "links": {
+    "self": "https://api.netrunnerdb.com/api/v3/public/restrictions/standard_ban_list_26_03"
+   }
+  },
+  {
+   "id": "standard_ban_list_26_05",
+   "type": "restrictions",
+   "attributes": {
+    "name": "Standard Ban List 26.05",
+    "date_start": "2026-05-01",
+    "point_limit": null,
+    "format_id": "standard",
+    "verdicts": {
+     "banned": [
+      "ashen_epilogue",
+      "bellona",
+      "bukhgalter",
+      "cayambe_grid",
+      "cleaver",
+      "cyberdex_sandbox",
+      "cybersand_harvester",
+      "dr_vientiane_keeling",
+      "drago_ivanov",
+      "endurance",
+      "engram_flush",
+      "extract",
+      "false_lead",
+      "gold_farmer",
+      "hoshiko_shiro_untold_protagonist",
+      "k2cp_turbine",
+      "luminal_transubstantiation",
+      "matryoshka",
+      "moshing",
+      "nanisivik_grid",
+      "nbn_reality_plus",
+      "nyusha_sable_sintashta_symphonic_prodigy",
+      "offworld_office",
+      "project_vacheron",
+      "rezeki",
+      "sting",
+      "svyatogor_excavator",
+      "touch_ups",
+      "tributary",
+      "trick_shot",
+      "tsakhia_bankhar_gantulga",
+      "world_tree"
+     ],
+     "restricted": [],
+     "universal_faction_cost": {},
+     "global_penalty": [],
+     "points": {}
+    },
+    "banned_subtypes": [],
+    "size": 32,
+    "updated_at": "2026-08-01T00:00:00Z"
+   },
+   "links": {
+    "self": "https://api.netrunnerdb.com/api/v3/public/restrictions/standard_ban_list_26_05"
+   }
+  },
+  {
+   "id": "standard_balance_update_26_08",
+   "type": "restrictions",
+   "attributes": {
+    "name": "Standard Balance Update 26.08",
+    "date_start": "2026-08-01",
+    "point_limit": null,
+    "format_id": "standard",
+    "verdicts": {
+     "banned": [
+      "ashen_epilogue",
+      "bellona",
+      "bukhgalter",
+      "cayambe_grid",
+      "cleaver",
+      "cyberdex_sandbox",
+      "cybersand_harvester",
+      "dr_vientiane_keeling",
+      "drago_ivanov",
+      "endurance",
+      "engram_flush",
+      "extract",
+      "false_lead",
+      "gold_farmer",
+      "hoshiko_shiro_untold_protagonist",
+      "k2cp_turbine",
+      "luminal_transubstantiation",
+      "matryoshka",
+      "melies_u_only_the_brightest",
+      "moshing",
+      "nanisivik_grid",
+      "nyusha_sable_sintashta_symphonic_prodigy",
+      "offworld_office",
+      "project_vacheron",
+      "red_level_clearance",
+      "rezeki",
+      "sting",
+      "touch_ups",
+      "tributary",
+      "trick_shot",
+      "tsakhia_bankhar_gantulga",
+      "world_tree"
+     ],
+     "restricted": [],
+     "universal_faction_cost": {},
+     "global_penalty": [],
+     "points": {}
+    },
+    "banned_subtypes": [],
+    "size": 32,
+    "updated_at": "2026-08-01T00:00:00Z"
+   },
+   "links": {
+    "self": "https://api.netrunnerdb.com/api/v3/public/restrictions/standard_balance_update_26_08"
+   }
+  }
+ ],
+ "links": {
+  "self": "https://api.netrunnerdb.com/api/v3/public/restrictions",
+  "first": "https://api.netrunnerdb.com/api/v3/public/restrictions?page%5Bnumber%5D=1",
+  "last": "https://api.netrunnerdb.com/api/v3/public/restrictions?page%5Bnumber%5D=1"
+ },
+ "meta": {
+  "stats": {
+   "total": {
+    "count": 6
+   }
+  }
+ }
+}

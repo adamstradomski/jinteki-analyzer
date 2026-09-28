@@ -1,0 +1,100 @@
+{
+ "cards": [
+  {
+   "nrdb_card_id": "cataloguer",
+   "nrdb_printing_id": "34088",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "coalescence",
+   "nrdb_printing_id": "34089",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "conduit",
+   "nrdb_printing_id": "30024",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "daeg_first_net_cat",
+   "nrdb_printing_id": "33028",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "environmental_testing",
+   "nrdb_printing_id": "33029",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "harmony_ar_therapy",
+   "nrdb_printing_id": "26083",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "hyperbaric",
+   "nrdb_printing_id": "33026",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "joy_ride",
+   "nrdb_printing_id": "34021",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "methuselah",
+   "nrdb_printing_id": "36020",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "pantograph",
+   "nrdb_printing_id": "30023",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "pelangi",
+   "nrdb_printing_id": "26025",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "rigging_up",
+   "nrdb_printing_id": "33024",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "sipa",
+   "nrdb_printing_id": "36023",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "spec_work",
+   "nrdb_printing_id": "26022",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "sure_gamble",
+   "nrdb_printing_id": "30030",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "valentina_ferreira_carvalho",
+   "nrdb_printing_id": "34095",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "verbal_plasticity",
+   "nrdb_printing_id": "30034",
+   "qty": 1
+  }
+ ],
+ "identity": {
+  "nrdb_card_id": "magdalene_keino_chemutai_cryptarchitect",
+  "nrdb_printing_id": "35024"
+ },
+ "nrdb_uuid": null,
+ "pid": 59699,
+ "record_hash": "sha256:a050b5edbf41564ede94e4e5e7554d7bfe70d1400674ed936231ea9ba33ccd29",
+ "schema": "cobra.deck/1",
+ "side": "runner",
+ "stage_visibility": "public",
+ "tournament_id": 4990
+}

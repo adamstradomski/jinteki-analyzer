@@ -1,0 +1,85 @@
+{
+ "cards": [
+  {
+   "nrdb_card_id": "backstitching",
+   "nrdb_printing_id": "33019",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "carmen",
+   "nrdb_printing_id": "30015",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "docklands_pass",
+   "nrdb_printing_id": "30013",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "info_bounty",
+   "nrdb_printing_id": "33083",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "malandragem",
+   "nrdb_printing_id": "34081",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "mu_safecracker",
+   "nrdb_printing_id": "26076",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "pan_weave",
+   "nrdb_printing_id": "33014",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "rejig",
+   "nrdb_printing_id": "26029",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "reprise",
+   "nrdb_printing_id": "33076",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "sure_gamble",
+   "nrdb_printing_id": "30030",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "t400_memory_diamond",
+   "nrdb_printing_id": "30031",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "trickster_taka",
+   "nrdb_printing_id": "26009",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "underdome_irregulars",
+   "nrdb_printing_id": "36016",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "valentina_ferreira_carvalho",
+   "nrdb_printing_id": "34095",
+   "qty": 3
+  }
+ ],
+ "identity": {
+  "nrdb_card_id": "zahya_sadeghi_versatile_smuggler",
+  "nrdb_printing_id": "30010"
+ },
+ "nrdb_uuid": null,
+ "pid": 59696,
+ "record_hash": "sha256:edca7b5a10566528aa2388e4bd08793598141db053c868e2bd5024d36c2a23fa",
+ "schema": "cobra.deck/1",
+ "side": "runner",
+ "stage_visibility": "public",
+ "tournament_id": 4990
+}

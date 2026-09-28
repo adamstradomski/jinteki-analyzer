@@ -1,0 +1,779 @@
+{
+ "data": [
+  {
+   "id": "1000",
+   "type": "pairings",
+   "attributes": {
+    "id": 1000,
+    "table_number": 1,
+    "side": "player1_is_runner",
+    "score1": 3,
+    "score2": 0,
+    "player1_id": 59692,
+    "player2_id": 59705,
+    "reported": true,
+    "intentional_draw": false,
+    "two_for_one": false
+   }
+  },
+  {
+   "id": "1001",
+   "type": "pairings",
+   "attributes": {
+    "id": 1001,
+    "table_number": 2,
+    "side": "player1_is_corp",
+    "score1": 0,
+    "score2": 3,
+    "player1_id": 59699,
+    "player2_id": 59691,
+    "reported": true,
+    "intentional_draw": false,
+    "two_for_one": false
+   }
+  },
+  {
+   "id": "1002",
+   "type": "pairings",
+   "attributes": {
+    "id": 1002,
+    "table_number": 3,
+    "side": "player1_is_runner",
+    "score1": 1,
+    "score2": 1,
+    "player1_id": 59703,
+    "player2_id": 59694,
+    "reported": true,
+    "intentional_draw": false,
+    "two_for_one": false
+   }
+  },
+  {
+   "id": "1003",
+   "type": "pairings",
+   "attributes": {
+    "id": 1003,
+    "table_number": 4,
+    "side": "player1_is_corp",
+    "score1": 0,
+    "score2": 3,
+    "player1_id": 59695,
+    "player2_id": 59696,
+    "reported": true,
+    "intentional_draw": false,
+    "two_for_one": false
+   }
+  },
+  {
+   "id": "1004",
+   "type": "pairings",
+   "attributes": {
+    "id": 1004,
+    "table_number": 5,
+    "side": "player1_is_runner",
+    "score1": 3,
+    "score2": 0,
+    "player1_id": 59700,
+    "player2_id": 59690,
+    "reported": true,
+    "intentional_draw": false,
+    "two_for_one": false
+   }
+  },
+  {
+   "id": "1005",
+   "type": "pairings",
+   "attributes": {
+    "id": 1005,
+    "table_number": 6,
+    "side": "player1_is_corp",
+    "score1": 3,
+    "score2": 0,
+    "player1_id": 59701,
+    "player2_id": 59702,
+    "reported": true,
+    "intentional_draw": false,
+    "two_for_one": false
+   }
+  },
+  {
+   "id": "1006",
+   "type": "pairings",
+   "attributes": {
+    "id": 1006,
+    "table_number": 7,
+    "side": "player1_is_runner",
+    "score1": 3,
+    "score2": 0,
+    "player1_id": 59697,
+    "player2_id": 59698,
+    "reported": true,
+    "intentional_draw": false,
+    "two_for_one": false
+   }
+  },
+  {
+   "id": "1007",
+   "type": "pairings",
+   "attributes": {
+    "id": 1007,
+    "table_number": 8,
+    "side": "player1_is_corp",
+    "score1": 3,
+    "score2": 0,
+    "player1_id": 59704,
+    "player2_id": 59693,
+    "reported": true,
+    "intentional_draw": false,
+    "two_for_one": false
+   }
+  },
+  {
+   "id": "1008",
+   "type": "pairings",
+   "attributes": {
+    "id": 1008,
+    "table_number": 1,
+    "side": "player1_is_corp",
+    "score1": 3,
+    "score2": 0,
+    "player1_id": 59704,
+    "player2_id": 59691,
+    "reported": true,
+    "intentional_draw": false,
+    "two_for_one": false
+   }
+  },
+  {
+   "id": "1009",
+   "type": "pairings",
+   "attributes": {
+    "id": 1009,
+    "table_number": 2,
+    "side": "player1_is_runner",
+    "score1": 3,
+    "score2": 0,
+    "player1_id": 59701,
+    "player2_id": 59700,
+    "reported": true,
+    "intentional_draw": false,
+    "two_for_one": false
+   }
+  },
+  {
+   "id": "1010",
+   "type": "pairings",
+   "attributes": {
+    "id": 1010,
+    "table_number": 3,
+    "side": "player1_is_corp",
+    "score1": 0,
+    "score2": 3,
+    "player1_id": 59696,
+    "player2_id": 59697,
+    "reported": true,
+    "intentional_draw": false,
+    "two_for_one": false
+   }
+  },
+  {
+   "id": "1011",
+   "type": "pairings",
+   "attributes": {
+    "id": 1011,
+    "table_number": 4,
+    "side": "player1_is_runner",
+    "score1": 0,
+    "score2": 3,
+    "player1_id": 59692,
+    "player2_id": 59694,
+    "reported": true,
+    "intentional_draw": false,
+    "two_for_one": false
+   }
+  },
+  {
+   "id": "1012",
+   "type": "pairings",
+   "attributes": {
+    "id": 1012,
+    "table_number": 5,
+    "side": "player1_is_corp",
+    "score1": 3,
+    "score2": 0,
+    "player1_id": 59703,
+    "player2_id": 59705,
+    "reported": true,
+    "intentional_draw": false,
+    "two_for_one": false
+   }
+  },
+  {
+   "id": "1013",
+   "type": "pairings",
+   "attributes": {
+    "id": 1013,
+    "table_number": 6,
+    "side": "player1_is_runner",
+    "score1": 3,
+    "score2": 0,
+    "player1_id": 59695,
+    "player2_id": 59690,
+    "reported": true,
+    "intentional_draw": false,
+    "two_for_one": false
+   }
+  },
+  {
+   "id": "1014",
+   "type": "pairings",
+   "attributes": {
+    "id": 1014,
+    "table_number": 7,
+    "side": "player1_is_corp",
+    "score1": 0,
+    "score2": 3,
+    "player1_id": 59698,
+    "player2_id": 59699,
+    "reported": true,
+    "intentional_draw": false,
+    "two_for_one": false
+   }
+  },
+  {
+   "id": "1015",
+   "type": "pairings",
+   "attributes": {
+    "id": 1015,
+    "table_number": 8,
+    "side": "player1_is_runner",
+    "score1": 3,
+    "score2": 0,
+    "player1_id": 59693,
+    "player2_id": 59702,
+    "reported": true,
+    "intentional_draw": false,
+    "two_for_one": false
+   }
+  },
+  {
+   "id": "1016",
+   "type": "pairings",
+   "attributes": {
+    "id": 1016,
+    "table_number": 1,
+    "side": "player1_is_runner",
+    "score1": 0,
+    "score2": 3,
+    "player1_id": 59701,
+    "player2_id": 59697,
+    "reported": true,
+    "intentional_draw": false,
+    "two_for_one": false
+   }
+  },
+  {
+   "id": "1017",
+   "type": "pairings",
+   "attributes": {
+    "id": 1017,
+    "table_number": 2,
+    "side": "player1_is_corp",
+    "score1": 3,
+    "score2": 0,
+    "player1_id": 59704,
+    "player2_id": 59694,
+    "reported": true,
+    "intentional_draw": false,
+    "two_for_one": false
+   }
+  },
+  {
+   "id": "1018",
+   "type": "pairings",
+   "attributes": {
+    "id": 1018,
+    "table_number": 3,
+    "side": "player1_is_runner",
+    "score1": 0,
+    "score2": 3,
+    "player1_id": 59703,
+    "player2_id": 59692,
+    "reported": true,
+    "intentional_draw": false,
+    "two_for_one": false
+   }
+  },
+  {
+   "id": "1019",
+   "type": "pairings",
+   "attributes": {
+    "id": 1019,
+    "table_number": 4,
+    "side": "player1_is_corp",
+    "score1": 3,
+    "score2": 0,
+    "player1_id": 59691,
+    "player2_id": 59700,
+    "reported": true,
+    "intentional_draw": false,
+    "two_for_one": false
+   }
+  },
+  {
+   "id": "1020",
+   "type": "pairings",
+   "attributes": {
+    "id": 1020,
+    "table_number": 5,
+    "side": "player1_is_runner",
+    "score1": 0,
+    "score2": 3,
+    "player1_id": 59695,
+    "player2_id": 59693,
+    "reported": true,
+    "intentional_draw": false,
+    "two_for_one": false
+   }
+  },
+  {
+   "id": "1021",
+   "type": "pairings",
+   "attributes": {
+    "id": 1021,
+    "table_number": 6,
+    "side": "player1_is_corp",
+    "score1": 0,
+    "score2": 3,
+    "player1_id": 59699,
+    "player2_id": 59696,
+    "reported": true,
+    "intentional_draw": false,
+    "two_for_one": false
+   }
+  },
+  {
+   "id": "1022",
+   "type": "pairings",
+   "attributes": {
+    "id": 1022,
+    "table_number": 7,
+    "side": "player1_is_runner",
+    "score1": 0,
+    "score2": 3,
+    "player1_id": 59702,
+    "player2_id": 59690,
+    "reported": true,
+    "intentional_draw": false,
+    "two_for_one": false
+   }
+  },
+  {
+   "id": "1023",
+   "type": "pairings",
+   "attributes": {
+    "id": 1023,
+    "table_number": 8,
+    "side": "player1_is_corp",
+    "score1": 3,
+    "score2": 0,
+    "player1_id": 59705,
+    "player2_id": 59698,
+    "reported": true,
+    "intentional_draw": false,
+    "two_for_one": false
+   }
+  },
+  {
+   "id": "1024",
+   "type": "pairings",
+   "attributes": {
+    "id": 1024,
+    "table_number": 1,
+    "side": "player1_is_corp",
+    "score1": 0,
+    "score2": 3,
+    "player1_id": 59704,
+    "player2_id": 59697,
+    "reported": true,
+    "intentional_draw": false,
+    "two_for_one": false
+   }
+  },
+  {
+   "id": "1025",
+   "type": "pairings",
+   "attributes": {
+    "id": 1025,
+    "table_number": 2,
+    "side": "player1_is_runner",
+    "score1": 0,
+    "score2": 3,
+    "player1_id": 59692,
+    "player2_id": 59696,
+    "reported": true,
+    "intentional_draw": false,
+    "two_for_one": false
+   }
+  },
+  {
+   "id": "1026",
+   "type": "pairings",
+   "attributes": {
+    "id": 1026,
+    "table_number": 3,
+    "side": "player1_is_corp",
+    "score1": 0,
+    "score2": 3,
+    "player1_id": 59693,
+    "player2_id": 59691,
+    "reported": true,
+    "intentional_draw": false,
+    "two_for_one": false
+   }
+  },
+  {
+   "id": "1027",
+   "type": "pairings",
+   "attributes": {
+    "id": 1027,
+    "table_number": 4,
+    "side": "player1_is_runner",
+    "score1": 3,
+    "score2": 0,
+    "player1_id": 59701,
+    "player2_id": 59694,
+    "reported": true,
+    "intentional_draw": false,
+    "two_for_one": false
+   }
+  },
+  {
+   "id": "1028",
+   "type": "pairings",
+   "attributes": {
+    "id": 1028,
+    "table_number": 5,
+    "side": "player1_is_corp",
+    "score1": 3,
+    "score2": 0,
+    "player1_id": 59703,
+    "player2_id": 59700,
+    "reported": true,
+    "intentional_draw": false,
+    "two_for_one": false
+   }
+  },
+  {
+   "id": "1029",
+   "type": "pairings",
+   "attributes": {
+    "id": 1029,
+    "table_number": 6,
+    "side": "player1_is_runner",
+    "score1": 0,
+    "score2": 3,
+    "player1_id": 59695,
+    "player2_id": 59699,
+    "reported": true,
+    "intentional_draw": false,
+    "two_for_one": false
+   }
+  },
+  {
+   "id": "1030",
+   "type": "pairings",
+   "attributes": {
+    "id": 1030,
+    "table_number": 7,
+    "side": "player1_is_corp",
+    "score1": 3,
+    "score2": 0,
+    "player1_id": 59705,
+    "player2_id": 59690,
+    "reported": true,
+    "intentional_draw": false,
+    "two_for_one": false
+   }
+  },
+  {
+   "id": "1031",
+   "type": "pairings",
+   "attributes": {
+    "id": 1031,
+    "table_number": 8,
+    "side": "player1_is_runner",
+    "score1": 3,
+    "score2": 0,
+    "player1_id": 59702,
+    "player2_id": 59698,
+    "reported": true,
+    "intentional_draw": false,
+    "two_for_one": false
+   }
+  },
+  {
+   "id": "1032",
+   "type": "pairings",
+   "attributes": {
+    "id": 1032,
+    "table_number": 1,
+    "side": "player1_is_runner",
+    "score1": 0,
+    "score2": 3,
+    "player1_id": 59697,
+    "player2_id": 59691,
+    "reported": true,
+    "intentional_draw": false,
+    "two_for_one": false
+   }
+  },
+  {
+   "id": "1033",
+   "type": "pairings",
+   "attributes": {
+    "id": 1033,
+    "table_number": 2,
+    "side": "player1_is_corp",
+    "score1": 1,
+    "score2": 1,
+    "player1_id": 59704,
+    "player2_id": 59696,
+    "reported": true,
+    "intentional_draw": false,
+    "two_for_one": false
+   }
+  },
+  {
+   "id": "1034",
+   "type": "pairings",
+   "attributes": {
+    "id": 1034,
+    "table_number": 3,
+    "side": "player1_is_runner",
+    "score1": 0,
+    "score2": 3,
+    "player1_id": 59701,
+    "player2_id": 59703,
+    "reported": true,
+    "intentional_draw": false,
+    "two_for_one": false
+   }
+  },
+  {
+   "id": "1035",
+   "type": "pairings",
+   "attributes": {
+    "id": 1035,
+    "table_number": 4,
+    "side": "player1_is_corp",
+    "score1": 3,
+    "score2": 0,
+    "player1_id": 59693,
+    "player2_id": 59699,
+    "reported": true,
+    "intentional_draw": false,
+    "two_for_one": false
+   }
+  },
+  {
+   "id": "1036",
+   "type": "pairings",
+   "attributes": {
+    "id": 1036,
+    "table_number": 5,
+    "side": "player1_is_runner",
+    "score1": 0,
+    "score2": 3,
+    "player1_id": 59692,
+    "player2_id": 59695,
+    "reported": true,
+    "intentional_draw": false,
+    "two_for_one": false
+   }
+  },
+  {
+   "id": "1037",
+   "type": "pairings",
+   "attributes": {
+    "id": 1037,
+    "table_number": 6,
+    "side": "player1_is_corp",
+    "score1": 3,
+    "score2": 0,
+    "player1_id": 59705,
+    "player2_id": 59694,
+    "reported": true,
+    "intentional_draw": false,
+    "two_for_one": false
+   }
+  },
+  {
+   "id": "1038",
+   "type": "pairings",
+   "attributes": {
+    "id": 1038,
+    "table_number": 7,
+    "side": "player1_is_runner",
+    "score1": 0,
+    "score2": 3,
+    "player1_id": 59702,
+    "player2_id": 59700,
+    "reported": true,
+    "intentional_draw": false,
+    "two_for_one": false
+   }
+  },
+  {
+   "id": "1039",
+   "type": "pairings",
+   "attributes": {
+    "id": 1039,
+    "table_number": 8,
+    "side": "player1_is_corp",
+    "score1": 0,
+    "score2": 3,
+    "player1_id": 59690,
+    "player2_id": 59698,
+    "reported": true,
+    "intentional_draw": false,
+    "two_for_one": false
+   }
+  },
+  {
+   "id": "1040",
+   "type": "pairings",
+   "attributes": {
+    "id": 1040,
+    "table_number": 1,
+    "side": "player1_is_corp",
+    "score1": 1,
+    "score2": 1,
+    "player1_id": 59691,
+    "player2_id": 59703,
+    "reported": true,
+    "intentional_draw": true,
+    "two_for_one": false
+   }
+  },
+  {
+   "id": "1041",
+   "type": "pairings",
+   "attributes": {
+    "id": 1041,
+    "table_number": 2,
+    "side": "player1_is_runner",
+    "score1": 0,
+    "score2": 3,
+    "player1_id": 59697,
+    "player2_id": 59693,
+    "reported": true,
+    "intentional_draw": false,
+    "two_for_one": false
+   }
+  },
+  {
+   "id": "1042",
+   "type": "pairings",
+   "attributes": {
+    "id": 1042,
+    "table_number": 3,
+    "side": "player1_is_corp",
+    "score1": 3,
+    "score2": 0,
+    "player1_id": 59704,
+    "player2_id": 59701,
+    "reported": true,
+    "intentional_draw": false,
+    "two_for_one": false
+   }
+  },
+  {
+   "id": "1043",
+   "type": "pairings",
+   "attributes": {
+    "id": 1043,
+    "table_number": 4,
+    "side": "player1_is_runner",
+    "score1": 3,
+    "score2": 0,
+    "player1_id": 59696,
+    "player2_id": 59705,
+    "reported": true,
+    "intentional_draw": false,
+    "two_for_one": false
+   }
+  },
+  {
+   "id": "1044",
+   "type": "pairings",
+   "attributes": {
+    "id": 1044,
+    "table_number": 5,
+    "side": "player1_is_corp",
+    "score1": 3,
+    "score2": 0,
+    "player1_id": 59695,
+    "player2_id": 59700,
+    "reported": true,
+    "intentional_draw": false,
+    "two_for_one": false
+   }
+  },
+  {
+   "id": "1045",
+   "type": "pairings",
+   "attributes": {
+    "id": 1045,
+    "table_number": 6,
+    "side": "player1_is_runner",
+    "score1": 0,
+    "score2": 3,
+    "player1_id": 59692,
+    "player2_id": 59699,
+    "reported": true,
+    "intentional_draw": false,
+    "two_for_one": false
+   }
+  },
+  {
+   "id": "1046",
+   "type": "pairings",
+   "attributes": {
+    "id": 1046,
+    "table_number": 7,
+    "side": "player1_is_corp",
+    "score1": 0,
+    "score2": 3,
+    "player1_id": 59694,
+    "player2_id": 59698,
+    "reported": true,
+    "intentional_draw": false,
+    "two_for_one": false
+   }
+  },
+  {
+   "id": "1047",
+   "type": "pairings",
+   "attributes": {
+    "id": 1047,
+    "table_number": 8,
+    "side": "player1_is_runner",
+    "score1": 3,
+    "score2": 0,
+    "player1_id": 59702,
+    "player2_id": 59690,
+    "reported": true,
+    "intentional_draw": false,
+    "two_for_one": false
+   }
+  }
+ ],
+ "meta": {
+  "stats": {
+   "total": {
+    "count": 48
+   }
+  }
+ }
+}

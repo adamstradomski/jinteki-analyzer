@@ -1,0 +1,1758 @@
+[
+ {
+  "url": "https://alwaysberunning.net/api/entries?id=5240",
+  "status": 200,
+  "file": "alwaysberunning.net__api__entries__id-5240.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://alwaysberunning.net/api/entries?id=5250",
+  "status": 200,
+  "file": "alwaysberunning.net__api__entries__id-5250.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://alwaysberunning.net/api/entries?id=5284",
+  "status": 200,
+  "file": "alwaysberunning.net__api__entries__id-5284.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://alwaysberunning.net/api/entries?id=5301",
+  "status": 200,
+  "file": "alwaysberunning.net__api__entries__id-5301.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://alwaysberunning.net/api/entries?id=5310",
+  "status": 200,
+  "file": "alwaysberunning.net__api__entries__id-5310.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://alwaysberunning.net/api/tournaments/results?limit=200&offset=0",
+  "status": 200,
+  "file": "alwaysberunning.net__api__tournaments__results__limit-200_offset-0.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://alwaysberunning.net/api/tournaments/results?limit=200&offset=200",
+  "status": 200,
+  "file": "alwaysberunning.net__api__tournaments__results__limit-200_offset-200.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://alwaysberunning.net/api/tournaments?approved=1&concluded=1&desc=1&end=2026.07.29.&start=2025.09.27.",
+  "status": 200,
+  "file": "alwaysberunning.net__api__tournaments__approved-1_concluded-1_desc-1_end-2026.07.29._start-2025.09.27..json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://alwaysberunning.net/api/tournaments?approved=1&concluded=1&desc=1&start=2026.07.29.",
+  "status": 200,
+  "file": "alwaysberunning.net__api__tournaments__approved-1_concluded-1_desc-1_start-2026.07.29..json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://alwaysberunning.net/robots.txt",
+  "status": 200,
+  "file": "robots-alwaysberunning.net.txt",
+  "headers": {
+   "Content-Type": "text/plain"
+  }
+ },
+ {
+  "url": "https://api.netrunnerdb.com/api/v3/public/card_sets?page%5Bnumber%5D=1&page%5Bsize%5D=1000",
+  "status": 200,
+  "file": "api.netrunnerdb.com__api__v3__public__card_sets__page%5Bnumber%5D-1_page%5Bsize%5D-1000.json",
+  "headers": {
+   "Content-Type": "application/json",
+   "ETag": "W/\"nrdb3-card_sets-v1\""
+  }
+ },
+ {
+  "url": "https://api.netrunnerdb.com/api/v3/public/cards?page%5Bnumber%5D=1&page%5Bsize%5D=500",
+  "status": 200,
+  "file": "api.netrunnerdb.com__api__v3__public__cards__page%5Bnumber%5D-1_page%5Bsize%5D-500.json",
+  "headers": {
+   "Content-Type": "application/json",
+   "ETag": "W/\"nrdb3-cards-v1\""
+  }
+ },
+ {
+  "url": "https://api.netrunnerdb.com/api/v3/public/formats?page%5Bnumber%5D=1&page%5Bsize%5D=1000",
+  "status": 200,
+  "file": "api.netrunnerdb.com__api__v3__public__formats__page%5Bnumber%5D-1_page%5Bsize%5D-1000.json",
+  "headers": {
+   "Content-Type": "application/json",
+   "ETag": "W/\"nrdb3-formats-v1\""
+  }
+ },
+ {
+  "url": "https://api.netrunnerdb.com/api/v3/public/printings?page%5Bnumber%5D=1&page%5Bsize%5D=500",
+  "status": 200,
+  "file": "api.netrunnerdb.com__api__v3__public__printings__page%5Bnumber%5D-1_page%5Bsize%5D-500.json",
+  "headers": {
+   "Content-Type": "application/json",
+   "ETag": "W/\"nrdb3-printings-v1\""
+  }
+ },
+ {
+  "url": "https://api.netrunnerdb.com/api/v3/public/restrictions?page%5Bnumber%5D=1&page%5Bsize%5D=1000",
+  "status": 200,
+  "file": "api.netrunnerdb.com__api__v3__public__restrictions__page%5Bnumber%5D-1_page%5Bsize%5D-1000.json",
+  "headers": {
+   "Content-Type": "application/json",
+   "ETag": "W/\"nrdb3-restrictions-v1\""
+  }
+ },
+ {
+  "url": "https://api.netrunnerdb.com/api/v3/public/snapshots?page%5Bnumber%5D=1&page%5Bsize%5D=1000",
+  "status": 200,
+  "file": "api.netrunnerdb.com__api__v3__public__snapshots__page%5Bnumber%5D-1_page%5Bsize%5D-1000.json",
+  "headers": {
+   "Content-Type": "application/json",
+   "ETag": "W/\"nrdb3-snapshots-v1\""
+  }
+ },
+ {
+  "url": "https://api.netrunnerdb.com/robots.txt",
+  "status": 200,
+  "file": "robots-api.netrunnerdb.com.txt",
+  "headers": {
+   "Content-Type": "text/plain"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/deck/4b2c9e1a-77d0-4c1b-9a51-2f0d3c6e8a10",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__deck__4b2c9e1a-77d0-4c1b-9a51-2f0d3c6e8a10.json",
+  "headers": {
+   "Content-Type": "application/json",
+   "Last-Modified": "Fri, 18 Sep 2026 12:00:00 GMT"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklist/98589",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklist__98589.json",
+  "headers": {
+   "Content-Type": "application/json",
+   "Last-Modified": "Sun, 20 Sep 2026 12:00:00 GMT"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-05-01",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-05-01.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-05-02",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-05-02.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-05-03",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-05-03.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-05-04",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-05-04.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-05-05",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-05-05.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-05-06",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-05-06.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-05-07",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-05-07.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-05-08",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-05-08.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-05-09",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-05-09.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-05-10",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-05-10.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-05-11",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-05-11.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-05-12",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-05-12.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-05-13",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-05-13.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-05-14",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-05-14.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-05-15",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-05-15.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-05-16",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-05-16.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-05-17",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-05-17.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-05-18",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-05-18.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-05-19",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-05-19.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-05-20",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-05-20.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-05-21",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-05-21.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-05-22",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-05-22.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-05-23",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-05-23.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-05-24",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-05-24.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-05-25",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-05-25.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-05-26",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-05-26.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-05-27",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-05-27.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-05-28",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-05-28.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-05-29",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-05-29.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-05-30",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-05-30.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-05-31",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-05-31.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-06-01",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-06-01.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-06-02",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-06-02.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-06-03",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-06-03.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-06-04",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-06-04.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-06-05",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-06-05.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-06-06",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-06-06.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-06-07",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-06-07.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-06-08",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-06-08.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-06-09",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-06-09.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-06-10",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-06-10.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-06-11",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-06-11.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-06-12",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-06-12.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-06-13",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-06-13.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-06-14",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-06-14.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-06-15",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-06-15.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-06-16",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-06-16.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-06-17",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-06-17.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-06-18",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-06-18.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-06-19",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-06-19.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-06-20",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-06-20.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-06-21",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-06-21.json",
+  "headers": {
+   "Content-Type": "application/json",
+   "Last-Modified": "Sun, 21 Jun 2026 12:00:00 GMT"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-06-22",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-06-22.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-06-23",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-06-23.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-06-24",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-06-24.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-06-25",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-06-25.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-06-26",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-06-26.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-06-27",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-06-27.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-06-28",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-06-28.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-06-29",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-06-29.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-06-30",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-06-30.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-07-01",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-07-01.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-07-02",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-07-02.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-07-03",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-07-03.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-07-04",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-07-04.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-07-05",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-07-05.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-07-06",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-07-06.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-07-07",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-07-07.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-07-08",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-07-08.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-07-09",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-07-09.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-07-10",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-07-10.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-07-11",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-07-11.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-07-12",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-07-12.json",
+  "headers": {
+   "Content-Type": "application/json",
+   "Last-Modified": "Sun, 12 Jul 2026 12:00:00 GMT"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-07-13",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-07-13.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-07-14",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-07-14.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-07-15",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-07-15.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-07-16",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-07-16.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-07-17",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-07-17.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-07-18",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-07-18.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-07-19",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-07-19.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-07-20",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-07-20.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-07-21",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-07-21.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-07-22",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-07-22.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-07-23",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-07-23.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-07-24",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-07-24.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-07-25",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-07-25.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-07-26",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-07-26.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-07-27",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-07-27.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-07-28",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-07-28.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-07-29",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-07-29.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-07-30",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-07-30.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-07-31",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-07-31.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-08-01",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-08-01.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-08-02",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-08-02.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-08-03",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-08-03.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-08-04",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-08-04.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-08-05",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-08-05.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-08-06",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-08-06.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-08-07",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-08-07.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-08-08",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-08-08.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-08-09",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-08-09.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-08-10",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-08-10.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-08-11",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-08-11.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-08-12",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-08-12.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-08-13",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-08-13.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-08-14",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-08-14.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-08-15",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-08-15.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-08-16",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-08-16.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-08-17",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-08-17.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-08-18",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-08-18.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-08-19",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-08-19.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-08-20",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-08-20.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-08-21",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-08-21.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-08-22",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-08-22.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-08-23",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-08-23.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-08-24",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-08-24.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-08-25",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-08-25.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-08-26",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-08-26.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-08-27",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-08-27.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-08-28",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-08-28.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-08-29",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-08-29.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-08-30",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-08-30.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-08-31",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-08-31.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-09-01",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-09-01.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-09-02",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-09-02.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-09-03",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-09-03.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-09-04",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-09-04.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-09-05",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-09-05.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-09-06",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-09-06.json",
+  "headers": {
+   "Content-Type": "application/json",
+   "Last-Modified": "Sun, 06 Sep 2026 12:00:00 GMT"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-09-07",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-09-07.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-09-08",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-09-08.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-09-09",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-09-09.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-09-10",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-09-10.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-09-11",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-09-11.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-09-12",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-09-12.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-09-13",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-09-13.json",
+  "headers": {
+   "Content-Type": "application/json",
+   "Last-Modified": "Sun, 13 Sep 2026 12:00:00 GMT"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-09-14",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-09-14.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-09-15",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-09-15.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-09-16",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-09-16.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-09-17",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-09-17.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-09-18",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-09-18.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-09-19",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-09-19.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-09-20",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-09-20.json",
+  "headers": {
+   "Content-Type": "application/json",
+   "Last-Modified": "Sun, 20 Sep 2026 12:00:00 GMT"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-09-21",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-09-21.json",
+  "headers": {
+   "Content-Type": "application/json",
+   "Last-Modified": "Mon, 21 Sep 2026 12:00:00 GMT"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-09-22",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-09-22.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-09-23",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-09-23.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-09-24",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-09-24.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-09-25",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-09-25.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-09-26",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-09-26.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/api/2.0/public/decklists/by_date/2026-09-27",
+  "status": 200,
+  "file": "netrunnerdb.com__api__2.0__public__decklists__by_date__2026-09-27.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://netrunnerdb.com/robots.txt",
+  "status": 200,
+  "file": "robots-netrunnerdb.com.txt",
+  "headers": {
+   "Content-Type": "text/plain"
+  }
+ },
+ {
+  "url": "https://tournaments.nullsignal.games/api/v1/public/deckbuilding_restrictions?page%5Bnumber%5D=1&page%5Bsize%5D=250",
+  "status": 200,
+  "file": "tournaments.nullsignal.games__api__v1__public__deckbuilding_restrictions__page%5Bnumber%5D-1_page%5Bsize%5D-250.json",
+  "headers": {
+   "Content-Type": "application/json",
+   "ETag": "W/\"cobra-deckbuilding_restrictions-v1\""
+  }
+ },
+ {
+  "url": "https://tournaments.nullsignal.games/api/v1/public/formats?page%5Bnumber%5D=1&page%5Bsize%5D=250",
+  "status": 200,
+  "file": "tournaments.nullsignal.games__api__v1__public__formats__page%5Bnumber%5D-1_page%5Bsize%5D-250.json",
+  "headers": {
+   "Content-Type": "application/json",
+   "ETag": "W/\"cobra-formats-v1\""
+  }
+ },
+ {
+  "url": "https://tournaments.nullsignal.games/api/v1/public/tournament_types?page%5Bnumber%5D=1&page%5Bsize%5D=250",
+  "status": 200,
+  "file": "tournaments.nullsignal.games__api__v1__public__tournament_types__page%5Bnumber%5D-1_page%5Bsize%5D-250.json",
+  "headers": {
+   "Content-Type": "application/json",
+   "ETag": "W/\"cobra-tournament_types-v1\""
+  }
+ },
+ {
+  "url": "https://tournaments.nullsignal.games/api/v1/public/tournaments/4990/pairings?page%5Bnumber%5D=1&page%5Bsize%5D=1000",
+  "status": 200,
+  "file": "tournaments.nullsignal.games__api__v1__public__tournaments__4990__pairings__page%5Bnumber%5D-1_page%5Bsize%5D-1000.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://tournaments.nullsignal.games/api/v1/public/tournaments/4990/players?page%5Bnumber%5D=1&page%5Bsize%5D=10",
+  "status": 200,
+  "file": "tournaments.nullsignal.games__api__v1__public__tournaments__4990__players__page%5Bnumber%5D-1_page%5Bsize%5D-10.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://tournaments.nullsignal.games/api/v1/public/tournaments/4990/players?page%5Bnumber%5D=2&page%5Bsize%5D=10",
+  "status": 200,
+  "file": "tournaments.nullsignal.games__api__v1__public__tournaments__4990__players__page%5Bnumber%5D-2_page%5Bsize%5D-10.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://tournaments.nullsignal.games/api/v1/public/tournaments/4990/standings?page%5Bnumber%5D=1&page%5Bsize%5D=1000",
+  "status": 200,
+  "file": "tournaments.nullsignal.games__api__v1__public__tournaments__4990__standings__page%5Bnumber%5D-1_page%5Bsize%5D-1000.json",
+  "headers": {
+   "Content-Type": "application/json"
+  }
+ },
+ {
+  "url": "https://tournaments.nullsignal.games/api/v1/public/tournaments/5012",
+  "status": 200,
+  "file": "tournaments.nullsignal.games__api__v1__public__tournaments__5012.json",
+  "headers": {
+   "Content-Type": "application/json",
+   "ETag": "W/\"show-5012-v1\""
+  }
+ },
+ {
+  "url": "https://tournaments.nullsignal.games/api/v1/public/tournaments?page%5Bnumber%5D=1&page%5Bsize%5D=250&sort=-id",
+  "status": 200,
+  "file": "tournaments.nullsignal.games__api__v1__public__tournaments__page%5Bnumber%5D-1_page%5Bsize%5D-250_sort--id.json",
+  "headers": {
+   "Content-Type": "application/json",
+   "ETag": "W/\"index-250-1-v1\""
+  }
+ },
+ {
+  "url": "https://tournaments.nullsignal.games/api/v1/public/tournaments?page%5Bnumber%5D=1&page%5Bsize%5D=4&sort=-id",
+  "status": 200,
+  "file": "tournaments.nullsignal.games__api__v1__public__tournaments__page%5Bnumber%5D-1_page%5Bsize%5D-4_sort--id.json",
+  "headers": {
+   "Content-Type": "application/json",
+   "ETag": "W/\"index-4-1-v1\""
+  }
+ },
+ {
+  "url": "https://tournaments.nullsignal.games/api/v1/public/tournaments?page%5Bnumber%5D=2&page%5Bsize%5D=250&sort=-id",
+  "status": 200,
+  "file": "tournaments.nullsignal.games__api__v1__public__tournaments__page%5Bnumber%5D-2_page%5Bsize%5D-250_sort--id.json",
+  "headers": {
+   "Content-Type": "application/json",
+   "ETag": "W/\"index-250-2-v1\""
+  }
+ },
+ {
+  "url": "https://tournaments.nullsignal.games/api/v1/public/tournaments?page%5Bnumber%5D=2&page%5Bsize%5D=4&sort=-id",
+  "status": 200,
+  "file": "tournaments.nullsignal.games__api__v1__public__tournaments__page%5Bnumber%5D-2_page%5Bsize%5D-4_sort--id.json",
+  "headers": {
+   "Content-Type": "application/json",
+   "ETag": "W/\"index-4-2-v1\""
+  }
+ },
+ {
+  "url": "https://tournaments.nullsignal.games/api/v1/public/tournaments?page%5Bnumber%5D=3&page%5Bsize%5D=4&sort=-id",
+  "status": 200,
+  "file": "tournaments.nullsignal.games__api__v1__public__tournaments__page%5Bnumber%5D-3_page%5Bsize%5D-4_sort--id.json",
+  "headers": {
+   "Content-Type": "application/json",
+   "ETag": "W/\"index-4-3-v1\""
+  }
+ },
+ {
+  "url": "https://tournaments.nullsignal.games/robots.txt",
+  "status": 200,
+  "file": "robots-tournaments.nullsignal.games.txt",
+  "headers": {
+   "Content-Type": "text/plain"
+  }
+ },
+ {
+  "url": "https://tournaments.nullsignal.games/tournaments/4990.json",
+  "status": 200,
+  "file": "tournaments.nullsignal.games__tournaments__4990.json.json",
+  "headers": {
+   "Content-Type": "application/json",
+   "ETag": "W/\"nrtm-4990-v1\""
+  }
+ },
+ {
+  "url": "https://tournaments.nullsignal.games/tournaments/4990/players/59690/view_decks",
+  "status": 200,
+  "file": "tournaments.nullsignal.games__tournaments__4990__players__59690__view_decks.html",
+  "headers": {
+   "Content-Type": "text/html; charset=utf-8",
+   "ETag": "W/\"decks-59690\""
+  }
+ },
+ {
+  "url": "https://tournaments.nullsignal.games/tournaments/4990/players/59691/view_decks",
+  "status": 200,
+  "file": "tournaments.nullsignal.games__tournaments__4990__players__59691__view_decks.html",
+  "headers": {
+   "Content-Type": "text/html; charset=utf-8",
+   "ETag": "W/\"decks-59691\""
+  }
+ },
+ {
+  "url": "https://tournaments.nullsignal.games/tournaments/4990/players/59692/view_decks",
+  "status": 200,
+  "file": "tournaments.nullsignal.games__tournaments__4990__players__59692__view_decks.html",
+  "headers": {
+   "Content-Type": "text/html; charset=utf-8",
+   "ETag": "W/\"decks-59692\""
+  }
+ },
+ {
+  "url": "https://tournaments.nullsignal.games/tournaments/4990/players/59693/view_decks",
+  "status": 200,
+  "file": "tournaments.nullsignal.games__tournaments__4990__players__59693__view_decks.html",
+  "headers": {
+   "Content-Type": "text/html; charset=utf-8",
+   "ETag": "W/\"decks-59693\""
+  }
+ },
+ {
+  "url": "https://tournaments.nullsignal.games/tournaments/4990/players/59694/view_decks",
+  "status": 200,
+  "file": "tournaments.nullsignal.games__tournaments__4990__players__59694__view_decks.html",
+  "headers": {
+   "Content-Type": "text/html; charset=utf-8",
+   "ETag": "W/\"decks-59694\""
+  }
+ },
+ {
+  "url": "https://tournaments.nullsignal.games/tournaments/4990/players/59695/view_decks",
+  "status": 200,
+  "file": "tournaments.nullsignal.games__tournaments__4990__players__59695__view_decks.html",
+  "headers": {
+   "Content-Type": "text/html; charset=utf-8",
+   "ETag": "W/\"decks-59695\""
+  }
+ },
+ {
+  "url": "https://tournaments.nullsignal.games/tournaments/4990/players/59696/view_decks",
+  "status": 200,
+  "file": "tournaments.nullsignal.games__tournaments__4990__players__59696__view_decks.html",
+  "headers": {
+   "Content-Type": "text/html; charset=utf-8",
+   "ETag": "W/\"decks-59696\""
+  }
+ },
+ {
+  "url": "https://tournaments.nullsignal.games/tournaments/4990/players/59697/view_decks",
+  "status": 200,
+  "file": "tournaments.nullsignal.games__tournaments__4990__players__59697__view_decks.html",
+  "headers": {
+   "Content-Type": "text/html; charset=utf-8",
+   "ETag": "W/\"decks-59697\""
+  }
+ },
+ {
+  "url": "https://tournaments.nullsignal.games/tournaments/4990/players/59698/view_decks",
+  "status": 200,
+  "file": "tournaments.nullsignal.games__tournaments__4990__players__59698__view_decks.html",
+  "headers": {
+   "Content-Type": "text/html; charset=utf-8",
+   "ETag": "W/\"decks-59698\""
+  }
+ },
+ {
+  "url": "https://tournaments.nullsignal.games/tournaments/4990/players/59699/view_decks",
+  "status": 200,
+  "file": "tournaments.nullsignal.games__tournaments__4990__players__59699__view_decks.html",
+  "headers": {
+   "Content-Type": "text/html; charset=utf-8",
+   "ETag": "W/\"decks-59699\""
+  }
+ },
+ {
+  "url": "https://tournaments.nullsignal.games/tournaments/4990/players/59700/view_decks",
+  "status": 200,
+  "file": "tournaments.nullsignal.games__tournaments__4990__players__59700__view_decks.html",
+  "headers": {
+   "Content-Type": "text/html; charset=utf-8",
+   "ETag": "W/\"decks-59700\""
+  }
+ },
+ {
+  "url": "https://tournaments.nullsignal.games/tournaments/4990/players/59701/view_decks",
+  "status": 200,
+  "file": "tournaments.nullsignal.games__tournaments__4990__players__59701__view_decks.html",
+  "headers": {
+   "Content-Type": "text/html; charset=utf-8",
+   "ETag": "W/\"decks-59701\""
+  }
+ },
+ {
+  "url": "https://tournaments.nullsignal.games/tournaments/4990/players/59702/view_decks",
+  "status": 200,
+  "file": "tournaments.nullsignal.games__tournaments__4990__players__59702__view_decks.html",
+  "headers": {
+   "Content-Type": "text/html; charset=utf-8",
+   "ETag": "W/\"decks-59702\""
+  }
+ },
+ {
+  "url": "https://tournaments.nullsignal.games/tournaments/4990/players/59703/view_decks",
+  "status": 200,
+  "file": "tournaments.nullsignal.games__tournaments__4990__players__59703__view_decks.html",
+  "headers": {
+   "Content-Type": "text/html; charset=utf-8",
+   "ETag": "W/\"decks-59703\""
+  }
+ },
+ {
+  "url": "https://tournaments.nullsignal.games/tournaments/4990/players/59704/view_decks",
+  "status": 200,
+  "file": "tournaments.nullsignal.games__tournaments__4990__players__59704__view_decks.html",
+  "headers": {
+   "Content-Type": "text/html; charset=utf-8",
+   "ETag": "W/\"decks-59704\""
+  }
+ },
+ {
+  "url": "https://tournaments.nullsignal.games/tournaments/4990/players/59705/view_decks",
+  "status": 200,
+  "file": "tournaments.nullsignal.games__tournaments__4990__players__59705__view_decks.html",
+  "headers": {
+   "Content-Type": "text/html; charset=utf-8",
+   "ETag": "W/\"decks-59705\""
+  }
+ },
+ {
+  "url": "https://tournaments.nullsignal.games/tournaments/5012.json",
+  "status": 200,
+  "file": "tournaments.nullsignal.games__tournaments__5012.json.json",
+  "headers": {
+   "Content-Type": "application/json",
+   "ETag": "W/\"nrtm-5012-v1\""
+  }
+ },
+ {
+  "url": "https://tournaments.nullsignal.games/tournaments/5015.json",
+  "status": 200,
+  "file": "tournaments.nullsignal.games__tournaments__5015.json.json",
+  "headers": {
+   "Content-Type": "application/json",
+   "ETag": "W/\"nrtm-5015-v1\""
+  }
+ },
+ {
+  "url": "https://tournaments.nullsignal.games/tournaments/5015/players/60200/view_decks",
+  "status": 200,
+  "file": "tournaments.nullsignal.games__tournaments__5015__players__60200__view_decks.html",
+  "headers": {
+   "Content-Type": "text/html; charset=utf-8",
+   "ETag": "W/\"decks-60200\""
+  }
+ },
+ {
+  "url": "https://tournaments.nullsignal.games/tournaments/5015/players/60201/view_decks",
+  "status": 200,
+  "file": "tournaments.nullsignal.games__tournaments__5015__players__60201__view_decks.html",
+  "headers": {
+   "Content-Type": "text/html; charset=utf-8",
+   "ETag": "W/\"decks-60201\""
+  }
+ },
+ {
+  "url": "https://tournaments.nullsignal.games/tournaments/5015/players/60202/view_decks",
+  "status": 200,
+  "file": "tournaments.nullsignal.games__tournaments__5015__players__60202__view_decks.html",
+  "headers": {
+   "Content-Type": "text/html; charset=utf-8",
+   "ETag": "W/\"decks-60202\""
+  }
+ },
+ {
+  "url": "https://tournaments.nullsignal.games/tournaments/5015/players/60203/view_decks",
+  "status": 200,
+  "file": "tournaments.nullsignal.games__tournaments__5015__players__60203__view_decks.html",
+  "headers": {
+   "Content-Type": "text/html; charset=utf-8",
+   "ETag": "W/\"decks-60203\""
+  }
+ },
+ {
+  "url": "https://tournaments.nullsignal.games/tournaments/5015/players/60204/view_decks",
+  "status": 200,
+  "file": "tournaments.nullsignal.games__tournaments__5015__players__60204__view_decks.html",
+  "headers": {
+   "Content-Type": "text/html; charset=utf-8",
+   "ETag": "W/\"decks-60204\""
+  }
+ },
+ {
+  "url": "https://tournaments.nullsignal.games/tournaments/5015/players/60205/view_decks",
+  "status": 200,
+  "file": "tournaments.nullsignal.games__tournaments__5015__players__60205__view_decks.html",
+  "headers": {
+   "Content-Type": "text/html; charset=utf-8",
+   "ETag": "W/\"decks-60205\""
+  }
+ },
+ {
+  "url": "https://tournaments.nullsignal.games/tournaments/5015/players/60206/view_decks",
+  "status": 200,
+  "file": "tournaments.nullsignal.games__tournaments__5015__players__60206__view_decks.html",
+  "headers": {
+   "Content-Type": "text/html; charset=utf-8",
+   "ETag": "W/\"decks-60206\""
+  }
+ },
+ {
+  "url": "https://tournaments.nullsignal.games/tournaments/5015/players/60207/view_decks",
+  "status": 200,
+  "file": "tournaments.nullsignal.games__tournaments__5015__players__60207__view_decks.html",
+  "headers": {
+   "Content-Type": "text/html; charset=utf-8",
+   "ETag": "W/\"decks-60207\""
+  }
+ },
+ {
+  "url": "https://tournaments.nullsignal.games/tournaments/5015/players/60208/view_decks",
+  "status": 200,
+  "file": "tournaments.nullsignal.games__tournaments__5015__players__60208__view_decks.html",
+  "headers": {
+   "Content-Type": "text/html; charset=utf-8",
+   "ETag": "W/\"decks-60208\""
+  }
+ },
+ {
+  "url": "https://tournaments.nullsignal.games/tournaments/5015/players/60209/view_decks",
+  "status": 200,
+  "file": "tournaments.nullsignal.games__tournaments__5015__players__60209__view_decks.html",
+  "headers": {
+   "Content-Type": "text/html; charset=utf-8",
+   "ETag": "W/\"decks-60209\""
+  }
+ }
+]

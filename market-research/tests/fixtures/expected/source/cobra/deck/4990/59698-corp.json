@@ -1,0 +1,85 @@
+{
+ "cards": [
+  {
+   "nrdb_card_id": "ballista",
+   "nrdb_printing_id": "30062",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "hammer",
+   "nrdb_printing_id": "34126",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "hedge_fund",
+   "nrdb_printing_id": "30075",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "hostile_architecture",
+   "nrdb_printing_id": "33122",
+   "qty": 2
+  },
+  {
+   "nrdb_card_id": "kessleroid",
+   "nrdb_printing_id": "35075",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "key_performance_indicators",
+   "nrdb_printing_id": "35077",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "let_them_dream",
+   "nrdb_printing_id": "36066",
+   "qty": 2
+  },
+  {
+   "nrdb_card_id": "maskirovka",
+   "nrdb_printing_id": "33061",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "napd_cordon",
+   "nrdb_printing_id": "26130",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "reanimation_protocol",
+   "nrdb_printing_id": "36062",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "regolith_mining_license",
+   "nrdb_printing_id": "30071",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "sacrifice_zone_expansion",
+   "nrdb_printing_id": "36056",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "send_a_message",
+   "nrdb_printing_id": "30069",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "zato_city_grid",
+   "nrdb_printing_id": "33127",
+   "qty": 3
+  }
+ ],
+ "identity": {
+  "nrdb_card_id": "weyland_consortium_built_to_last",
+  "nrdb_printing_id": "30059"
+ },
+ "nrdb_uuid": null,
+ "pid": 59698,
+ "record_hash": "sha256:a98d3dce03f6bd818b0c2031db84436664445356628b7dc2a76cbf09e8695a81",
+ "schema": "cobra.deck/1",
+ "side": "corp",
+ "stage_visibility": "public",
+ "tournament_id": 4990
+}

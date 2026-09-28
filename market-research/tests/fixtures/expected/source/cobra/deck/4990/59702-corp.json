@@ -1,0 +1,100 @@
+{
+ "cards": [
+  {
+   "nrdb_card_id": "above_the_law",
+   "nrdb_printing_id": "30060",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "angelique_garza_correa",
+   "nrdb_printing_id": "34063",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "armed_asset_protection",
+   "nrdb_printing_id": "34061",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "ballista",
+   "nrdb_printing_id": "30062",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "csr_campaign",
+   "nrdb_printing_id": "26064",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "eminent_domain",
+   "nrdb_printing_id": "34122",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "hearts_and_minds",
+   "nrdb_printing_id": "34124",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "hedge_fund",
+   "nrdb_printing_id": "30075",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "mutually_assured_destruction",
+   "nrdb_printing_id": "33064",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "myoshu",
+   "nrdb_printing_id": "36061",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "petty_cash",
+   "nrdb_printing_id": "35081",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "regolith_mining_license",
+   "nrdb_printing_id": "30071",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "roughneck_repair_squad",
+   "nrdb_printing_id": "26057",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "shackleton_grid",
+   "nrdb_printing_id": "36065",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "slash_and_burn_agriculture",
+   "nrdb_printing_id": "34057",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "the_basalt_spire",
+   "nrdb_printing_id": "34123",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "tithe",
+   "nrdb_printing_id": "30073",
+   "qty": 3
+  }
+ ],
+ "identity": {
+  "nrdb_card_id": "earth_station_sea_headquarters",
+  "nrdb_printing_id": "26120"
+ },
+ "nrdb_uuid": null,
+ "pid": 59702,
+ "record_hash": "sha256:caea46497701f7c09c0bdd021bdb84e585f5ac8216bfa19ab10aa5a6b26af901",
+ "schema": "cobra.deck/1",
+ "side": "corp",
+ "stage_visibility": "public",
+ "tournament_id": 4990
+}

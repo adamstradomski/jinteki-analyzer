@@ -1,0 +1,85 @@
+{
+ "cards": [
+  {
+   "nrdb_card_id": "blood_in_the_water",
+   "nrdb_printing_id": "33039",
+   "qty": 2
+  },
+  {
+   "nrdb_card_id": "cultivate",
+   "nrdb_printing_id": "36043",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "daniela_jorge_inacio",
+   "nrdb_printing_id": "34047",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "diviner",
+   "nrdb_printing_id": "30046",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "esca",
+   "nrdb_printing_id": "36038",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "hedge_fund",
+   "nrdb_printing_id": "30075",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "knowledge_seeker",
+   "nrdb_printing_id": "36040",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "lamplighter",
+   "nrdb_printing_id": "35080",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "mitra_aman",
+   "nrdb_printing_id": "35056",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "project_yagi_uda",
+   "nrdb_printing_id": "26040",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "public_health_portal",
+   "nrdb_printing_id": "26042",
+   "qty": 2
+  },
+  {
+   "nrdb_card_id": "sericulture_expansion",
+   "nrdb_printing_id": "35049",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "superconducting_hub",
+   "nrdb_printing_id": "30070",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "whitespace",
+   "nrdb_printing_id": "30074",
+   "qty": 3
+  }
+ ],
+ "identity": {
+  "nrdb_card_id": "jinteki_restoring_humanity",
+  "nrdb_printing_id": "30043"
+ },
+ "nrdb_uuid": null,
+ "pid": 60203,
+ "record_hash": "sha256:b45077f98700641f61d5c54f70ab3f3f733e74565659afe5d977f92778bdfe36",
+ "schema": "cobra.deck/1",
+ "side": "corp",
+ "stage_visibility": "public",
+ "tournament_id": 5015
+}

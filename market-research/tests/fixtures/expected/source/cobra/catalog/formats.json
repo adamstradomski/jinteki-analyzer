@@ -1,0 +1,22 @@
+{
+ "items": [
+  {
+   "extra": null,
+   "id": "1",
+   "name": "Standard"
+  },
+  {
+   "extra": null,
+   "id": "2",
+   "name": "Startup"
+  },
+  {
+   "extra": null,
+   "id": "3",
+   "name": "Eternal"
+  }
+ ],
+ "kind": "formats",
+ "record_hash": "sha256:1bb2057c38490bd7b8bccd56f41ec1d38384d1f05f2c43e1a6f96a769a25e9a4",
+ "schema": "cobra.catalog/1"
+}

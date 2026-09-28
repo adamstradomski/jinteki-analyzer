@@ -1,0 +1,100 @@
+{
+ "cards": [
+  {
+   "nrdb_card_id": "ablative_barrier",
+   "nrdb_printing_id": "34034",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "aggressive_trendsetting",
+   "nrdb_printing_id": "35037",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "architect_deployment_test",
+   "nrdb_printing_id": "26032",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "bass_ch1r180g4",
+   "nrdb_printing_id": "26098",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "digital_rights_management",
+   "nrdb_printing_id": "27006",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "fully_operational",
+   "nrdb_printing_id": "26036",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "hagen",
+   "nrdb_printing_id": "26035",
+   "qty": 1
+  },
+  {
+   "nrdb_card_id": "hedge_fund",
+   "nrdb_printing_id": "30075",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "lightning_laboratory",
+   "nrdb_printing_id": "34097",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "m_i_c",
+   "nrdb_printing_id": "34036",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "megaprix_qualifier",
+   "nrdb_printing_id": "27004",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "mercia_b4ll4rd",
+   "nrdb_printing_id": "35045",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "napd_cordon",
+   "nrdb_printing_id": "26130",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "orbital_superiority",
+   "nrdb_printing_id": "30068",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "otto_campaign",
+   "nrdb_printing_id": "35040",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "sprint",
+   "nrdb_printing_id": "30041",
+   "qty": 3
+  },
+  {
+   "nrdb_card_id": "tithe",
+   "nrdb_printing_id": "30073",
+   "qty": 3
+  }
+ ],
+ "identity": {
+  "nrdb_card_id": "thunderbolt_armaments_peace_through_power",
+  "nrdb_printing_id": "34096"
+ },
+ "nrdb_uuid": null,
+ "pid": 59691,
+ "record_hash": "sha256:ebed3fc6f8a3ef765146bdfffdb99126fcb43e829e0887c05c0beebb2b05dcd7",
+ "schema": "cobra.deck/1",
+ "side": "corp",
+ "stage_visibility": "public",
+ "tournament_id": 4990
+}
