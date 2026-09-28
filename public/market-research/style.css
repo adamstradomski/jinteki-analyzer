@@ -62,6 +62,7 @@ body { margin: 0; background: var(--bg); }
 .mr-guide dt { font-family: var(--font-mono); color: var(--text); }
 .mr-guide dd { margin: 0; color: var(--dim); }
 @media (max-width: 560px) { .mr-guide dl { grid-template-columns: 1fr; } .mr-guide dd { margin-bottom: var(--space-2); } }
+.mr-band { fill: var(--accent); fill-opacity: 0.12; }
 .mr-toolbar { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: flex-end; margin-bottom: var(--space-3); }
 .mr-chip { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--text); }
 .mr-x { all: unset; cursor: pointer; padding: 0 2px; color: var(--dim); }

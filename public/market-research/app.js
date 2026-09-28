@@ -446,6 +446,8 @@ function niceMax(v) {
 // ---------------------------------------------------------------- trends
 
 let trendsData = null;
+// The card detail chart's trends: every ban list, whatever the Ban list filter says.
+let detailTrends = null;
 
 function initTrendCards() {
   const played = view.cards.filter((c) => c.decks > 0);
@@ -490,7 +492,7 @@ function trendRange() {
   return state.from && state.to ? { from: state.from, to: state.to } : null;
 }
 
-function lineChart(host, series, markers, { height = 260, label }) {
+function lineChart(host, series, markers, { height = 260, label, band = null }) {
   const months = series[0]?.points.map((p) => p.month) || [];
   if (!months.length) { host.replaceChildren(el('p', { class: 'mr-note', text: 'No data in this period.' })); return; }
   const { s, width, m, iw, ih } = chartBox(host, height);
@@ -503,17 +505,34 @@ function lineChart(host, series, markers, { height = 260, label }) {
     s.append(svg('line', { class: k === 0 ? 'chart-axis' : 'chart-grid', x1: m.l, x2: width - m.r, y1: y(v), y2: y(v) }));
     s.append(svg('text', { class: 'chart-tick', x: m.l - 6, y: y(v) + 3, 'text-anchor': 'end' }, `${Math.round(v * 100)}%`));
   }
+  if (band) {
+    // Shade the months selected in the filters; the rest of the timeline stays for context.
+    const i0 = months.indexOf(band.from);
+    const i1 = months.indexOf(band.to);
+    if (i0 >= 0 && i1 >= i0) {
+      const half = months.length > 1 ? iw / (months.length - 1) / 2 : iw / 2;
+      const x0 = Math.max(m.l, x(i0) - half);
+      const x1 = Math.min(m.l + iw, x(i1) + half);
+      s.append(svg('rect', { class: 'mr-band', x: x0, y: m.t, width: Math.max(1, x1 - x0), height: ih }));
+    }
+  }
   const step = Math.ceil(months.length / Math.max(2, Math.floor(iw / 70)));
   months.forEach((mo, i) => {
     if (i % step === 0 || i === months.length - 1) {
       s.append(svg('text', { class: 'chart-tick', x: x(i), y: m.t + ih + 16, 'text-anchor': 'middle' }, shortMonth(mo)));
     }
   });
+  // Every ban list gets its line; a label that would overlap one already drawn is left out.
+  const taken = [];
   for (const mk of markers) {
     const i = months.indexOf(mk.month);
     if (i < 0) continue;
     s.append(svg('line', { class: 'chart-marker', x1: x(i), x2: x(i), y1: m.t, y2: m.t + ih }));
     const right = x(i) > m.l + iw * 0.6;
+    const w = mk.name.length * 5.6;
+    const x0 = right ? x(i) - 4 - w : x(i) + 4;
+    if (taken.some(([a0, a1]) => x0 < a1 + 6 && x0 + w > a0 - 6)) continue;
+    taken.push([x0, x0 + w]);
     s.append(svg('text', { class: 'chart-tick', x: x(i) + (right ? -4 : 4), y: m.t + 9, 'text-anchor': right ? 'end' : 'start' }, mk.name));
   }
   for (const ser of series) {
@@ -749,10 +768,10 @@ async function openDetail(id, scroll = true) {
       stat(m.copies_mode ? `${m.copies_mode}×` : '–', 'Most common copy count'),
       stat(fmtPp(m.winrate_diff_pp), `Winrate vs baseline (${fmtN(m.games)}${m.winrate_status === 'ok' ? '' : ', small sample'})`),
       stat(`${fmtPp(m.wilson_low_pp)} → ${fmtPp(m.wilson_high_pp)}`, '95% interval')];
-  body.replaceChildren(head, el('div', { class: 'summary-grid mr-stats' }, ...stats), el('h3', { text: 'Inclusion by month' }), el('div', { id: 'detail-chart', class: 'mr-chart' }));
+  body.replaceChildren(head, el('div', { class: 'summary-grid mr-stats' }, ...stats), el('h3', { text: 'Inclusion by month' }), el('p', { class: 'mr-note', text: 'Every month and every ban list; the months selected in Filters are shaded.' }), el('div', { id: 'detail-chart', class: 'mr-chart' }));
   if (scroll) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
   try {
-    trendsData = await slice('trends'); // cached per URL, so this is the file already loaded
+    detailTrends = await slice('trends', { ...state, restriction: 'all' }); // whole timeline, every ban list
     drawDetailChart();
   } catch {
     $('detail-chart').replaceChildren(el('p', { class: 'mr-note', text: 'Trends could not be loaded.' }));
@@ -761,14 +780,15 @@ async function openDetail(id, scroll = true) {
 
 function drawDetailChart() {
   const host = document.getElementById('detail-chart');
-  if (!host || !detailCard || !trendsData || !trendsData.cards[detailCard]) {
-    if (host && detailCard && trendsData) host.replaceChildren(el('p', { class: 'mr-note', text: 'Identities have no deck-inclusion series.' }));
+  if (!host || !detailCard || !detailTrends || !detailTrends.cards[detailCard]) {
+    if (host && detailCard && detailTrends) host.replaceChildren(el('p', { class: 'mr-note', text: 'Identities have no deck-inclusion series.' }));
     return;
   }
-  const points = D.monthlySeries(trendsData, detailCard, trendRange());
+  const points = D.monthlySeries(detailTrends, detailCard, null);
   const months = points.map((p) => p.month);
+  const range = trendRange();
   lineChart(host, [{ name: cardName(detailCard), color: JW.sideColor(state.side), points }], D.banlistMarkers(manifest, months),
-    { height: 200, label: `Monthly inclusion of ${cardName(detailCard)}` });
+    { height: 200, band: range, label: `Monthly inclusion of ${cardName(detailCard)} over every month, all ban lists${range ? `; ${monthName(range.from)} to ${monthName(range.to)} is shaded` : ''}` });
 }
 
 // ---------------------------------------------------------------- quality footer
