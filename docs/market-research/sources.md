@@ -101,8 +101,9 @@ Findings, including where Cobra differs from the brief:
   titles and everything else. The page also shows the player's name in an `<h4>`; only the two inputs
   are read (selectolax, no scripts).
 - The export and API send ETags (Rails); conditional requests use `If-None-Match`.
-- There is no "concluded" flag: an event is live while its date is within 3 days or any pairing is
-  unreported.
+- There is no "concluded" flag: an event is live while its date is within 3 days, or while any
+  pairing is unreported, up to 14 days after its date; after that it counts as finished even with a
+  result missing, so its decks are still fetched. A bye can have the player in either seat (p1 or p2).
 
 ## NetrunnerDB
 

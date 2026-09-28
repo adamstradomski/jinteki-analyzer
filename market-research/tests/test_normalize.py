@@ -46,6 +46,37 @@ def tourney(fmt: str, pairings: list[CobraPairing], n: int = 4) -> CobraTourname
     )
 
 
+def test_bye_in_either_seat_is_not_unreported():
+    # Seen live: Cobra byes with the player as p2 and p1 empty kept finished events "live" for
+    # months, so their public decks were never fetched.
+    from market_research.sources.cobra import has_unreported
+
+    done = CobraPairing(
+        stage=1, round=1, table=1, p1=100, p2=101, p1_side="corp", p1_corp_score=3, p2_runner_score=0
+    )
+    for bye in (
+        CobraPairing(stage=1, round=1, table=2, p1=102, p2=None),
+        CobraPairing(stage=1, round=1, table=2, p1=None, p2=102),
+    ):
+        assert not has_unreported(tourney("single_sided", [done, bye]))
+    missing = CobraPairing(stage=1, round=2, table=1, p1=100, p2=102)
+    assert has_unreported(tourney("single_sided", [done, missing]))
+
+
+def test_event_with_a_missing_result_settles_after_two_weeks():
+    from market_research.sources.cobra import is_live
+
+    done = CobraPairing(
+        stage=1, round=1, table=1, p1=100, p2=101, p1_side="corp", p1_corp_score=3, p2_runner_score=0
+    )
+    missing = CobraPairing(stage=2, round=1, table=1, p1=100, p2=101, elimination=True)
+    t = tourney("single_sided", [done, missing])  # dated 2026-09-01
+    assert is_live(t, date(2026, 9, 3))  # within 3 days: live regardless
+    assert is_live(t, date(2026, 9, 10))  # a result is missing: still live
+    assert not is_live(t, date(2026, 9, 16))  # 15 days on: settled, decks can be fetched
+    assert not is_live(tourney("single_sided", [done]), date(2026, 9, 10))  # all reported
+
+
 def games_of(t: CobraTournament) -> list[dict]:
     n = Normalizer({}, __import__("market_research.config", fromlist=["load_settings"]).load_settings({}))
     return list(n.games(t, {p.pid: p.swiss_rank for p in t.players}, "c1"))

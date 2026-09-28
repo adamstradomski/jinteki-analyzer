@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from datetime import date
+from datetime import date, timedelta
 from typing import Any
 
 from selectolax.parser import HTMLParser
@@ -265,12 +265,25 @@ def _pairing(
     )
 
 
+# An event this many days old is finished even if a result is still missing: organisers rarely
+# fix results that late, and treating it as live would stop its decks from ever being fetched.
+SETTLED_DAYS = 14
+
+
+def is_live(t: CobraTournament, today: date) -> bool:
+    """Still being played or reported: within 3 days of its date, or with a missing result until settled."""
+    played = date.fromisoformat(t.date)
+    if played >= today - timedelta(days=3):
+        return True
+    return played >= today - timedelta(days=SETTLED_DAYS) and has_unreported(t)
+
+
 def has_unreported(t: CobraTournament) -> bool:
     if not t.pairings:
         return True
     for p in t.pairings:
-        if p.p2 is None:
-            continue  # bye
+        if p.p1 is None or p.p2 is None:
+            continue  # bye: Cobra puts the player in either seat (seen live with only p2 set)
         if p.elimination:
             if p.winner is None:
                 return True
