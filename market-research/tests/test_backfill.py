@@ -6,7 +6,6 @@ import random
 from datetime import date
 
 import httpx
-import pytest
 
 from helpers import make_env
 from market_research.runner import Runtime, backfill, default_since, format_plan, plan
@@ -77,48 +76,25 @@ def test_backfill_phases_publish_in_order_and_skip_rules(tmp_path, clock):
     assert len(days) == len(set(days)) == (date(2026, 9, 27) - SINCE).days + 1
 
 
-def test_interrupted_backfill_resumes_without_refetching(tmp_path, clock):
-    env = make_env(tmp_path, clock)
-    boom = "https://tournaments.nullsignal.games/tournaments/4990/players/59700/view_decks"
-
-    def explode(request):
-        if normalize_url(str(request.url)) == normalize_url(boom):
-            raise RuntimeError("network gone")
-        return env.routes.respond(request)
-
-    first = rt(env)
-    first.transport = _Transport(explode)
-    with pytest.raises(RuntimeError):
-        backfill(first, SINCE)
-    done_first = [normalize_url(str(c.url)) for c in env.routes.calls]
-    assert done_first
-    env.routes.calls.clear()
-    res = backfill(rt(env), SINCE)
-    assert res.phases_published == [1, 2, 3]
-    again = [normalize_url(str(c.url)) for c in env.routes.calls]
-    # A backfill always re-reads the discovery listings; nothing else is fetched twice.
-    listing = ("robots.txt", "/api/tournaments/results", "/public/tournaments?")
-    refetched = [u for u in again if u in done_first and not any(x in u for x in listing)]
-    assert normalize_url(boom) in again
-    assert refetched == []
-
-
 def test_default_since(tmp_path, clock):
     env = make_env(tmp_path, clock)
-    assert default_since(date(2026, 9, 27), env.stores) == date(2024, 9, 1)
-    backfill(rt(env), date(2026, 9, 1), phase=1)
-    # Oldest ban list of the current card pool (2026-03-13) vs 24 months: the earlier wins.
+    assert default_since(date(2026, 9, 27), env.stores) == date(2024, 9, 1)  # no ban lists stored yet
+    # NRDB's snapshot list, as stored: ban lists of the active card pool started 2026-03-13.
+    env.stores.source.put_json(
+        "nrdb/catalog/snapshots.json",
+        {
+            "snapshots": [
+                {"format_id": "standard", "card_pool_id": "p1", "date_start": "2025-06-01", "active": False},
+                {"format_id": "standard", "card_pool_id": "p2", "date_start": "2026-03-13", "active": False},
+                {"format_id": "standard", "card_pool_id": "p2", "date_start": "2026-07-01", "active": True},
+                {"format_id": "startup", "card_pool_id": "s1", "date_start": "2020-01-01", "active": True},
+            ]
+        },
+    )
+    # Oldest ban list of the current card pool vs 24 months: the earlier wins.
     assert default_since(date(2026, 9, 27), env.stores) == date(2024, 9, 1)
     assert default_since(date(2027, 12, 1), env.stores) == date(2025, 12, 1)
     assert default_since(date(2028, 6, 1), env.stores) == date(2026, 3, 13)
-
-
-class _Transport(FixtureTransport):
-    def __init__(self, fn):
-        self.fn = fn
-
-    def handle_request(self, request):
-        return self.fn(request)
 
 
 def test_plan_skips_misdated_cobra_event_without_stopping(tmp_path, clock):

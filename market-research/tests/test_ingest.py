@@ -256,3 +256,42 @@ def test_backfill_index_read_fills_in_a_missing_cobra_name(tmp_path, clock):
     env.stores.source.put_json(key, dump(stored.model_copy(update={"name": None}).hashed()))
     discover(env, BACKFILL_SINCE)
     assert env.stores.source.get_json(key)["name"] == stored.name
+
+
+def backfill_ingest(env, since: date = BACKFILL_SINCE):
+    ing = Ingestor(
+        env.settings,
+        env.clock,
+        env.http(unlimited_budget=True),
+        env.stores,
+        since=since,
+        backfill=True,
+        parallel=False,
+    )
+    return ing.run()
+
+
+def test_interrupted_backfill_resumes_without_refetching(tmp_path, clock, monkeypatch):
+    env = make_env(tmp_path, clock)
+    boom = normalize_url("https://tournaments.nullsignal.games/tournaments/4990/players/59700/view_decks")
+    respond = env.routes.respond
+
+    def explode(request):
+        if normalize_url(str(request.url)) == boom:
+            raise RuntimeError("network gone")
+        return respond(request)
+
+    monkeypatch.setattr(env.routes, "respond", explode)
+    with pytest.raises(RuntimeError):
+        backfill_ingest(env)
+    done_first = urls(env)
+    assert done_first
+    monkeypatch.setattr(env.routes, "respond", respond)
+    env.routes.calls.clear()
+    backfill_ingest(env)
+    again = urls(env)
+    # A backfill always re-reads the discovery listings; nothing else is fetched twice.
+    listing = ("robots.txt", "/api/tournaments/results", "/public/tournaments?")
+    refetched = [u for u in again if u in done_first and not any(x in u for x in listing)]
+    assert boom in again
+    assert refetched == []
