@@ -36,8 +36,53 @@
     return { family: isFamily(f) ? f : 'jnet', mode: isMode(m) ? m : systemMode() };
   }
 
+  /* Web fonts: each family only needs its own faces, so they are loaded from script when the
+     family is applied (instead of one render-blocking @import of every face in bundle.css).
+     The stacks in bundle.css carry system fallbacks, so text renders before the fonts arrive.
+     Faces already requested are not requested again, e.g. IBM Plex Mono (Beanstalk and Console). */
+  var FONT_FACES = {
+    'Barlow Condensed': 'wght@600;700;800',
+    'IBM Plex Sans': 'wght@400;500;600',
+    'IBM Plex Mono': 'wght@400;500;600',
+    'Chakra Petch': 'wght@500;600;700',
+    'JetBrains Mono': 'wght@400;500;700',
+    'VT323': '',
+    'Oxanium': 'wght@500;600;700;800',
+    'Share Tech Mono': ''
+  };
+  var FAMILY_FONTS = {
+    jnet: ['Barlow Condensed', 'IBM Plex Sans', 'IBM Plex Mono'],
+    icewall: ['Chakra Petch', 'JetBrains Mono'],
+    console: ['VT323', 'IBM Plex Mono'],
+    nightcity: ['Oxanium', 'Share Tech Mono']
+  };
+  var fontsRequested = {};
+  var fontsPreconnected = false;
+  function addLink(attrs) {
+    var l = document.createElement('link');
+    for (var k in attrs) l.setAttribute(k, attrs[k]);
+    (document.head || document.documentElement).appendChild(l);
+  }
+  function loadFonts(family) {
+    var missing = (FAMILY_FONTS[family] || []).filter(function (f) { return !fontsRequested[f]; });
+    if (!missing.length) return;
+    try {
+      if (!fontsPreconnected) {
+        fontsPreconnected = true;
+        addLink({ rel: 'preconnect', href: 'https://fonts.googleapis.com' });
+        addLink({ rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' });
+      }
+      var query = missing.map(function (f) {
+        fontsRequested[f] = true;
+        return 'family=' + f.replace(/ /g, '+') + (FONT_FACES[f] ? ':' + FONT_FACES[f] : '');
+      }).join('&');
+      addLink({ rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?' + query + '&display=swap' });
+    } catch (e) {}
+  }
+
   function apply(family, mode, persist) {
     var root = document.documentElement;
+    loadFonts(family);
     root.setAttribute('data-theme', family + (mode === 'light' ? '-light' : ''));
     root.setAttribute('data-mode', mode);
     if (persist !== false) { write(THEME_KEY, family); write(MODE_KEY, mode); }
