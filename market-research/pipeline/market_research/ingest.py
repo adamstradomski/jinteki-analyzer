@@ -635,7 +635,7 @@ class Ingestor:
         else:
             raise NotFound(f"status {r.status}")
         changed = self.write(key, rec, known_hash=stored.get("record_hash"))
-        live = not concluded_by_date or cobra.has_unreported(rec)
+        live = cobra.is_live(rec, self.today)
         if not live:
             self.enqueue_cobra_decks(rec, it.priority % SIGNAL_BONUS)
         with self._lock:
