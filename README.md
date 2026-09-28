@@ -14,7 +14,7 @@ Trace: Paste (or bookmarklet-import) a finished game's chat log and get parsed s
 - **Log parsing** — paste the log text from the jinteki.net chat panel and parse it into structured turn-by-turn data.
 - **Browser bookmarklet** — drag a bookmarklet into your bookmarks bar; on any finished jinteki.net game, one click extracts the log and opens it here already parsed, no copy/paste.
 - **Game summary & stats** — turns played, credits, draws, runs, installs, and other per-player totals.
-- **Achievements** — per-player Corp/Runner achievements for the game (e.g. won without clicking for credits, flatline and mill wins, comebacks from 0–6), shown as tags next to the chat badges in the game summary with the description on hover. Defined in one `ACHIEVEMENTS` list in `public/trace/index.html`.
+- **Achievements** — per-player Corp/Runner achievements for the game (e.g. won without clicking for credits, flatline and mill wins, comebacks from 0–6), shown as tags next to the chat badges in the game summary with the description on hover. Defined in one `ACHIEVEMENTS` list in `public/trace/app.js`.
 - **Charts** — agenda points, net credits gained per turn, credit pool over time, cards in hand, and cumulative cards drawn, plotted both by each player's own turn number and on a shared/interleaved turn-order axis.
 - **Per-card tables** — credits gained/spent and net value attributed to each installed card, plus operations/events, with a flagged-lines list for anything the parser couldn't confidently resolve.
 - **Share link** — compresses the pasted log and encodes it into a URL fragment (`/trace/#log=...`) so a whole game can be shared as a link. The log never touches a server; only whoever has the link can decode it in their own browser.
@@ -27,7 +27,7 @@ Everything runs client-side. Nothing about a pasted log is uploaded anywhere unl
 
 ## Development
 
-Trace is a single static file, `public/trace/index.html`, with no build step, no dependencies, and no package manager. To work on it locally, open it in a browser, or serve `public/` with any static file server. The landing page (`public/index.html`) and Market Research load their files from site-root paths or as ES modules, so serve `public/` for those.
+Trace is plain static files with no build step, no dependencies, and no package manager: the markup and styles in `public/trace/index.html`, and its script in `public/trace/app.js` (plus two tiny scripts that must run before first paint, `theme-init.js` and `hash-overlay.js`). The page's Content Security Policy forbids inline scripts and `on…=` attributes, so keep all script in those files. Everything taken from a log (player names, card names, whole lines) is untrusted, because anyone can craft a `#log=` link: pass it through `esc()` (or `fmt()`) before it goes into `innerHTML`, or use `textContent`. To work on it locally, open it in a browser, or serve `public/` with any static file server. The landing page (`public/index.html`) and Market Research load their files from site-root paths or as ES modules, so serve `public/` for those.
 
 Trace used to live at `/`. Old share links and installed bookmarklets still point at `https://jinteki.win/#log=…`, so `public/home.js` forwards any `#log=` hash on the landing page to `/trace/` before it paints. Keep that forwarding in place.
 
@@ -47,6 +47,7 @@ Run from the repository root. The Market Research pipeline has its own CLI, docu
 | `npx wrangler dev` | Runs the Worker locally (site plus shortener) after `npm run build` has rendered `wrangler.toml`. |
 | `npx wrangler deploy` | The Workers Builds deploy step. |
 | `node public/shared/jw/build-tokens.mjs` | Regenerates `public/shared/jw/tokens.css` from `tokens.json`. |
+| `node --test test/worker/*.test.mjs` | Unit tests for the link shortener Worker in `src/`, with in-memory fakes for D1 and the other bindings (also run in CI). |
 | `node --test market-research/tests/ui/*.test.mjs` | Tests the Market Research page's data module against the pipeline's reference snapshot (also run in CI). |
 
 ## Deployment
@@ -55,7 +56,8 @@ The site runs on one Cloudflare Worker per environment, built from this repo wit
 
 - `public/` holds the static site, served directly as Worker static assets.
 - `src/` is the Worker code for the link shortener: `POST /api/shorten` creates a short link, `GET /s/<id>` redirects to `/trace/#log=<payload>`. Only these paths run code.
-- `schema.sql` is the D1 schema; each environment has its own database.
+- `schema.sql` is the D1 schema; each environment has its own database. It only uses `IF NOT EXISTS`, so re-running it on an existing database adds anything new (such as the `idx_links_created_at` index the daily cap uses): `npx wrangler d1 execute <D1_NAME> --remote --file schema.sql`.
+- `public/_headers` adds security headers (`nosniff`, no framing, HSTS, Referrer-Policy) to every static file; `src/index.js` sets the same ones on the shortener's responses, which `_headers` doesn't reach. Each page sets its own Content-Security-Policy in a `<meta>` tag.
 
 Production (`jinteki-analyzer`, from `main`) serves jinteki.win; the test Worker (`jinteki-analyzer-test`) is an identical copy with its own database on its workers.dev URL.
 
@@ -72,7 +74,7 @@ The repo is public, so account details aren't committed. `wrangler.toml` is gene
 
 Build settings: root directory `/`, build command `node scripts/render-config.mjs`, deploy command `npx wrangler deploy`.
 
-Short links accept only this site's log payloads (never arbitrary URLs), are created only from the site's own origin, are rate-limited per IP, and identical logs reuse the same link. Stay on the Workers Free plan: if a daily limit is reached, requests fail until the reset instead of being billed, and the site falls back to the long share link.
+Short links accept only this site's log payloads (never arbitrary URLs), are created only from the site's own origin, are at most 32K characters (a long real game compresses to about 6K), are rate-limited per IP and capped at 1,000 new links a day site-wide (`DEFAULT_DAILY_CREATE_LIMIT` in `src/create.js`), and identical logs reuse the same link. Stay on the Workers Free plan: if a daily limit is reached, requests fail until the reset instead of being billed, and the site falls back to the long share link.
 
 ## Market Research
 
