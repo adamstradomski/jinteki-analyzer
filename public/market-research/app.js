@@ -203,6 +203,7 @@ function syncFilters() {
   if (state.to) $('f-to').value = state.to;
   sideToggle?.set(state.side);
   $('f-cut').setAttribute('aria-pressed', String(!!state.cut));
+  $('card-search').placeholder = `Type a ${state.side === 'corp' ? 'Corp' : 'Runner'} card name`;
   document.documentElement.style.setProperty('--mr-side', `var(--${state.side})`);
 }
 
@@ -683,7 +684,7 @@ function cardCombo(input, list, { find, onPick, clearOnPick = false }) {
 
 function setupSearch() {
   cardCombo($('card-search'), $('card-options'), {
-    find: (q) => D.searchCards(catalog, q, { limit: 8 }),
+    find: (q) => D.searchCards(catalog, q, { side: state.side, limit: 8 }), // only the selected side's cards
     onPick: (c) => openDetail(c.id),
   });
   // Trends: only cards played in the current view and not already charted.
