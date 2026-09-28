@@ -9,6 +9,7 @@
  "fetched_at": "2026-09-27T04:00:28Z",
  "format_id": 1,
  "id": 5012,
+ "name": "Fixture Tournament 108",
  "pairings": [
   {
    "elimination": false,
@@ -311,7 +312,7 @@
  ],
  "players_active": 8,
  "players_dropped": 0,
- "record_hash": "sha256:7c1200b24154b2a9797668a8d1a25af6c36c71b1376e9d092203fe637905b6ec",
+ "record_hash": "sha256:acfff52857790f75e45b1b53ea49a16ded1d081b382c6299f328dcec484ca4f7",
  "restriction_id": "standard_balance_update_26_08",
  "results_fetched": true,
  "schema": "cobra.tournament/1",

@@ -1,7 +1,7 @@
 [
  {
   "id": 5310,
-  "title": "PII_CANARY_TOURNAMENT_586",
+  "title": "Fixture Tournament 586",
   "contact": "PII_CANARY_CONTACT@example.invalid",
   "approved": 1,
   "registration_count": 8,
@@ -37,7 +37,7 @@
  },
  {
   "id": 5306,
-  "title": "PII_CANARY_TOURNAMENT_598",
+  "title": "Fixture Tournament 598",
   "contact": "PII_CANARY_CONTACT@example.invalid",
   "approved": 1,
   "registration_count": 6,
@@ -73,7 +73,7 @@
  },
  {
   "id": 5305,
-  "title": "PII_CANARY_TOURNAMENT_596",
+  "title": "Fixture Tournament 596",
   "contact": "PII_CANARY_CONTACT@example.invalid",
   "approved": 1,
   "registration_count": 12,
@@ -109,7 +109,7 @@
  },
  {
   "id": 5304,
-  "title": "PII_CANARY_TOURNAMENT_594",
+  "title": "Fixture Tournament 594",
   "contact": "PII_CANARY_CONTACT@example.invalid",
   "approved": 1,
   "registration_count": 10,
@@ -145,7 +145,7 @@
  },
  {
   "id": 5303,
-  "title": "PII_CANARY_TOURNAMENT_592",
+  "title": "Fixture Tournament 592",
   "contact": "PII_CANARY_CONTACT@example.invalid",
   "approved": 1,
   "registration_count": 14,
@@ -181,7 +181,7 @@
  },
  {
   "id": 5302,
-  "title": "PII_CANARY_TOURNAMENT_590",
+  "title": "Fixture Tournament 590",
   "contact": "PII_CANARY_CONTACT@example.invalid",
   "approved": null,
   "registration_count": 12,
@@ -217,7 +217,7 @@
  },
  {
   "id": 5301,
-  "title": "PII_CANARY_TOURNAMENT_588",
+  "title": "Fixture Tournament 588",
   "contact": "PII_CANARY_CONTACT@example.invalid",
   "approved": 1,
   "registration_count": 10,
@@ -253,7 +253,7 @@
  },
  {
   "id": 5284,
-  "title": "PII_CANARY_TOURNAMENT_584",
+  "title": "Fixture Tournament 584",
   "contact": "PII_CANARY_CONTACT@example.invalid",
   "approved": 1,
   "registration_count": 16,
@@ -290,7 +290,7 @@
  },
  {
   "id": 5250,
-  "title": "PII_CANARY_TOURNAMENT_600",
+  "title": "Fixture Tournament 600",
   "contact": "PII_CANARY_CONTACT@example.invalid",
   "approved": 1,
   "registration_count": 20,
@@ -326,7 +326,7 @@
  },
  {
   "id": 5240,
-  "title": "PII_CANARY_TOURNAMENT_602",
+  "title": "Fixture Tournament 602",
   "contact": "PII_CANARY_CONTACT@example.invalid",
   "approved": 1,
   "registration_count": 12,

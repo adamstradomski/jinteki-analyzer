@@ -10,6 +10,7 @@ import pytest
 
 from helpers import make_env
 from market_research.frontier import Frontier
+from market_research.records import CobraTournament, dump
 from market_research.runner import Runtime, backfill, default_since, format_plan, plan
 from market_research.testing import FixtureTransport, normalize_url
 
@@ -174,3 +175,16 @@ def test_longer_backfill_after_shorter_one_discovers_older_events(tmp_path, cloc
     backfill(rt(long_only), SINCE)
     assert _known_events(short) == _known_events(long_only)
     assert _known_events(long_only) > after_short
+
+
+def test_backfill_fills_in_missing_cobra_names(tmp_path, clock):
+    # Tournaments stored before names were kept get theirs on the next backfill's index read.
+    env = make_env(tmp_path, clock)
+    backfill(rt(env), SINCE)
+    key = "cobra/tournament/4990.json"
+    stored = CobraTournament.model_validate(json.loads(env.stores.source.get(key)))
+    name = stored.name
+    # As collected before names were kept: no name, and a hash computed without one.
+    env.stores.source.put_json(key, dump(stored.model_copy(update={"name": None}).hashed()))
+    backfill(rt(env), SINCE)
+    assert json.loads(env.stores.source.get(key))["name"] == name

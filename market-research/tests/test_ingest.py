@@ -202,3 +202,11 @@ def test_abr_string_null_identity_is_missing():
     assert opt_printing("34096") == "34096"
     with pytest.raises(ParseError):
         opt_printing("nul")
+
+
+def test_event_names_are_cleaned():
+    from market_research.sources.common import opt_title
+
+    assert opt_title("  Worlds\n2026\t Top Cut ") == "Worlds 2026 Top Cut"
+    assert opt_title("x" * 200) == "x" * 120
+    assert opt_title("   ") is None and opt_title(None) is None

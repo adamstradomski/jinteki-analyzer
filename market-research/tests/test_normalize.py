@@ -529,3 +529,11 @@ def test_ban_list_follows_the_decks(fixture_run):
     n2.catalog.check_deck = one_bad  # type: ignore[method-assign]
     n2.run()
     assert n2.q.restriction_overrides == []
+
+
+def test_tournaments_keep_public_names_and_swiss_format(fixture_run):
+    _, _, data, _ = fixture_run
+    t = {r["tid"]: r for r in data.rows["tournament"]}
+    assert all(r["name"] and r["name"].startswith("Fixture Tournament ") for r in t.values())
+    assert t["c4990"]["swiss_format"] in ("single_sided", "double_sided")
+    assert all(r["swiss_format"] is None for tid, r in t.items() if tid.startswith("a"))

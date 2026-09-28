@@ -4,7 +4,7 @@
    "id": "5025",
    "type": "tournaments",
    "attributes": {
-    "name": "PII_CANARY_TOURNAMENT_92",
+    "name": "Fixture Tournament 92",
     "slug": "PII_CANARY_SLUG",
     "abr_code": null,
     "private": false,
@@ -57,7 +57,7 @@
    "id": "5021",
    "type": "tournaments",
    "attributes": {
-    "name": "PII_CANARY_TOURNAMENT_96",
+    "name": "Fixture Tournament 96",
     "slug": "PII_CANARY_SLUG",
     "abr_code": null,
     "private": true,
@@ -110,7 +110,7 @@
    "id": "5020",
    "type": "tournaments",
    "attributes": {
-    "name": "PII_CANARY_TOURNAMENT_100",
+    "name": "Fixture Tournament 100",
     "slug": "PII_CANARY_SLUG",
     "abr_code": null,
     "private": false,
@@ -163,7 +163,7 @@
    "id": "5015",
    "type": "tournaments",
    "attributes": {
-    "name": "PII_CANARY_TOURNAMENT_104",
+    "name": "Fixture Tournament 104",
     "slug": "PII_CANARY_SLUG",
     "abr_code": null,
     "private": false,

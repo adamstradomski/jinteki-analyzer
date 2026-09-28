@@ -97,6 +97,14 @@ def opt_printing(value: object) -> str | None:
     return s
 
 
+def opt_title(value: object) -> str | None:
+    """A public event name: control characters removed, whitespace collapsed, at most 120 characters."""
+    if value is None:
+        return None
+    s = " ".join("".join(ch if ch.isprintable() else " " for ch in str(value)).split())
+    return s[:120] or None
+
+
 def opt_slug(value: object) -> str | None:
     if value is None or value == "":
         return None

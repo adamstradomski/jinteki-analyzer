@@ -102,6 +102,7 @@ class CobraTournament(Record):
     fetched_at: str
     record_hash: str = ""
     abr_code: str | None = None
+    name: str | None = None  # the event's public name
     date: str
     type_id: int | None = None
     format_id: int | None = None
@@ -172,6 +173,7 @@ class AbrTournament(Record):
     record_hash: str = ""
     date: str
     end_date: str | None = None  # last day of a multi-day event; None for one-day events
+    title: str | None = None  # the event's public name
     type_id: str | None = None
     format: str | None = None
     cardpool: str | None = None

@@ -9,6 +9,7 @@
  "fetched_at": "2026-09-27T04:00:28Z",
  "format_id": 1,
  "id": 4990,
+ "name": "Fixture Tournament 112",
  "pairings": [
   {
    "elimination": false,
@@ -1087,7 +1088,7 @@
  ],
  "players_active": 16,
  "players_dropped": 0,
- "record_hash": "sha256:e915dad0834f87e309ea81b942c97f400cc75c5c6d59b25ac4a3ea4f57f05e56",
+ "record_hash": "sha256:467567cb2ddc539e55d149e55556a94e596f8c25fdeebcc1a689a030f0a44a2d",
  "restriction_id": "standard_balance_update_26_08",
  "results_fetched": true,
  "schema": "cobra.tournament/1",

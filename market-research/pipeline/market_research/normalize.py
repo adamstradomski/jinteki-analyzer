@@ -47,6 +47,7 @@ TABLES: dict[str, list[tuple[str, str]]] = {
         ("tier", "VARCHAR"), ("format", "VARCHAR"), ("restriction_id", "VARCHAR"), ("card_set", "VARCHAR"),
         ("country", "VARCHAR"), ("online", "BOOLEAN"), ("players", "INTEGER"), ("cut_size", "INTEGER"),
         ("has_games", "BOOLEAN"), ("deck_visibility", "VARCHAR"), ("decklist_coverage", "DOUBLE"),
+        ("name", "VARCHAR"), ("swiss_format", "VARCHAR"),
     ],
     "entry": [
         ("tid", "VARCHAR"), ("entry_no", "INTEGER"), ("cut_rank", "INTEGER"), ("made_cut", "BOOLEAN"),
@@ -503,6 +504,8 @@ class Normalizer:
         players: int,
         cut_size: int,
         visibility: str,
+        name: str | None = None,
+        swiss_format: str | None = None,
     ) -> dict[str, Any]:
         online = tier == "online" and (
             (abr is not None and str(abr.type_id or "").lower() in self.tiers.online_abr_types)
@@ -525,6 +528,8 @@ class Normalizer:
             "has_games": False,
             "deck_visibility": visibility,
             "decklist_coverage": 0.0,
+            "name": name,
+            "swiss_format": swiss_format,
         }
 
     def build_cobra(
@@ -545,6 +550,8 @@ class Normalizer:
             players=len(t.players),
             cut_size=cut_size,
             visibility=f"swiss:{t.deck_visibility.swiss},cut:{t.deck_visibility.cut}",
+            name=t.name or (a.title if a else None),
+            swiss_format=t.swiss_format,
         )
         abr_by_rank = {e.swiss_rank: e for e in self.abr_e[a.id].entries} if a and a.id in self.abr_e else {}
         pid_entry: dict[int, int] = {}
@@ -652,6 +659,7 @@ class Normalizer:
             players=a.players_count,
             cut_size=a.top_count,
             visibility="n/a",
+            name=a.title,
         )
         trow["decklist_coverage"] = round(decks_found / (2 * n), 6) if n else 0.0
         out.rows["tournament"].append(trow)

@@ -29,7 +29,6 @@ def test_fixtures_contain_canaries():
         "PII_CANARY_ADDRESS",
         "PII_CANARY_CONTACT",
         "PII_CANARY_DESCRIPTION",
-        "PII_CANARY_TOURNAMENT",
     ):
         assert c.encode() in raw, c
 
@@ -81,7 +80,7 @@ def test_records_are_allowlisted():
     with pytest.raises(ValueError):
         NrdbDecklist(id="1", cards=[], name="x")  # type: ignore[call-arg]
     with pytest.raises(ValueError):
-        AbrTournament(id=1, fetched_at="t", date="2026-01-01", title="x")  # type: ignore[call-arg]
+        AbrTournament(id=1, fetched_at="t", date="2026-01-01", creator_name="x")  # type: ignore[call-arg]
 
 
 def test_record_hash_ignores_fetch_time_and_dropped_fields():
@@ -93,13 +92,12 @@ def test_record_hash_ignores_fetch_time_and_dropped_fields():
         "approved": 1,
         "concluded": True,
         "players_count": 10,
-        "title": "PII_CANARY_TOURNAMENT_A",
+        "title": "Fixture Cup",  # public event names are kept
         "creator_name": "PII_CANARY_NAME_A",
     }
     a = abr.parse_event(ev, q, "2026-09-01T00:00:00Z")
-    b = abr.parse_event(
-        dict(ev, title="PII_CANARY_TOURNAMENT_B", creator_name="PII_CANARY_NAME_B"), q, "2026-09-27T00:00:00Z"
-    )
+    b = abr.parse_event(dict(ev, creator_name="PII_CANARY_NAME_B"), q, "2026-09-27T00:00:00Z")
+    assert a.title == "Fixture Cup"
     assert a.record_hash == b.record_hash
     assert a.record_hash.startswith("sha256:") and len(a.record_hash) == 71
     assert CANARY not in json.dumps(a.model_dump(mode="json"))

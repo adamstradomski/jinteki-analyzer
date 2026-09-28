@@ -43,6 +43,11 @@ routes: list[dict[str, Any]] = []
 canary_n = 0
 
 
+def public_name() -> str:
+    """Tournament names are public and stored; they use the canary counter but are not canaries."""
+    return canary("TOURNAMENT").replace("PII_CANARY_TOURNAMENT_", "Fixture Tournament ")
+
+
 def canary(kind: str) -> str:
     global canary_n
     canary_n += 1
@@ -729,7 +734,7 @@ def cobra_tournament_attrs(
     stage: str = "double_elim",
 ) -> dict[str, Any]:
     return {
-        "name": canary("TOURNAMENT"),
+        "name": public_name(),
         "slug": "PII_CANARY_SLUG",
         "abr_code": abr_code,
         "private": private,
@@ -896,7 +901,7 @@ def abr_event(
 ) -> dict[str, Any]:
     ev = {
         "id": eid,
-        "title": canary("TOURNAMENT"),
+        "title": public_name(),
         "contact": "PII_CANARY_CONTACT@example.invalid",
         "approved": approved,
         "registration_count": players,
@@ -1073,7 +1078,7 @@ def main() -> None:
     elim4990 = run_de4(rng, ranked[:4])
     add_route(
         f"{cobra}/tournaments/4990.json",
-        jdump(nrtm(canary("TOURNAMENT"), d4990, p4990, rounds4990, elim4990, ranked[:4], cd)),
+        jdump(nrtm(public_name(), d4990, p4990, rounds4990, elim4990, ranked[:4], cd)),
         headers={"ETag": 'W/"nrtm-4990-v1"'},
     )
     deck_pages: list[tuple[int, Player, dict[str, Any] | None, dict[str, Any] | None]] = []
@@ -1087,7 +1092,7 @@ def main() -> None:
     standings(p5012)
     add_route(
         f"{cobra}/tournaments/5012.json",
-        jdump(nrtm(canary("TOURNAMENT"), d5012, p5012, rounds5012, [], [], cd)),
+        jdump(nrtm(public_name(), d5012, p5012, rounds5012, [], [], cd)),
         headers={"ETag": 'W/"nrtm-5012-v1"'},
     )
 
@@ -1098,7 +1103,7 @@ def main() -> None:
     standings(p5015)
     add_route(
         f"{cobra}/tournaments/5015.json",
-        jdump(nrtm(canary("TOURNAMENT"), d5015, p5015, rounds5015, [], [], cd)),
+        jdump(nrtm(public_name(), d5015, p5015, rounds5015, [], [], cd)),
         headers={"ETag": 'W/"nrtm-5015-v1"'},
     )
     for p in p5015:
