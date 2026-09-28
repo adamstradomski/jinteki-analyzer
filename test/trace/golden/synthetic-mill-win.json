@@ -1,0 +1,293 @@
+{
+ "achievements": {
+  "Corp": [],
+  "Runner": [
+   "A Diesel a Day",
+   "Keyhole",
+   "Apocalypse"
+  ]
+ },
+ "parseLog": {
+  "advanceClicks": {},
+  "agendaEvents": [],
+  "agendaSeqSeries": {
+   "Corp": [
+    0,
+    0,
+    0,
+    0
+   ],
+   "Runner": [
+    0,
+    0,
+    0,
+    0
+   ]
+  },
+  "agendaSeries": {
+   "Corp": [
+    0,
+    0,
+    0
+   ],
+   "Runner": [
+    0,
+    0,
+    0
+   ]
+  },
+  "breachCounts": {},
+  "cardsAccessed": {},
+  "cardsDrawnSeqSeries": {
+   "Corp": [
+    0,
+    1,
+    1,
+    1
+   ],
+   "Runner": [
+    0,
+    0,
+    0,
+    0
+   ]
+  },
+  "cardsDrawnSeries": {
+   "Corp": [
+    0,
+    1,
+    1
+   ],
+   "Runner": [
+    0,
+    0,
+    0
+   ]
+  },
+  "cardsRezzed": {},
+  "chatBadges": {},
+  "clickCredits": {
+   "Runner": {
+    "count": 1,
+    "gained": 1
+   }
+  },
+  "clicksGained": {},
+  "concededPlayer": null,
+  "creditPoolSeqSeries": {
+   "Corp": [
+    5,
+    5,
+    5,
+    5
+   ],
+   "Runner": [
+    5,
+    5,
+    6,
+    6
+   ]
+  },
+  "creditPoolSeries": {
+   "Corp": [
+    5,
+    5,
+    5
+   ],
+   "Runner": [
+    5,
+    5,
+    5
+   ]
+  },
+  "creditsGainedSeries": {
+   "Corp": [
+    0,
+    0,
+    0
+   ],
+   "Runner": [
+    0,
+    1,
+    0
+   ]
+  },
+  "creditsNetSeqSeries": {
+   "Corp": [
+    0,
+    0,
+    0,
+    0
+   ],
+   "Runner": [
+    0,
+    0,
+    1,
+    0
+   ]
+  },
+  "creditsNetSeries": {
+   "Corp": [
+    0,
+    0,
+    0
+   ],
+   "Runner": [
+    0,
+    1,
+    0
+   ]
+  },
+  "damageTaken": {},
+  "deckedPlayer": "Corp",
+  "drawClicks": {
+   "Corp": 1
+  },
+  "eventsPlayed": {},
+  "finalCreditPool": {
+   "Corp": 5,
+   "Runner": 6
+  },
+  "finalScore": {
+   "Corp": 0,
+   "Runner": 0
+  },
+  "flagged": [],
+  "flatlinedPlayer": null,
+  "handSizeSeqSeries": {
+   "Corp": [
+    5,
+    5,
+    5,
+    5
+   ],
+   "Runner": [
+    5,
+    5,
+    5,
+    5
+   ]
+  },
+  "handSizeSeries": {
+   "Corp": [
+    5,
+    5,
+    5
+   ],
+   "Runner": [
+    5,
+    5,
+    5
+   ]
+  },
+  "installClicks": {},
+  "installedRows": [],
+  "maxTurn": {
+   "Corp": 2,
+   "Runner": 1
+  },
+  "mulligans": [],
+  "opposingTrashes": {},
+  "opsRows": [],
+  "playerCountError": null,
+  "playerSide": {
+   "Corp": "corp",
+   "Runner": "runner"
+  },
+  "players": [
+   "Corp",
+   "Runner"
+  ],
+  "poolSegments": {
+   "Corp": [
+    {
+     "end": 5,
+     "endLine": 2,
+     "expected": 5,
+     "fromKind": "start",
+     "fromTurn": 1,
+     "ok": true,
+     "start": 5,
+     "startLine": 0,
+     "values": []
+    },
+    {
+     "end": 5,
+     "endLine": 7,
+     "expected": 5,
+     "fromKind": "end",
+     "fromTurn": 1,
+     "ok": true,
+     "start": 5,
+     "startLine": 2,
+     "values": []
+    },
+    {
+     "end": null,
+     "endLine": null,
+     "expected": null,
+     "fromKind": "start",
+     "fromTurn": 2,
+     "ok": null,
+     "start": 5,
+     "startLine": 7,
+     "values": []
+    }
+   ],
+   "Runner": [
+    {
+     "end": 6,
+     "endLine": 6,
+     "expected": 6,
+     "fromKind": "start",
+     "fromTurn": 1,
+     "ok": true,
+     "start": 5,
+     "startLine": 4,
+     "values": [
+      6
+     ]
+    },
+    {
+     "end": null,
+     "endLine": null,
+     "expected": null,
+     "fromKind": "end",
+     "fromTurn": 1,
+     "ok": null,
+     "start": 6,
+     "startLine": 6,
+     "values": []
+    }
+   ]
+  },
+  "purgeClicks": {},
+  "rounds": 2,
+  "runsMade": {},
+  "seqAxisLabels": [
+   "",
+   "C1",
+   "R1",
+   "C2"
+  ],
+  "tagRemovals": {},
+  "tagsGained": {
+   "Runner": 0
+  },
+  "tagsGiven": {
+   "Corp": 0
+  },
+  "totalDraws": {
+   "Corp": 1
+  },
+  "totalGained": {
+   "Runner": 1
+  },
+  "totalSeq": 3,
+  "totalSpent": {},
+  "trashResources": {},
+  "undos": [],
+  "winReason": "decked",
+  "winner": "Runner"
+ }
+}

@@ -1,0 +1,3575 @@
+{
+ "achievements": {
+  "Corp": [],
+  "Runner": []
+ },
+ "parseLog": {
+  "advanceClicks": {
+   "Corp": {
+    "cost": 13,
+    "count": 13
+   }
+  },
+  "agendaEvents": [
+   {
+    "player": "Corp",
+    "points": 1,
+    "seq": 11,
+    "turn": 6
+   },
+   {
+    "player": "Corp",
+    "points": 3,
+    "seq": 11,
+    "turn": 6
+   },
+   {
+    "player": "Runner",
+    "points": 3,
+    "seq": 28,
+    "turn": 14
+   },
+   {
+    "player": "Runner",
+    "points": 1,
+    "seq": 32,
+    "turn": 16
+   },
+   {
+    "player": "Runner",
+    "points": 2,
+    "seq": 42,
+    "turn": 21
+   },
+   {
+    "player": "Corp",
+    "points": 2,
+    "seq": 43,
+    "turn": 22
+   },
+   {
+    "player": "Corp",
+    "points": 1,
+    "seq": 49,
+    "turn": 25
+   }
+  ],
+  "agendaSeqSeries": {
+   "Corp": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    6,
+    6,
+    6,
+    6,
+    6,
+    6,
+    7
+   ],
+   "Runner": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    3,
+    3,
+    3,
+    3,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    6,
+    6,
+    6,
+    6,
+    6,
+    6,
+    6,
+    6
+   ]
+  },
+  "agendaSeries": {
+   "Corp": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    6,
+    6,
+    6,
+    7
+   ],
+   "Runner": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    3,
+    3,
+    4,
+    4,
+    4,
+    4,
+    4,
+    6,
+    6,
+    6,
+    6,
+    6
+   ]
+  },
+  "breachCounts": {
+   "Runner": {
+    "Archives": 3,
+    "HQ": 3,
+    "RD": 6,
+    "remote": 0
+   }
+  },
+  "cardsAccessed": {
+   "Runner": {
+    "Archives": 6,
+    "HQ": 7,
+    "RD": 6,
+    "remote": 5
+   }
+  },
+  "cardsDrawnSeqSeries": {
+   "Corp": [
+    0,
+    1,
+    1,
+    3,
+    3,
+    6,
+    6,
+    8,
+    8,
+    11,
+    11,
+    12,
+    12,
+    13,
+    15,
+    16,
+    16,
+    17,
+    17,
+    18,
+    18,
+    19,
+    19,
+    21,
+    21,
+    23,
+    23,
+    24,
+    24,
+    25,
+    25,
+    26,
+    26,
+    27,
+    29,
+    30,
+    30,
+    31,
+    31,
+    32,
+    32,
+    33,
+    33,
+    34,
+    34,
+    35,
+    37,
+    38,
+    38,
+    39
+   ],
+   "Runner": [
+    0,
+    0,
+    2,
+    2,
+    3,
+    3,
+    6,
+    6,
+    7,
+    7,
+    9,
+    9,
+    11,
+    11,
+    12,
+    12,
+    13,
+    13,
+    16,
+    16,
+    18,
+    18,
+    23,
+    23,
+    23,
+    23,
+    24,
+    24,
+    26,
+    26,
+    29,
+    29,
+    30,
+    30,
+    33,
+    33,
+    36,
+    36,
+    38,
+    38,
+    39,
+    39,
+    40,
+    40,
+    40,
+    40,
+    40,
+    40,
+    40,
+    40
+   ]
+  },
+  "cardsDrawnSeries": {
+   "Corp": [
+    0,
+    1,
+    3,
+    6,
+    8,
+    11,
+    12,
+    15,
+    16,
+    17,
+    18,
+    19,
+    21,
+    23,
+    24,
+    25,
+    26,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    37,
+    38,
+    39
+   ],
+   "Runner": [
+    0,
+    2,
+    3,
+    6,
+    7,
+    9,
+    11,
+    12,
+    13,
+    16,
+    18,
+    23,
+    23,
+    24,
+    26,
+    29,
+    30,
+    33,
+    36,
+    38,
+    39,
+    40,
+    40,
+    40,
+    40,
+    40
+   ]
+  },
+  "cardsRezzed": {
+   "Corp": 15
+  },
+  "chatBadges": {
+   "Corp": {
+    "gg": false,
+    "glhf": true,
+    "kurwa": false,
+    "savedReplay": false,
+    "ty": true
+   },
+   "Runner": {
+    "gg": true,
+    "glhf": true,
+    "kurwa": false,
+    "savedReplay": true,
+    "ty": false
+   }
+  },
+  "clickCredits": {
+   "Corp": {
+    "count": 27,
+    "gained": 27
+   },
+   "Runner": {
+    "count": 16,
+    "gained": 16
+   }
+  },
+  "clicksGained": {},
+  "concededPlayer": null,
+  "creditPoolSeqSeries": {
+   "Corp": [
+    5,
+    11,
+    11,
+    12,
+    6,
+    7,
+    7,
+    9,
+    11,
+    12,
+    12,
+    10,
+    10,
+    9,
+    1,
+    4,
+    4,
+    5,
+    5,
+    6,
+    6,
+    8,
+    8,
+    10,
+    10,
+    10,
+    7,
+    10,
+    0,
+    1,
+    4,
+    7,
+    1,
+    4,
+    4,
+    7,
+    1,
+    4,
+    1,
+    3,
+    3,
+    10,
+    10,
+    8,
+    8,
+    15,
+    15,
+    11,
+    11,
+    8
+   ],
+   "Runner": [
+    5,
+    5,
+    6,
+    6,
+    6,
+    6,
+    5,
+    5,
+    6,
+    6,
+    7,
+    7,
+    6,
+    6,
+    5,
+    5,
+    8,
+    8,
+    8,
+    8,
+    6,
+    6,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    0,
+    0,
+    7,
+    7,
+    1,
+    1,
+    8,
+    8,
+    8,
+    8,
+    2,
+    2,
+    6,
+    6,
+    3,
+    3,
+    7,
+    7,
+    9,
+    1,
+    2,
+    2
+   ]
+  },
+  "creditPoolSeries": {
+   "Corp": [
+    5,
+    5,
+    11,
+    6,
+    7,
+    11,
+    12,
+    10,
+    1,
+    4,
+    5,
+    6,
+    8,
+    10,
+    7,
+    0,
+    4,
+    1,
+    4,
+    1,
+    1,
+    3,
+    10,
+    8,
+    15,
+    11
+   ],
+   "Runner": [
+    5,
+    5,
+    6,
+    6,
+    5,
+    6,
+    7,
+    6,
+    5,
+    8,
+    8,
+    6,
+    10,
+    10,
+    10,
+    0,
+    7,
+    1,
+    8,
+    8,
+    2,
+    6,
+    3,
+    7,
+    1,
+    1
+   ]
+  },
+  "creditsGainedSeries": {
+   "Corp": [
+    0,
+    11,
+    1,
+    1,
+    6,
+    2,
+    1,
+    4,
+    3,
+    2,
+    3,
+    3,
+    2,
+    4,
+    3,
+    5,
+    3,
+    3,
+    3,
+    3,
+    3,
+    12,
+    1,
+    12,
+    1,
+    0
+   ],
+   "Runner": [
+    0,
+    6,
+    16,
+    0,
+    9,
+    1,
+    1,
+    7,
+    8,
+    0,
+    0,
+    9,
+    7,
+    3,
+    9,
+    7,
+    1,
+    7,
+    10,
+    16,
+    4,
+    2,
+    4,
+    4,
+    4,
+    0
+   ]
+  },
+  "creditsNetSeqSeries": {
+   "Corp": [
+    0,
+    6,
+    0,
+    1,
+    -6,
+    1,
+    0,
+    2,
+    2,
+    1,
+    0,
+    -2,
+    0,
+    -1,
+    -8,
+    3,
+    0,
+    1,
+    0,
+    1,
+    0,
+    2,
+    0,
+    2,
+    0,
+    0,
+    -3,
+    3,
+    -10,
+    1,
+    3,
+    3,
+    -6,
+    3,
+    0,
+    3,
+    -6,
+    3,
+    -3,
+    2,
+    0,
+    7,
+    0,
+    -2,
+    0,
+    7,
+    0,
+    -4,
+    0,
+    -3
+   ],
+   "Runner": [
+    0,
+    0,
+    1,
+    0,
+    0,
+    0,
+    -1,
+    0,
+    1,
+    0,
+    1,
+    0,
+    -1,
+    0,
+    -1,
+    0,
+    3,
+    0,
+    0,
+    0,
+    -2,
+    0,
+    4,
+    0,
+    0,
+    0,
+    0,
+    0,
+    -10,
+    0,
+    7,
+    0,
+    -6,
+    0,
+    7,
+    0,
+    0,
+    0,
+    -6,
+    0,
+    4,
+    0,
+    -3,
+    0,
+    4,
+    0,
+    2,
+    -8,
+    1,
+    0
+   ]
+  },
+  "creditsNetSeries": {
+   "Corp": [
+    0,
+    6,
+    -5,
+    1,
+    4,
+    1,
+    -2,
+    -9,
+    3,
+    1,
+    1,
+    2,
+    2,
+    -3,
+    -7,
+    4,
+    -3,
+    3,
+    -3,
+    0,
+    2,
+    7,
+    -2,
+    7,
+    -4,
+    -3
+   ],
+   "Runner": [
+    0,
+    1,
+    0,
+    -1,
+    1,
+    1,
+    -1,
+    -1,
+    3,
+    0,
+    -2,
+    4,
+    0,
+    0,
+    -10,
+    7,
+    -6,
+    7,
+    0,
+    -6,
+    4,
+    -3,
+    4,
+    -6,
+    1,
+    0
+   ]
+  },
+  "damageTaken": {
+   "Runner": 9
+  },
+  "deckedPlayer": null,
+  "drawClicks": {
+   "Corp": 6,
+   "Runner": 27
+  },
+  "eventsPlayed": {
+   "Corp": 6,
+   "Runner": 13
+  },
+  "finalCreditPool": {
+   "Corp": 8,
+   "Runner": 2
+  },
+  "finalScore": {
+   "Corp": 7,
+   "Runner": 6
+  },
+  "flagged": [
+   {
+    "line": "Runner sets credit to 9 (+1).",
+    "reason": "Manual credit adjustment (Runner) — set to 9 with the /credit command; applied to the credit pool and totals"
+   },
+   {
+    "line": "Runner sets credit to 10 (+1).",
+    "reason": "Manual credit adjustment (Runner) — set to 10 with the /credit command; applied to the credit pool and totals"
+   }
+  ],
+  "flatlinedPlayer": null,
+  "handSizeSeqSeries": {
+   "Corp": [
+    5,
+    5,
+    5,
+    2,
+    2,
+    3,
+    3,
+    5,
+    5,
+    5,
+    5,
+    5,
+    5,
+    5,
+    5,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    5,
+    5,
+    5,
+    5,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    5,
+    5,
+    5,
+    5,
+    4,
+    4,
+    5,
+    5,
+    5,
+    5,
+    5,
+    5,
+    5,
+    5,
+    4
+   ],
+   "Runner": [
+    5,
+    5,
+    5,
+    5,
+    5,
+    5,
+    3,
+    3,
+    5,
+    5,
+    4,
+    4,
+    5,
+    5,
+    5,
+    5,
+    4,
+    4,
+    3,
+    3,
+    5,
+    5,
+    5,
+    5,
+    8,
+    8,
+    5,
+    5,
+    4,
+    4,
+    3,
+    3,
+    5,
+    5,
+    4,
+    4,
+    5,
+    5,
+    2,
+    2,
+    3,
+    3,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    3,
+    3
+   ]
+  },
+  "handSizeSeries": {
+   "Corp": [
+    5,
+    5,
+    2,
+    3,
+    5,
+    5,
+    5,
+    5,
+    4,
+    4,
+    4,
+    4,
+    4,
+    5,
+    5,
+    3,
+    3,
+    3,
+    5,
+    5,
+    4,
+    5,
+    5,
+    5,
+    5,
+    4
+   ],
+   "Runner": [
+    5,
+    5,
+    5,
+    3,
+    5,
+    4,
+    5,
+    5,
+    4,
+    3,
+    5,
+    5,
+    8,
+    5,
+    4,
+    3,
+    5,
+    4,
+    5,
+    2,
+    3,
+    4,
+    4,
+    4,
+    3,
+    3
+   ]
+  },
+  "installClicks": {
+   "Corp": 23,
+   "Runner": 18
+  },
+  "installedRows": [
+   {
+    "cost": 0,
+    "events": 23,
+    "gained": 23,
+    "instanceIndex": null,
+    "name": "Jinteki: Restoring Humanity",
+    "net": 23,
+    "player": "Corp",
+    "triggerLog": [
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 1
+     },
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 2
+     },
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 3
+     },
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 4
+     },
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 5
+     },
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 6
+     },
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 7
+     },
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 8
+     },
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 9
+     },
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 10
+     },
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 11
+     },
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 12
+     },
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 13
+     },
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 14
+     },
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 15
+     },
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 16
+     },
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 17
+     },
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 18
+     },
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 19
+     },
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 20
+     },
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 21
+     },
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 22
+     },
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 23
+     }
+    ],
+    "turnInstalled": 1,
+    "turnLeftDisplay": "-",
+    "turnsInPlay": 25
+   },
+   {
+    "cost": 2,
+    "events": 0,
+    "gained": 0,
+    "instanceIndex": null,
+    "name": "Revolver",
+    "net": -2,
+    "player": "Runner",
+    "triggerLog": [],
+    "turnInstalled": 1,
+    "turnLeftDisplay": "-",
+    "turnsInPlay": 24
+   },
+   {
+    "cost": 6,
+    "events": 0,
+    "gained": 0,
+    "instanceIndex": 1,
+    "name": "Attini",
+    "net": -6,
+    "player": "Corp",
+    "triggerLog": [],
+    "turnInstalled": 2,
+    "turnLeftDisplay": "-",
+    "turnsInPlay": 24
+   },
+   {
+    "cost": 1,
+    "events": 6,
+    "gained": 11,
+    "instanceIndex": null,
+    "name": "Mystic Maemi",
+    "net": 10,
+    "player": "Runner",
+    "triggerLog": [
+     {
+      "amount": 2,
+      "kind": "credit",
+      "turn": 4
+     },
+     {
+      "amount": 3,
+      "kind": "credit",
+      "turn": 7
+     },
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 8
+     },
+     {
+      "amount": 3,
+      "kind": "credit",
+      "turn": 11
+     },
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 12
+     },
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 13
+     }
+    ],
+    "turnInstalled": 2,
+    "turnLeftDisplay": 15,
+    "turnsInPlay": 14
+   },
+   {
+    "cost": 1,
+    "events": 9,
+    "gained": 10,
+    "instanceIndex": null,
+    "name": "Paladin Poemu",
+    "net": 9,
+    "player": "Runner",
+    "triggerLog": [
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 4
+     },
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 5
+     },
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 6
+     },
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 8
+     },
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 9
+     },
+     {
+      "amount": 2,
+      "kind": "credit",
+      "turn": 10
+     },
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 12
+     },
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 13
+     },
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 15
+     }
+    ],
+    "turnInstalled": 3,
+    "turnLeftDisplay": 17,
+    "turnsInPlay": 15
+   },
+   {
+    "cost": 4,
+    "events": 0,
+    "gained": 0,
+    "instanceIndex": null,
+    "name": "Curupira",
+    "net": -4,
+    "player": "Runner",
+    "triggerLog": [],
+    "turnInstalled": 4,
+    "turnLeftDisplay": "-",
+    "turnsInPlay": 21
+   },
+   {
+    "cost": 2,
+    "events": 1,
+    "gained": 4,
+    "instanceIndex": null,
+    "name": "Tatu-Bola",
+    "net": 2,
+    "player": "Corp",
+    "triggerLog": [
+     {
+      "amount": 4,
+      "kind": "credit",
+      "turn": 4
+     }
+    ],
+    "turnInstalled": 4,
+    "turnLeftDisplay": "-",
+    "turnsInPlay": 22
+   },
+   {
+    "cost": 0,
+    "events": 1,
+    "gained": 0,
+    "instanceIndex": 1,
+    "name": "Spin Doctor",
+    "net": 0,
+    "player": "Corp",
+    "triggerLog": [
+     {
+      "amount": 2,
+      "kind": "draw",
+      "turn": 5
+     }
+    ],
+    "turnInstalled": 5,
+    "turnLeftDisplay": 11,
+    "turnsInPlay": 7
+   },
+   {
+    "cost": 1,
+    "events": 0,
+    "gained": 0,
+    "instanceIndex": null,
+    "name": "Docklands Pass",
+    "net": -1,
+    "player": "Runner",
+    "triggerLog": [],
+    "turnInstalled": 5,
+    "turnLeftDisplay": "-",
+    "turnsInPlay": 20
+   },
+   {
+    "cost": 6,
+    "events": 0,
+    "gained": 0,
+    "instanceIndex": null,
+    "name": "Unity",
+    "net": -6,
+    "player": "Runner",
+    "triggerLog": [],
+    "turnInstalled": 6,
+    "turnLeftDisplay": "-",
+    "turnsInPlay": 19
+   },
+   {
+    "cost": 4,
+    "events": 0,
+    "gained": 0,
+    "instanceIndex": null,
+    "name": "Phoneutria",
+    "net": -4,
+    "player": "Corp",
+    "triggerLog": [],
+    "turnInstalled": 7,
+    "turnLeftDisplay": "-",
+    "turnsInPlay": 19
+   },
+   {
+    "cost": 0,
+    "events": 1,
+    "gained": 3,
+    "instanceIndex": 1,
+    "name": "Charlotte Caçador",
+    "net": 3,
+    "player": "Corp",
+    "triggerLog": [
+     {
+      "amount": 3,
+      "kind": "credit",
+      "turn": 7
+     }
+    ],
+    "turnInstalled": 7,
+    "turnLeftDisplay": 7,
+    "turnsInPlay": 1
+   },
+   {
+    "cost": 7,
+    "events": 1,
+    "gained": 0,
+    "instanceIndex": null,
+    "name": "Empiricist",
+    "net": -7,
+    "player": "Corp",
+    "triggerLog": [
+     {
+      "amount": 1,
+      "kind": "draw",
+      "turn": 7
+     }
+    ],
+    "turnInstalled": 7,
+    "turnLeftDisplay": "-",
+    "turnsInPlay": 19
+   },
+   {
+    "cost": 2,
+    "events": 0,
+    "gained": 0,
+    "instanceIndex": null,
+    "name": "Cupellation",
+    "net": -2,
+    "player": "Runner",
+    "triggerLog": [],
+    "turnInstalled": 8,
+    "turnLeftDisplay": 19,
+    "turnsInPlay": 12
+   },
+   {
+    "cost": 1,
+    "events": 2,
+    "gained": 6,
+    "instanceIndex": 1,
+    "name": "Side Hustle",
+    "net": 5,
+    "player": "Runner",
+    "triggerLog": [
+     {
+      "amount": 6,
+      "kind": "credit",
+      "turn": 14
+     },
+     {
+      "amount": 1,
+      "kind": "draw",
+      "turn": 14
+     }
+    ],
+    "turnInstalled": 9,
+    "turnLeftDisplay": 14,
+    "turnsInPlay": 6
+   },
+   {
+    "cost": 2,
+    "events": 7,
+    "gained": 19,
+    "instanceIndex": null,
+    "name": "Pennyshaver",
+    "net": 17,
+    "player": "Runner",
+    "triggerLog": [
+     {
+      "amount": 3,
+      "kind": "credit",
+      "turn": 13
+     },
+     {
+      "amount": 5,
+      "kind": "credit",
+      "turn": 17
+     },
+     {
+      "amount": 3,
+      "kind": "credit",
+      "turn": 18
+     },
+     {
+      "amount": 2,
+      "kind": "credit",
+      "turn": 20
+     },
+     {
+      "amount": 2,
+      "kind": "credit",
+      "turn": 21
+     },
+     {
+      "amount": 2,
+      "kind": "credit",
+      "turn": 23
+     },
+     {
+      "amount": 2,
+      "kind": "credit",
+      "turn": 24
+     }
+    ],
+    "turnInstalled": 10,
+    "turnLeftDisplay": "-",
+    "turnsInPlay": 15
+   },
+   {
+    "cost": 2,
+    "events": 6,
+    "gained": 12,
+    "instanceIndex": 1,
+    "name": "Cezve",
+    "net": 10,
+    "player": "Runner",
+    "triggerLog": [
+     {
+      "amount": 2,
+      "kind": "credit",
+      "turn": 12
+     },
+     {
+      "amount": 2,
+      "kind": "credit",
+      "turn": 13
+     },
+     {
+      "amount": 2,
+      "kind": "credit",
+      "turn": 14
+     },
+     {
+      "amount": 2,
+      "kind": "credit",
+      "turn": 17
+     },
+     {
+      "amount": 2,
+      "kind": "credit",
+      "turn": 18
+     },
+     {
+      "amount": 2,
+      "kind": "credit",
+      "turn": 19
+     }
+    ],
+    "turnInstalled": 10,
+    "turnLeftDisplay": "-",
+    "turnsInPlay": 15
+   },
+   {
+    "cost": 3,
+    "events": 1,
+    "gained": 0,
+    "instanceIndex": null,
+    "name": "The Class Act",
+    "net": -3,
+    "player": "Runner",
+    "triggerLog": [
+     {
+      "amount": 4,
+      "kind": "draw",
+      "turn": 11
+     }
+    ],
+    "turnInstalled": 11,
+    "turnLeftDisplay": "-",
+    "turnsInPlay": 14
+   },
+   {
+    "cost": 1,
+    "events": 2,
+    "gained": 6,
+    "instanceIndex": 2,
+    "name": "Side Hustle",
+    "net": 5,
+    "player": "Runner",
+    "triggerLog": [
+     {
+      "amount": 6,
+      "kind": "credit",
+      "turn": 15
+     },
+     {
+      "amount": 1,
+      "kind": "draw",
+      "turn": 15
+     }
+    ],
+    "turnInstalled": 12,
+    "turnLeftDisplay": 15,
+    "turnsInPlay": 4
+   },
+   {
+    "cost": 7,
+    "events": 0,
+    "gained": 0,
+    "instanceIndex": null,
+    "name": "Carmen",
+    "net": -7,
+    "player": "Runner",
+    "triggerLog": [],
+    "turnInstalled": 12,
+    "turnLeftDisplay": "-",
+    "turnsInPlay": 13
+   },
+   {
+    "cost": 6,
+    "events": 0,
+    "gained": 0,
+    "instanceIndex": 2,
+    "name": "Attini",
+    "net": -6,
+    "player": "Corp",
+    "triggerLog": [],
+    "turnInstalled": 13,
+    "turnLeftDisplay": "-",
+    "turnsInPlay": 13
+   },
+   {
+    "cost": 0,
+    "events": 1,
+    "gained": 3,
+    "instanceIndex": 2,
+    "name": "Charlotte Caçador",
+    "net": 3,
+    "player": "Corp",
+    "triggerLog": [
+     {
+      "amount": 3,
+      "kind": "credit",
+      "turn": 13
+     }
+    ],
+    "turnInstalled": 13,
+    "turnLeftDisplay": 13,
+    "turnsInPlay": 1
+   },
+   {
+    "cost": 1,
+    "events": 6,
+    "gained": 6,
+    "instanceIndex": null,
+    "name": "Open Market",
+    "net": 5,
+    "player": "Runner",
+    "triggerLog": [
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 14
+     },
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 15
+     },
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 16
+     },
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 16
+     },
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 17
+     },
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 18
+     }
+    ],
+    "turnInstalled": 13,
+    "turnLeftDisplay": 18,
+    "turnsInPlay": 6
+   },
+   {
+    "cost": 6,
+    "events": 0,
+    "gained": 0,
+    "instanceIndex": null,
+    "name": "Boto",
+    "net": -6,
+    "player": "Corp",
+    "triggerLog": [],
+    "turnInstalled": 14,
+    "turnLeftDisplay": "-",
+    "turnsInPlay": 12
+   },
+   {
+    "cost": 3,
+    "events": 0,
+    "gained": 0,
+    "instanceIndex": null,
+    "name": "La Costa Grid",
+    "net": -3,
+    "player": "Corp",
+    "triggerLog": [],
+    "turnInstalled": 14,
+    "turnLeftDisplay": 16,
+    "turnsInPlay": 3
+   },
+   {
+    "cost": 0,
+    "events": 1,
+    "gained": 3,
+    "instanceIndex": 3,
+    "name": "Charlotte Caçador",
+    "net": 3,
+    "player": "Corp",
+    "triggerLog": [
+     {
+      "amount": 3,
+      "kind": "credit",
+      "turn": 15
+     }
+    ],
+    "turnInstalled": 15,
+    "turnLeftDisplay": 15,
+    "turnsInPlay": 1
+   },
+   {
+    "cost": 1,
+    "events": 2,
+    "gained": 6,
+    "instanceIndex": 3,
+    "name": "Side Hustle",
+    "net": 5,
+    "player": "Runner",
+    "triggerLog": [
+     {
+      "amount": 6,
+      "kind": "credit",
+      "turn": 19
+     },
+     {
+      "amount": 1,
+      "kind": "draw",
+      "turn": 19
+     }
+    ],
+    "turnInstalled": 15,
+    "turnLeftDisplay": 19,
+    "turnsInPlay": 5
+   },
+   {
+    "cost": 0,
+    "events": 1,
+    "gained": 2,
+    "instanceIndex": null,
+    "name": "Debbie \"Downtown\" Moreira",
+    "net": 2,
+    "player": "Runner",
+    "triggerLog": [
+     {
+      "amount": 2,
+      "kind": "credit",
+      "turn": 16
+     }
+    ],
+    "turnInstalled": 16,
+    "turnLeftDisplay": 16,
+    "turnsInPlay": 1
+   },
+   {
+    "cost": 6,
+    "events": 0,
+    "gained": 0,
+    "instanceIndex": 3,
+    "name": "Attini",
+    "net": -6,
+    "player": "Corp",
+    "triggerLog": [],
+    "turnInstalled": 16,
+    "turnLeftDisplay": "-",
+    "turnsInPlay": 10
+   },
+   {
+    "cost": 1,
+    "events": 2,
+    "gained": 0,
+    "instanceIndex": null,
+    "name": "Dr. Nuka Vrolyck",
+    "net": -1,
+    "player": "Runner",
+    "triggerLog": [
+     {
+      "amount": 3,
+      "kind": "draw",
+      "turn": 17
+     },
+     {
+      "amount": 3,
+      "kind": "draw",
+      "turn": 18
+     }
+    ],
+    "turnInstalled": 16,
+    "turnLeftDisplay": 18,
+    "turnsInPlay": 3
+   },
+   {
+    "cost": 0,
+    "events": 1,
+    "gained": 0,
+    "instanceIndex": 2,
+    "name": "Spin Doctor",
+    "net": 0,
+    "player": "Corp",
+    "triggerLog": [
+     {
+      "amount": 2,
+      "kind": "draw",
+      "turn": 17
+     }
+    ],
+    "turnInstalled": 17,
+    "turnLeftDisplay": 17,
+    "turnsInPlay": 1
+   },
+   {
+    "cost": 6,
+    "events": 0,
+    "gained": 0,
+    "instanceIndex": null,
+    "name": "Lionsmane",
+    "net": -6,
+    "player": "Corp",
+    "triggerLog": [],
+    "turnInstalled": 18,
+    "turnLeftDisplay": "-",
+    "turnsInPlay": 8
+   },
+   {
+    "cost": 2,
+    "events": 3,
+    "gained": 6,
+    "instanceIndex": 2,
+    "name": "Cezve",
+    "net": 4,
+    "player": "Runner",
+    "triggerLog": [
+     {
+      "amount": 2,
+      "kind": "credit",
+      "turn": 21
+     },
+     {
+      "amount": 2,
+      "kind": "credit",
+      "turn": 23
+     },
+     {
+      "amount": 2,
+      "kind": "credit",
+      "turn": 24
+     }
+    ],
+    "turnInstalled": 21,
+    "turnLeftDisplay": "-",
+    "turnsInPlay": 4
+   },
+   {
+    "cost": 0,
+    "events": 1,
+    "gained": 0,
+    "instanceIndex": 3,
+    "name": "Spin Doctor",
+    "net": 0,
+    "player": "Corp",
+    "triggerLog": [
+     {
+      "amount": 2,
+      "kind": "draw",
+      "turn": 23
+     }
+    ],
+    "turnInstalled": 23,
+    "turnLeftDisplay": 23,
+    "turnsInPlay": 1
+   }
+  ],
+  "maxTurn": {
+   "Corp": 25,
+   "Runner": 24
+  },
+  "mulligans": [],
+  "opposingTrashes": {
+   "Runner": 4
+  },
+  "opsRows": [
+   {
+    "name": "Hansei Review",
+    "perTurnRows": [
+     {
+      "cost": 5,
+      "gain": 10,
+      "net": 5,
+      "nth": null,
+      "turn": 1
+     },
+     {
+      "cost": 5,
+      "gain": 10,
+      "net": 5,
+      "nth": null,
+      "turn": 23
+     }
+    ],
+    "player": "Corp",
+    "totalCost": 10,
+    "totalGain": 20,
+    "totalNet": 10,
+    "triggered": 2,
+    "turnsList": "1, 23"
+   },
+   {
+    "name": "Clean Getaway",
+    "perTurnRows": [
+     {
+      "cost": 3,
+      "gain": 6,
+      "net": 3,
+      "nth": null,
+      "turn": 1
+     },
+     {
+      "cost": 3,
+      "gain": 6,
+      "net": 3,
+      "nth": null,
+      "turn": 12
+     },
+     {
+      "cost": 3,
+      "gain": 6,
+      "net": 3,
+      "nth": null,
+      "turn": 18
+     }
+    ],
+    "player": "Runner",
+    "totalCost": 9,
+    "totalGain": 18,
+    "totalNet": 9,
+    "triggered": 3,
+    "turnsList": "1, 12, 18"
+   },
+   {
+    "name": "Cultivate",
+    "perTurnRows": [
+     {
+      "cost": 0,
+      "gain": 0,
+      "net": 0,
+      "nth": null,
+      "turn": 2
+     },
+     {
+      "cost": 0,
+      "gain": 0,
+      "net": 0,
+      "nth": null,
+      "turn": 9
+     }
+    ],
+    "player": "Corp",
+    "totalCost": 0,
+    "totalGain": 0,
+    "totalNet": 0,
+    "triggered": 2,
+    "turnsList": "2, 9"
+   },
+   {
+    "name": "Sure Gamble",
+    "perTurnRows": [
+     {
+      "cost": 5,
+      "gain": 9,
+      "net": 4,
+      "nth": null,
+      "turn": 2
+     },
+     {
+      "cost": 5,
+      "gain": 9,
+      "net": 4,
+      "nth": null,
+      "turn": 4
+     },
+     {
+      "cost": 5,
+      "gain": 9,
+      "net": 4,
+      "nth": null,
+      "turn": 11
+     }
+    ],
+    "player": "Runner",
+    "totalCost": 15,
+    "totalGain": 27,
+    "totalNet": 12,
+    "triggered": 3,
+    "turnsList": "2, 4, 11"
+   },
+   {
+    "name": "Bravado",
+    "perTurnRows": [
+     {
+      "cost": 3,
+      "gain": 7,
+      "net": 4,
+      "nth": null,
+      "turn": 2
+     },
+     {
+      "cost": 3,
+      "gain": 7,
+      "net": 4,
+      "nth": null,
+      "turn": 7
+     },
+     {
+      "cost": 3,
+      "gain": 7,
+      "net": 4,
+      "nth": null,
+      "turn": 8
+     }
+    ],
+    "player": "Runner",
+    "totalCost": 9,
+    "totalGain": 21,
+    "totalNet": 12,
+    "triggered": 3,
+    "turnsList": "2, 7, 8"
+   },
+   {
+    "name": "Transfer of Wealth",
+    "perTurnRows": [
+     {
+      "cost": 0,
+      "gain": 0,
+      "net": 0,
+      "nth": null,
+      "turn": 7
+     },
+     {
+      "cost": 0,
+      "gain": 2,
+      "net": 2,
+      "nth": null,
+      "turn": 14
+     },
+     {
+      "cost": 0,
+      "gain": 6,
+      "net": 6,
+      "nth": null,
+      "turn": 19
+     }
+    ],
+    "player": "Runner",
+    "totalCost": 0,
+    "totalGain": 8,
+    "totalNet": 8,
+    "triggered": 3,
+    "turnsList": "7, 14, 19"
+   },
+   {
+    "name": "Pinhole Threading",
+    "perTurnRows": [
+     {
+      "cost": 1,
+      "gain": 0,
+      "net": -1,
+      "nth": null,
+      "turn": 13
+     }
+    ],
+    "player": "Runner",
+    "totalCost": 1,
+    "totalGain": 0,
+    "totalNet": -1,
+    "triggered": 1,
+    "turnsList": "13"
+   },
+   {
+    "name": "Hedge Fund",
+    "perTurnRows": [
+     {
+      "cost": 5,
+      "gain": 9,
+      "net": 4,
+      "nth": null,
+      "turn": 21
+     }
+    ],
+    "player": "Corp",
+    "totalCost": 5,
+    "totalGain": 9,
+    "totalNet": 4,
+    "triggered": 1,
+    "turnsList": "21"
+   },
+   {
+    "name": "Measured Response",
+    "perTurnRows": [
+     {
+      "cost": 5,
+      "gain": 0,
+      "net": -5,
+      "nth": null,
+      "turn": 24
+     }
+    ],
+    "player": "Corp",
+    "totalCost": 5,
+    "totalGain": 0,
+    "totalNet": -5,
+    "triggered": 1,
+    "turnsList": "24"
+   }
+  ],
+  "playerCountError": null,
+  "playerSide": {
+   "Corp": "corp",
+   "Runner": "runner"
+  },
+  "players": [
+   "Corp",
+   "Runner"
+  ],
+  "poolSegments": {
+   "Corp": [
+    {
+     "end": 10,
+     "endLine": 17,
+     "expected": 10,
+     "fromKind": "start",
+     "fromTurn": 1,
+     "ok": true,
+     "start": 5,
+     "startLine": 10,
+     "values": [
+      5,
+      5,
+      0,
+      10
+     ]
+    },
+    {
+     "end": 11,
+     "endLine": 31,
+     "expected": 11,
+     "fromKind": "end",
+     "fromTurn": 1,
+     "ok": true,
+     "start": 10,
+     "startLine": 17,
+     "values": [
+      11
+     ]
+    },
+    {
+     "end": 11,
+     "endLine": 38,
+     "expected": 11,
+     "fromKind": "start",
+     "fromTurn": 2,
+     "ok": true,
+     "start": 11,
+     "startLine": 31,
+     "values": [
+      11,
+      11
+     ]
+    },
+    {
+     "end": 6,
+     "endLine": 63,
+     "expected": 6,
+     "fromKind": "end",
+     "fromTurn": 2,
+     "ok": true,
+     "start": 11,
+     "startLine": 38,
+     "values": [
+      12,
+      6
+     ]
+    },
+    {
+     "end": 6,
+     "endLine": 68,
+     "expected": 6,
+     "fromKind": "start",
+     "fromTurn": 3,
+     "ok": true,
+     "start": 6,
+     "startLine": 63,
+     "values": [
+      6
+     ]
+    },
+    {
+     "end": 7,
+     "endLine": 77,
+     "expected": 7,
+     "fromKind": "end",
+     "fromTurn": 3,
+     "ok": true,
+     "start": 6,
+     "startLine": 68,
+     "values": [
+      7
+     ]
+    },
+    {
+     "end": 8,
+     "endLine": 83,
+     "expected": 8,
+     "fromKind": "start",
+     "fromTurn": 4,
+     "ok": true,
+     "start": 7,
+     "startLine": 77,
+     "values": [
+      8
+     ]
+    },
+    {
+     "end": 11,
+     "endLine": 109,
+     "expected": 11,
+     "fromKind": "end",
+     "fromTurn": 4,
+     "ok": true,
+     "start": 8,
+     "startLine": 83,
+     "values": [
+      9,
+      7,
+      11
+     ]
+    },
+    {
+     "end": 11,
+     "endLine": 117,
+     "expected": 11,
+     "fromKind": "start",
+     "fromTurn": 5,
+     "ok": true,
+     "start": 11,
+     "startLine": 109,
+     "values": [
+      11,
+      10,
+      11
+     ]
+    },
+    {
+     "end": 12,
+     "endLine": 127,
+     "expected": 12,
+     "fromKind": "end",
+     "fromTurn": 5,
+     "ok": true,
+     "start": 11,
+     "startLine": 117,
+     "values": [
+      12
+     ]
+    },
+    {
+     "end": 9,
+     "endLine": 135,
+     "expected": 9,
+     "fromKind": "start",
+     "fromTurn": 6,
+     "ok": true,
+     "start": 12,
+     "startLine": 127,
+     "values": [
+      11,
+      10,
+      9
+     ]
+    },
+    {
+     "end": 10,
+     "endLine": 146,
+     "expected": 10,
+     "fromKind": "end",
+     "fromTurn": 6,
+     "ok": true,
+     "start": 9,
+     "startLine": 135,
+     "values": [
+      10
+     ]
+    },
+    {
+     "end": 8,
+     "endLine": 151,
+     "expected": 8,
+     "fromKind": "start",
+     "fromTurn": 7,
+     "ok": true,
+     "start": 10,
+     "startLine": 146,
+     "values": [
+      9,
+      8
+     ]
+    },
+    {
+     "end": 1,
+     "endLine": 190,
+     "expected": 1,
+     "fromKind": "end",
+     "fromTurn": 7,
+     "ok": true,
+     "start": 8,
+     "startLine": 151,
+     "values": [
+      9,
+      5,
+      5,
+      8,
+      1
+     ]
+    },
+    {
+     "end": 3,
+     "endLine": 195,
+     "expected": 3,
+     "fromKind": "start",
+     "fromTurn": 8,
+     "ok": true,
+     "start": 1,
+     "startLine": 190,
+     "values": [
+      2,
+      3
+     ]
+    },
+    {
+     "end": 4,
+     "endLine": 213,
+     "expected": 4,
+     "fromKind": "end",
+     "fromTurn": 8,
+     "ok": true,
+     "start": 3,
+     "startLine": 195,
+     "values": [
+      4
+     ]
+    },
+    {
+     "end": 4,
+     "endLine": 220,
+     "expected": 4,
+     "fromKind": "start",
+     "fromTurn": 9,
+     "ok": true,
+     "start": 4,
+     "startLine": 213,
+     "values": [
+      4,
+      3,
+      4
+     ]
+    },
+    {
+     "end": 5,
+     "endLine": 230,
+     "expected": 5,
+     "fromKind": "end",
+     "fromTurn": 9,
+     "ok": true,
+     "start": 4,
+     "startLine": 220,
+     "values": [
+      5
+     ]
+    },
+    {
+     "end": 5,
+     "endLine": 235,
+     "expected": 5,
+     "fromKind": "start",
+     "fromTurn": 10,
+     "ok": true,
+     "start": 5,
+     "startLine": 230,
+     "values": [
+      3,
+      4,
+      5
+     ]
+    },
+    {
+     "end": 6,
+     "endLine": 246,
+     "expected": 6,
+     "fromKind": "end",
+     "fromTurn": 10,
+     "ok": true,
+     "start": 5,
+     "startLine": 235,
+     "values": [
+      6
+     ]
+    },
+    {
+     "end": 7,
+     "endLine": 251,
+     "expected": 7,
+     "fromKind": "start",
+     "fromTurn": 11,
+     "ok": true,
+     "start": 6,
+     "startLine": 246,
+     "values": [
+      5,
+      6,
+      7
+     ]
+    },
+    {
+     "end": 8,
+     "endLine": 264,
+     "expected": 8,
+     "fromKind": "end",
+     "fromTurn": 11,
+     "ok": true,
+     "start": 7,
+     "startLine": 251,
+     "values": [
+      8
+     ]
+    },
+    {
+     "end": 9,
+     "endLine": 269,
+     "expected": 9,
+     "fromKind": "start",
+     "fromTurn": 12,
+     "ok": true,
+     "start": 8,
+     "startLine": 264,
+     "values": [
+      9
+     ]
+    },
+    {
+     "end": 10,
+     "endLine": 296,
+     "expected": 10,
+     "fromKind": "end",
+     "fromTurn": 12,
+     "ok": true,
+     "start": 9,
+     "startLine": 269,
+     "values": [
+      10
+     ]
+    },
+    {
+     "end": 9,
+     "endLine": 303,
+     "expected": 9,
+     "fromKind": "start",
+     "fromTurn": 13,
+     "ok": true,
+     "start": 10,
+     "startLine": 296,
+     "values": [
+      9
+     ]
+    },
+    {
+     "end": 7,
+     "endLine": 330,
+     "expected": 7,
+     "fromKind": "end",
+     "fromTurn": 13,
+     "ok": true,
+     "start": 9,
+     "startLine": 303,
+     "values": [
+      10,
+      4,
+      4,
+      7
+     ]
+    },
+    {
+     "end": 9,
+     "endLine": 335,
+     "expected": 9,
+     "fromKind": "start",
+     "fromTurn": 14,
+     "ok": true,
+     "start": 7,
+     "startLine": 330,
+     "values": [
+      8,
+      9
+     ]
+    },
+    {
+     "end": 0,
+     "endLine": 387,
+     "expected": 0,
+     "fromKind": "end",
+     "fromTurn": 14,
+     "ok": true,
+     "start": 9,
+     "startLine": 335,
+     "values": [
+      10,
+      4,
+      1,
+      0
+     ]
+    },
+    {
+     "end": 0,
+     "endLine": 393,
+     "expected": 0,
+     "fromKind": "start",
+     "fromTurn": 15,
+     "ok": true,
+     "start": 0,
+     "startLine": 387,
+     "values": [
+      1,
+      0
+     ]
+    },
+    {
+     "end": 4,
+     "endLine": 420,
+     "expected": 4,
+     "fromKind": "end",
+     "fromTurn": 15,
+     "ok": true,
+     "start": 0,
+     "startLine": 393,
+     "values": [
+      1,
+      1,
+      4
+     ]
+    },
+    {
+     "end": 6,
+     "endLine": 426,
+     "expected": 6,
+     "fromKind": "start",
+     "fromTurn": 16,
+     "ok": true,
+     "start": 4,
+     "startLine": 420,
+     "values": [
+      5,
+      6
+     ]
+    },
+    {
+     "end": 1,
+     "endLine": 455,
+     "expected": 1,
+     "fromKind": "end",
+     "fromTurn": 16,
+     "ok": true,
+     "start": 6,
+     "startLine": 426,
+     "values": [
+      7,
+      1
+     ]
+    },
+    {
+     "end": 3,
+     "endLine": 460,
+     "expected": 3,
+     "fromKind": "start",
+     "fromTurn": 17,
+     "ok": true,
+     "start": 1,
+     "startLine": 455,
+     "values": [
+      2,
+      3
+     ]
+    },
+    {
+     "end": 4,
+     "endLine": 491,
+     "expected": 4,
+     "fromKind": "end",
+     "fromTurn": 17,
+     "ok": true,
+     "start": 3,
+     "startLine": 460,
+     "values": [
+      4,
+      4
+     ]
+    },
+    {
+     "end": 6,
+     "endLine": 496,
+     "expected": 6,
+     "fromKind": "start",
+     "fromTurn": 18,
+     "ok": true,
+     "start": 4,
+     "startLine": 491,
+     "values": [
+      5,
+      6
+     ]
+    },
+    {
+     "end": 1,
+     "endLine": 548,
+     "expected": 1,
+     "fromKind": "end",
+     "fromTurn": 18,
+     "ok": true,
+     "start": 6,
+     "startLine": 496,
+     "values": [
+      7,
+      1
+     ]
+    },
+    {
+     "end": 3,
+     "endLine": 553,
+     "expected": 3,
+     "fromKind": "start",
+     "fromTurn": 19,
+     "ok": true,
+     "start": 1,
+     "startLine": 548,
+     "values": [
+      2,
+      3
+     ]
+    },
+    {
+     "end": 1,
+     "endLine": 604,
+     "expected": 1,
+     "fromKind": "end",
+     "fromTurn": 19,
+     "ok": true,
+     "start": 3,
+     "startLine": 553,
+     "values": [
+      4,
+      1
+     ]
+    },
+    {
+     "end": 2,
+     "endLine": 609,
+     "expected": 2,
+     "fromKind": "start",
+     "fromTurn": 20,
+     "ok": true,
+     "start": 1,
+     "startLine": 604,
+     "values": [
+      0,
+      1,
+      2
+     ]
+    },
+    {
+     "end": 3,
+     "endLine": 618,
+     "expected": 3,
+     "fromKind": "end",
+     "fromTurn": 20,
+     "ok": true,
+     "start": 2,
+     "startLine": 609,
+     "values": [
+      3
+     ]
+    },
+    {
+     "end": 9,
+     "endLine": 624,
+     "expected": 9,
+     "fromKind": "start",
+     "fromTurn": 21,
+     "ok": true,
+     "start": 3,
+     "startLine": 618,
+     "values": [
+      4,
+      5,
+      0,
+      9
+     ]
+    },
+    {
+     "end": 10,
+     "endLine": 650,
+     "expected": 10,
+     "fromKind": "end",
+     "fromTurn": 21,
+     "ok": true,
+     "start": 9,
+     "startLine": 624,
+     "values": [
+      10
+     ]
+    },
+    {
+     "end": 7,
+     "endLine": 658,
+     "expected": 7,
+     "fromKind": "start",
+     "fromTurn": 22,
+     "ok": true,
+     "start": 10,
+     "startLine": 650,
+     "values": [
+      9,
+      8,
+      7
+     ]
+    },
+    {
+     "end": 8,
+     "endLine": 666,
+     "expected": 8,
+     "fromKind": "end",
+     "fromTurn": 22,
+     "ok": true,
+     "start": 7,
+     "startLine": 658,
+     "values": [
+      8
+     ]
+    },
+    {
+     "end": 14,
+     "endLine": 673,
+     "expected": 14,
+     "fromKind": "start",
+     "fromTurn": 23,
+     "ok": true,
+     "start": 8,
+     "startLine": 666,
+     "values": [
+      3,
+      13,
+      14
+     ]
+    },
+    {
+     "end": 15,
+     "endLine": 701,
+     "expected": 15,
+     "fromKind": "end",
+     "fromTurn": 23,
+     "ok": true,
+     "start": 14,
+     "startLine": 673,
+     "values": [
+      15,
+      15
+     ]
+    },
+    {
+     "end": 11,
+     "endLine": 707,
+     "expected": 11,
+     "fromKind": "start",
+     "fromTurn": 24,
+     "ok": true,
+     "start": 15,
+     "startLine": 701,
+     "values": [
+      10,
+      11
+     ]
+    },
+    {
+     "end": 11,
+     "endLine": 733,
+     "expected": 11,
+     "fromKind": "end",
+     "fromTurn": 24,
+     "ok": true,
+     "start": 11,
+     "startLine": 707,
+     "values": []
+    },
+    {
+     "end": null,
+     "endLine": null,
+     "expected": null,
+     "fromKind": "start",
+     "fromTurn": 25,
+     "ok": null,
+     "start": 11,
+     "startLine": 733,
+     "values": [
+      10,
+      9,
+      8
+     ]
+    }
+   ],
+   "Runner": [
+    {
+     "end": 6,
+     "endLine": 30,
+     "expected": 6,
+     "fromKind": "start",
+     "fromTurn": 1,
+     "ok": true,
+     "start": 5,
+     "startLine": 19,
+     "values": [
+      2,
+      8,
+      6
+     ]
+    },
+    {
+     "end": 6,
+     "endLine": 40,
+     "expected": 6,
+     "fromKind": "end",
+     "fromTurn": 1,
+     "ok": true,
+     "start": 6,
+     "startLine": 30,
+     "values": []
+    },
+    {
+     "end": 6,
+     "endLine": 62,
+     "expected": 6,
+     "fromKind": "start",
+     "fromTurn": 2,
+     "ok": true,
+     "start": 6,
+     "startLine": 40,
+     "values": [
+      1,
+      10,
+      7,
+      5,
+      3,
+      1,
+      0,
+      7,
+      6
+     ]
+    },
+    {
+     "end": 6,
+     "endLine": 70,
+     "expected": 6,
+     "fromKind": "end",
+     "fromTurn": 2,
+     "ok": true,
+     "start": 6,
+     "startLine": 62,
+     "values": []
+    },
+    {
+     "end": 5,
+     "endLine": 76,
+     "expected": 5,
+     "fromKind": "start",
+     "fromTurn": 3,
+     "ok": true,
+     "start": 6,
+     "startLine": 70,
+     "values": [
+      5
+     ]
+    },
+    {
+     "end": 5,
+     "endLine": 85,
+     "expected": 5,
+     "fromKind": "end",
+     "fromTurn": 3,
+     "ok": true,
+     "start": 5,
+     "startLine": 76,
+     "values": []
+    },
+    {
+     "end": 6,
+     "endLine": 108,
+     "expected": 6,
+     "fromKind": "start",
+     "fromTurn": 4,
+     "ok": true,
+     "start": 5,
+     "startLine": 85,
+     "values": [
+      2,
+      11,
+      9,
+      8,
+      7,
+      6
+     ]
+    },
+    {
+     "end": 6,
+     "endLine": 119,
+     "expected": 6,
+     "fromKind": "end",
+     "fromTurn": 4,
+     "ok": true,
+     "start": 6,
+     "startLine": 108,
+     "values": []
+    },
+    {
+     "end": 7,
+     "endLine": 126,
+     "expected": 7,
+     "fromKind": "start",
+     "fromTurn": 5,
+     "ok": true,
+     "start": 6,
+     "startLine": 119,
+     "values": [
+      6,
+      7
+     ]
+    },
+    {
+     "end": 7,
+     "endLine": 137,
+     "expected": 7,
+     "fromKind": "end",
+     "fromTurn": 5,
+     "ok": true,
+     "start": 7,
+     "startLine": 126,
+     "values": []
+    },
+    {
+     "end": 6,
+     "endLine": 145,
+     "expected": 6,
+     "fromKind": "start",
+     "fromTurn": 6,
+     "ok": true,
+     "start": 7,
+     "startLine": 137,
+     "values": [
+      5,
+      6
+     ]
+    },
+    {
+     "end": 6,
+     "endLine": 153,
+     "expected": 6,
+     "fromKind": "end",
+     "fromTurn": 6,
+     "ok": true,
+     "start": 6,
+     "startLine": 145,
+     "values": []
+    },
+    {
+     "end": 5,
+     "endLine": 189,
+     "expected": 5,
+     "fromKind": "start",
+     "fromTurn": 7,
+     "ok": true,
+     "start": 6,
+     "startLine": 153,
+     "values": [
+      6,
+      4,
+      11,
+      11,
+      7,
+      5
+     ]
+    },
+    {
+     "end": 5,
+     "endLine": 197,
+     "expected": 5,
+     "fromKind": "end",
+     "fromTurn": 7,
+     "ok": true,
+     "start": 5,
+     "startLine": 189,
+     "values": []
+    },
+    {
+     "end": 8,
+     "endLine": 212,
+     "expected": 8,
+     "fromKind": "start",
+     "fromTurn": 8,
+     "ok": true,
+     "start": 5,
+     "startLine": 197,
+     "values": [
+      5,
+      3,
+      0,
+      7,
+      8
+     ]
+    },
+    {
+     "end": 8,
+     "endLine": 222,
+     "expected": 8,
+     "fromKind": "end",
+     "fromTurn": 8,
+     "ok": true,
+     "start": 8,
+     "startLine": 212,
+     "values": []
+    },
+    {
+     "end": 8,
+     "endLine": 229,
+     "expected": 8,
+     "fromKind": "start",
+     "fromTurn": 9,
+     "ok": true,
+     "start": 8,
+     "startLine": 222,
+     "values": [
+      8
+     ]
+    },
+    {
+     "end": 8,
+     "endLine": 237,
+     "expected": 8,
+     "fromKind": "end",
+     "fromTurn": 9,
+     "ok": true,
+     "start": 8,
+     "startLine": 229,
+     "values": []
+    },
+    {
+     "end": 6,
+     "endLine": 245,
+     "expected": 6,
+     "fromKind": "start",
+     "fromTurn": 10,
+     "ok": true,
+     "start": 8,
+     "startLine": 237,
+     "values": [
+      8,
+      6
+     ]
+    },
+    {
+     "end": 6,
+     "endLine": 253,
+     "expected": 6,
+     "fromKind": "end",
+     "fromTurn": 10,
+     "ok": true,
+     "start": 6,
+     "startLine": 245,
+     "values": []
+    },
+    {
+     "end": 10,
+     "endLine": 262,
+     "expected": 10,
+     "fromKind": "start",
+     "fromTurn": 11,
+     "ok": true,
+     "start": 6,
+     "startLine": 253,
+     "values": [
+      4,
+      13,
+      10
+     ]
+    },
+    {
+     "end": 10,
+     "endLine": 271,
+     "expected": 10,
+     "fromKind": "end",
+     "fromTurn": 11,
+     "ok": true,
+     "start": 10,
+     "startLine": 262,
+     "values": []
+    },
+    {
+     "end": 10,
+     "endLine": 295,
+     "expected": 10,
+     "fromKind": "start",
+     "fromTurn": 12,
+     "ok": true,
+     "start": 10,
+     "startLine": 271,
+     "values": [
+      10,
+      11,
+      9,
+      9,
+      15,
+      12,
+      10
+     ]
+    },
+    {
+     "end": 10,
+     "endLine": 305,
+     "expected": 10,
+     "fromKind": "end",
+     "fromTurn": 12,
+     "ok": true,
+     "start": 10,
+     "startLine": 295,
+     "values": []
+    },
+    {
+     "end": 10,
+     "endLine": 329,
+     "expected": 10,
+     "fromKind": "start",
+     "fromTurn": 13,
+     "ok": true,
+     "start": 10,
+     "startLine": 305,
+     "values": [
+      10,
+      7,
+      10,
+      10
+     ]
+    },
+    {
+     "end": 10,
+     "endLine": 337,
+     "expected": 10,
+     "fromKind": "end",
+     "fromTurn": 13,
+     "ok": true,
+     "start": 10,
+     "startLine": 329,
+     "values": []
+    },
+    {
+     "end": 0,
+     "endLine": 386,
+     "expected": 0,
+     "fromKind": "start",
+     "fromTurn": 14,
+     "ok": true,
+     "start": 10,
+     "startLine": 337,
+     "values": [
+      11,
+      11,
+      17,
+      11,
+      6,
+      1,
+      3,
+      2,
+      0
+     ]
+    },
+    {
+     "end": 0,
+     "endLine": 395,
+     "expected": 0,
+     "fromKind": "end",
+     "fromTurn": 14,
+     "ok": true,
+     "start": 0,
+     "startLine": 386,
+     "values": []
+    },
+    {
+     "end": 7,
+     "endLine": 418,
+     "expected": 7,
+     "fromKind": "start",
+     "fromTurn": 15,
+     "ok": true,
+     "start": 0,
+     "startLine": 395,
+     "values": [
+      1,
+      7,
+      7
+     ]
+    },
+    {
+     "end": 7,
+     "endLine": 428,
+     "expected": 7,
+     "fromKind": "end",
+     "fromTurn": 15,
+     "ok": true,
+     "start": 7,
+     "startLine": 418,
+     "values": []
+    },
+    {
+     "end": 1,
+     "endLine": 453,
+     "expected": 1,
+     "fromKind": "start",
+     "fromTurn": 16,
+     "ok": true,
+     "start": 7,
+     "startLine": 428,
+     "values": [
+      8,
+      8,
+      5,
+      1,
+      1
+     ]
+    },
+    {
+     "end": 1,
+     "endLine": 462,
+     "expected": 1,
+     "fromKind": "end",
+     "fromTurn": 16,
+     "ok": true,
+     "start": 1,
+     "startLine": 453,
+     "values": []
+    },
+    {
+     "end": 8,
+     "endLine": 489,
+     "expected": 8,
+     "fromKind": "start",
+     "fromTurn": 17,
+     "ok": true,
+     "start": 1,
+     "startLine": 462,
+     "values": [
+      2,
+      2,
+      7,
+      8
+     ]
+    },
+    {
+     "end": 8,
+     "endLine": 498,
+     "expected": 8,
+     "fromKind": "end",
+     "fromTurn": 17,
+     "ok": true,
+     "start": 8,
+     "startLine": 489,
+     "values": []
+    },
+    {
+     "end": 8,
+     "endLine": 547,
+     "expected": 8,
+     "fromKind": "start",
+     "fromTurn": 18,
+     "ok": true,
+     "start": 8,
+     "startLine": 498,
+     "values": [
+      9,
+      6,
+      3,
+      9,
+      5,
+      8
+     ]
+    },
+    {
+     "end": 8,
+     "endLine": 555,
+     "expected": 8,
+     "fromKind": "end",
+     "fromTurn": 18,
+     "ok": true,
+     "start": 8,
+     "startLine": 547,
+     "values": []
+    },
+    {
+     "end": 2,
+     "endLine": 603,
+     "expected": 2,
+     "fromKind": "start",
+     "fromTurn": 19,
+     "ok": true,
+     "start": 8,
+     "startLine": 555,
+     "values": [
+      9,
+      10,
+      10,
+      16,
+      10,
+      8,
+      9,
+      10,
+      5,
+      3,
+      2,
+      1,
+      0,
+      6,
+      5,
+      2
+     ]
+    },
+    {
+     "end": 2,
+     "endLine": 611,
+     "expected": 2,
+     "fromKind": "end",
+     "fromTurn": 19,
+     "ok": true,
+     "start": 2,
+     "startLine": 603,
+     "values": []
+    },
+    {
+     "end": 6,
+     "endLine": 617,
+     "expected": 6,
+     "fromKind": "start",
+     "fromTurn": 20,
+     "ok": true,
+     "start": 2,
+     "startLine": 611,
+     "values": [
+      4,
+      5,
+      6
+     ]
+    },
+    {
+     "end": 6,
+     "endLine": 626,
+     "expected": 6,
+     "fromKind": "end",
+     "fromTurn": 20,
+     "ok": true,
+     "start": 6,
+     "startLine": 617,
+     "values": []
+    },
+    {
+     "end": 3,
+     "endLine": 649,
+     "expected": 3,
+     "fromKind": "start",
+     "fromTurn": 21,
+     "ok": true,
+     "start": 6,
+     "startLine": 626,
+     "values": [
+      4,
+      3,
+      1,
+      3
+     ]
+    },
+    {
+     "end": 3,
+     "endLine": 660,
+     "expected": 3,
+     "fromKind": "end",
+     "fromTurn": 21,
+     "ok": true,
+     "start": 3,
+     "startLine": 649,
+     "values": []
+    },
+    {
+     "end": 7,
+     "endLine": 665,
+     "expected": 7,
+     "fromKind": "start",
+     "fromTurn": 22,
+     "ok": true,
+     "start": 3,
+     "startLine": 660,
+     "values": [
+      4,
+      5,
+      6,
+      7
+     ]
+    },
+    {
+     "end": 7,
+     "endLine": 675,
+     "expected": 7,
+     "fromKind": "end",
+     "fromTurn": 22,
+     "ok": true,
+     "start": 7,
+     "startLine": 665,
+     "values": []
+    },
+    {
+     "end": 9,
+     "endLine": 700,
+     "expected": 9,
+     "fromKind": "start",
+     "fromTurn": 23,
+     "ok": true,
+     "start": 7,
+     "startLine": 675,
+     "values": [
+      6,
+      5,
+      7,
+      8,
+      9
+     ]
+    },
+    {
+     "end": 1,
+     "endLine": 708,
+     "expected": 1,
+     "fromKind": "end",
+     "fromTurn": 23,
+     "ok": true,
+     "start": 9,
+     "startLine": 700,
+     "values": [
+      1
+     ]
+    },
+    {
+     "end": 2,
+     "endLine": 732,
+     "expected": 2,
+     "fromKind": "start",
+     "fromTurn": 24,
+     "ok": true,
+     "start": 1,
+     "startLine": 708,
+     "values": [
+      2,
+      3,
+      2,
+      0,
+      0,
+      2
+     ]
+    },
+    {
+     "end": null,
+     "endLine": null,
+     "expected": null,
+     "fromKind": "end",
+     "fromTurn": 24,
+     "ok": null,
+     "start": 2,
+     "startLine": 732,
+     "values": []
+    }
+   ]
+  },
+  "purgeClicks": {},
+  "rounds": 25,
+  "runsMade": {
+   "Runner": 17
+  },
+  "seqAxisLabels": [
+   "",
+   "C1",
+   "R1",
+   "C2",
+   "R2",
+   "C3",
+   "R3",
+   "C4",
+   "R4",
+   "C5",
+   "R5",
+   "C6",
+   "R6",
+   "C7",
+   "R7",
+   "C8",
+   "R8",
+   "C9",
+   "R9",
+   "C10",
+   "R10",
+   "C11",
+   "R11",
+   "C12",
+   "R12",
+   "C13",
+   "R13",
+   "C14",
+   "R14",
+   "C15",
+   "R15",
+   "C16",
+   "R16",
+   "C17",
+   "R17",
+   "C18",
+   "R18",
+   "C19",
+   "R19",
+   "C20",
+   "R20",
+   "C21",
+   "R21",
+   "C22",
+   "R22",
+   "C23",
+   "R23",
+   "C24",
+   "R24",
+   "C25"
+  ],
+  "tagRemovals": {
+   "Runner": {
+    "cost": 6,
+    "count": 3
+   }
+  },
+  "tagsGained": {
+   "Runner": 6
+  },
+  "tagsGiven": {
+   "Corp": 4
+  },
+  "totalDraws": {
+   "Corp": 39,
+   "Runner": 40
+  },
+  "totalGained": {
+   "Corp": 92,
+   "Runner": 135
+  },
+  "totalSeq": 49,
+  "totalSpent": {
+   "Corp": 89,
+   "Runner": 138
+  },
+  "trashResources": {},
+  "undos": [],
+  "winReason": "agenda",
+  "winner": "Corp"
+ }
+}
