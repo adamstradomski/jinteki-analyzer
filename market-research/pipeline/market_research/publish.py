@@ -460,6 +460,7 @@ def quality_report(
             ingest_q.get("rejected_deck_refs_total", ingest_q.get("rejected_deck_refs", 0))
         ),
         "skipped_tournaments": norm_q.get("skipped_tournaments", {}),
+        "restriction_overrides": norm_q.get("restriction_overrides", []),
     }
 
 

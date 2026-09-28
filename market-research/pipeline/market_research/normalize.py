@@ -99,6 +99,7 @@ class NormQuality:
     skipped: Counter[str] = field(default_factory=Counter)
     illegal_decks: int = 0
     comparisons: Counter[str] = field(default_factory=Counter)
+    restriction_overrides: list[dict[str, Any]] = field(default_factory=list)
 
     def to_json(self) -> dict[str, Any]:
         return {
@@ -109,7 +110,21 @@ class NormQuality:
             "skipped_tournaments": dict(sorted(self.skipped.items())),
             "illegal_decks": self.illegal_decks,
             "deck_comparison": dict(sorted(self.comparisons.items())),
+            "restriction_overrides": sorted(self.restriction_overrides, key=lambda x: x["tid"]),
         }
+
+
+# Deck precedence: Cobra's locked registration, then the ABR-claimed NRDB decklist, then a private NRDB deck.
+SOURCE_ORDER = {"cobra": 0, "nrdb_decklist": 1, "nrdb_deck": 2}
+# Evidence needed to replace an event's ban list with one its decks fit better (see choose_restriction).
+BANLIST_MIN_GAIN = 2
+BANLIST_MIN_SHARE = 0.1
+
+
+def _best(sources: list[_Deck], entry_ident: str | None) -> tuple[str | None, dict[str, int]]:
+    """(identity, cards) of the deck that counts for an entry-side."""
+    best = min(sources, key=lambda s: SOURCE_ORDER[s.source])
+    return best.identity or entry_ident, best.cards
 
 
 # ------------------------------------------------------------------ source cache
@@ -242,6 +257,60 @@ class Normalizer:
             return cobra_rid
         snap = self.catalog.snapshot_at(d)
         return snap.restriction_id if snap else None
+
+    def choose_restriction(
+        self, tid: str, given: str | None, d: str, decks: list[tuple[int, str, str | None, list[_Deck]]]
+    ) -> str | None:
+        """The ban list an event's decks were built for.
+
+        Organisers sometimes play a new list before it takes effect, keep an old one, or cannot pick
+        the right one in Cobra; ABR events have no setting at all. So the candidates are the given
+        list, the one in force on the event date and its neighbours, and the one under which most of
+        the event's decks are legal wins. It replaces the given list only on clear evidence: at least
+        BANLIST_MIN_GAIN more legal decks, and at least BANLIST_MIN_SHARE of the event's decks, so one
+        player's illegal deck cannot move a whole event. Without decks the given list stays.
+        """
+        if not decks:
+            return given
+        order = self.catalog.standard_restrictions()
+        snap = self.catalog.snapshot_at(d)
+        in_force = snap.restriction_id if snap else None
+        cands: list[str] = [r for r in (given, in_force) if r]
+        if in_force in order:
+            i = order.index(in_force)
+            cands += order[max(0, i - 1) : i] + order[i + 1 : i + 2]
+        cands = list(dict.fromkeys(cands))
+        if not cands:
+            return given
+        picked = [(*_best(sources, ident), side) for _, side, ident, sources in decks]
+
+        def legal(rid: str) -> int:
+            return sum(
+                1
+                for ident, cards, side in picked
+                if not self.catalog.check_deck(side, ident, cards, rid).issues
+            )
+
+        counts = {r: legal(r) for r in cands}
+        best = max(cands, key=lambda r: (counts[r], r == given, r == in_force))
+        gain = counts[best] - counts.get(given, 0) if given is not None else 0
+        if (
+            best != given
+            and given is not None
+            and gain >= max(BANLIST_MIN_GAIN, BANLIST_MIN_SHARE * len(picked))
+        ):
+            self.q.restriction_overrides.append(
+                {
+                    "tid": tid,
+                    "from": given,
+                    "to": best,
+                    "decks": len(picked),
+                    "legal_before": counts[given],
+                    "legal_after": counts[best],
+                }
+            )
+            return best
+        return given if given is not None else best
 
     def ident_from_title(self, title: str | None) -> str | None:
         if not title:
@@ -480,6 +549,7 @@ class Normalizer:
         abr_by_rank = {e.swiss_rank: e for e in self.abr_e[a.id].entries} if a and a.id in self.abr_e else {}
         pid_entry: dict[int, int] = {}
         decks_found = 0
+        pending: list[tuple[int, str, str | None, list[_Deck]]] = []
         for p in t.players:
             if p.swiss_rank is None:
                 continue
@@ -524,7 +594,11 @@ class Normalizer:
                         sources.append(nd)
                 if sources:
                     decks_found += 1
-                    self.add_deck(out, tid, no, side, ident, sources, restriction)
+                    pending.append((no, side, ident, sources))
+        restriction = self.choose_restriction(tid, restriction, t.date, pending)
+        trow["restriction_id"] = restriction
+        for no, side, ident, sources in pending:
+            self.add_deck(out, tid, no, side, ident, sources, restriction)
         trow["decklist_coverage"] = round(decks_found / (2 * len(pid_entry)), 6) if pid_entry else 0.0
         games = list(self.games(t, pid_entry, tid))
         out.rows["game"].extend(games)
@@ -536,6 +610,7 @@ class Normalizer:
         restriction = self.restriction_for(None, a.date)
         e = self.abr_e[a.id]
         decks_found = 0
+        pending: list[tuple[int, str, str | None, list[_Deck]]] = []
         has_cut = a.top_count > 0
         for x in e.entries:
             cut = x.cut_rank if x.cut_rank and x.cut_rank > 0 else None
@@ -560,15 +635,10 @@ class Normalizer:
                 nd = self.nrdb_deck(s.deck_ref.kind, s.deck_ref.id)
                 if nd is not None:
                     decks_found += 1
-                    self.add_deck(
-                        out,
-                        tid,
-                        x.swiss_rank,
-                        side,
-                        corp_i if side == "corp" else runner_i,
-                        [nd],
-                        restriction,
-                    )
+                    pending.append((x.swiss_rank, side, corp_i if side == "corp" else runner_i, [nd]))
+        restriction = self.choose_restriction(tid, restriction, a.date, pending)
+        for no, side, ident, sources in pending:
+            self.add_deck(out, tid, no, side, ident, sources, restriction)
         n = max(len(e.entries), a.players_count)
         trow = self._tournament_row(
             tid,
@@ -596,8 +666,7 @@ class Normalizer:
         sources: list[_Deck],
         restriction: str | None,
     ) -> None:
-        order = {"cobra": 0, "nrdb_decklist": 1, "nrdb_deck": 2}
-        sources = sorted(sources, key=lambda s: order[s.source])
+        sources = sorted(sources, key=lambda s: SOURCE_ORDER[s.source])
         best = sources[0]
         ident = best.identity or entry_ident
         if len(sources) > 1:
