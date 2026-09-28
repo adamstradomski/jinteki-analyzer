@@ -1,4 +1,8 @@
-"""Shared helpers for source clients: strict ID parsing, URL building and JSON:API pages."""
+"""Shared helpers for source clients: strict ID parsing, URL building and JSON:API pages.
+
+IDs are checked with `fullmatch`: with `match`, a pattern ending in `$` also accepts a trailing
+newline ("123\\n").
+"""
 
 from __future__ import annotations
 
@@ -26,14 +30,14 @@ class NotFound(Exception):
 
 def strict_int(value: object) -> int:
     s = str(value)
-    if not INT_ID.match(s):
+    if not INT_ID.fullmatch(s):
         raise ParseError("bad integer id")
     return int(s)
 
 
 def strict_uuid_or_int(value: str) -> str:
     v = value.lower()
-    if INT_ID.match(v) or UUID.match(v):
+    if INT_ID.fullmatch(v) or UUID.fullmatch(v):
         return v
     raise ParseError("bad deck id")
 
@@ -50,7 +54,10 @@ def parse_date(value: object) -> str:
     m = re.match(r"^(\d{4})[-.](\d{2})[-.](\d{2})", s)
     if not m:
         raise ParseError("bad date")
-    return date(int(m[1]), int(m[2]), int(m[3])).isoformat()
+    try:
+        return date(int(m[1]), int(m[2]), int(m[3])).isoformat()
+    except ValueError:  # e.g. 2026.02.30.: callers skip a ParseError, not any ValueError
+        raise ParseError("bad date") from None
 
 
 def opt_int(value: object) -> int | None:
@@ -92,7 +99,7 @@ def opt_printing(value: object) -> str | None:
     if value is None or value in ("", "null"):
         return None
     s = str(value)
-    if not PRINTING_ID.match(s):
+    if not PRINTING_ID.fullmatch(s):
         raise ParseError("bad printing id")
     return s
 
@@ -109,7 +116,7 @@ def opt_slug(value: object) -> str | None:
     if value is None or value == "":
         return None
     s = str(value)
-    if not SLUG_ID.match(s):
+    if not SLUG_ID.fullmatch(s):
         raise ParseError("bad card id")
     return s
 

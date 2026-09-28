@@ -105,7 +105,7 @@ def parse_event(ev: dict[str, Any], q: IngestQuality, fetched_at: str) -> AbrTou
         claim_count=opt_int(ev.get("claim_count")) or 0,
         claim_conflict=as_bool(ev.get("claim_conflict")),
         matchdata=as_bool(ev.get("matchdata")),
-        country=str(country)[:60] if country and re.match(r"^[A-Za-z .'-]{2,60}$", str(country)) else None,
+        country=str(country)[:60] if country and re.fullmatch(r"[A-Za-z .'-]{2,60}", str(country)) else None,
         winner_corp_identity=opt_printing(ev.get("winner_corp_identity")),
         winner_runner_identity=opt_printing(ev.get("winner_runner_identity")),
     ).hashed()

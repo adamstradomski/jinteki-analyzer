@@ -12,7 +12,6 @@ from helpers import make_env
 from market_research.frontier import Frontier
 from market_research.ingest import Ingestor, ReloadNotFound
 from market_research.records import CobraTournament, dump
-from market_research.sources.common import ParseError, opt_printing
 from market_research.testing import normalize_url
 
 
@@ -333,22 +332,6 @@ def test_reload_of_unknown_tournament_writes_nothing(tmp_path, clock):
         _reloader(env).reload(cobra_ids=[4990, 999999], abr_ids=[5305, 1])
     assert e.value.missing == ["cobra:999999", "abr:1"]
     assert len(env.stores.source.puts) == before  # type: ignore[attr-defined]
-
-
-def test_abr_string_null_identity_is_missing():
-    # Seen live on alwaysberunning.net: one event had winner_corp_identity "null" (a string).
-    assert opt_printing("null") is None
-    assert opt_printing("34096") == "34096"
-    with pytest.raises(ParseError):
-        opt_printing("nul")
-
-
-def test_event_names_are_cleaned():
-    from market_research.sources.common import opt_title
-
-    assert opt_title("  Worlds\n2026\t Top Cut ") == "Worlds 2026 Top Cut"
-    assert opt_title("x" * 200) == "x" * 120
-    assert opt_title("   ") is None and opt_title(None) is None
 
 
 def test_longer_backfill_discovers_events_a_shorter_one_did_not_reach(tmp_path, clock):

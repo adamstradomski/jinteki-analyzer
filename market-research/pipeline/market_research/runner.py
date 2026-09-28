@@ -168,7 +168,9 @@ def default_since(today: date, stores: Stores) -> date:
 
 
 def tier_of_priority(priority: float) -> str:
-    weight = int((priority % SIGNAL_BONUS) // 1000)
+    # event_priority() stays below 5,000; on top of it a change signal adds SIGNAL_BONUS and a
+    # private NRDB deck SIGNAL_BONUS / 2, so the remainder by SIGNAL_BONUS / 2 drops either.
+    weight = int((priority % (SIGNAL_BONUS / 2)) // 1000)
     for g, w in TIER_WEIGHT.items():
         if w == weight:
             return g

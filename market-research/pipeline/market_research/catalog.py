@@ -16,8 +16,10 @@ TYPE_ORDER = [
 
 
 def title_key(title: str) -> str:
-    t = unicodedata.normalize("NFKD", title).encode("ascii", "ignore").decode()
-    t = t.replace("“", '"').replace("”", '"').replace("’", "'")
+    # Curly quotes become straight ones before the ASCII fold drops them, so "O’Brian" and the
+    # "O'Brian" of an export that straightens quotes get the same key.
+    t = title.replace("“", '"').replace("”", '"').replace("’", "'")
+    t = unicodedata.normalize("NFKD", t).encode("ascii", "ignore").decode()
     return re.sub(r"[^a-z0-9]+", " ", t.lower()).strip()
 
 
