@@ -193,6 +193,19 @@ test('series, markers, scatter and table orders', () => {
   assert.ok(vals.indexOf(null) === -1 || vals.slice(vals.indexOf(null)).every((v) => v === null)); // nulls last
 });
 
+test('scatter name filter and top points per axis', () => {
+  const pts = [
+    { card_id: 'a', x: 50, y: -1, games: 90 }, { card_id: 'b', x: 40, y: 8, games: 60 },
+    { card_id: 'c', x: 5, y: 12, games: 40 }, { card_id: 'd', x: 3, y: -9, games: 35 },
+  ];
+  const titles = { a: 'Hedge Fund', b: 'Hédge Hog', c: 'Snare!', d: 'IPO' };
+  assert.deepEqual(D.filterByName(pts, 'hedge', (id) => titles[id]).map((p) => p.card_id), ['a', 'b']);
+  assert.equal(D.filterByName(pts, '  ', (id) => titles[id]).length, 4);
+  // top 1 by inclusion (a) plus top 1 by winrate difference (c), in the original order
+  assert.deepEqual(D.topPerAxis(pts, 1).map((p) => p.card_id), ['a', 'c']);
+  assert.deepEqual(D.topPerAxis(pts, 2).map((p) => p.card_id), ['a', 'b', 'c']);
+});
+
 test('catalog search, factions and types', () => {
   const catalog = load(`/snap/${manifest.base_path}${manifest.paths.catalog}`);
   const hits = D.searchCards(catalog, 'hedge');

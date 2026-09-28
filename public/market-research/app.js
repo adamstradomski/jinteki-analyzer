@@ -24,6 +24,8 @@ let detailCard = null;
 let sideToggle = null;
 // Per-panel "Hide small samples" switches (cards under the minimum games); on by default.
 const hideSmall = { winrate: true, scatter: true };
+const scatterView = { query: '', top: false };
+const SCATTER_TOP = 10;
 
 // ---------------------------------------------------------------- DOM helpers
 
@@ -135,6 +137,12 @@ async function boot() {
   setupSearch();
   setupSampleToggle('winrate-small', 'winrate', renderWinrate);
   setupSampleToggle('scatter-small', 'scatter', renderScatter);
+  $('scatter-filter').addEventListener('input', debounce(() => { scatterView.query = $('scatter-filter').value; if (view) renderScatter(); }, 150));
+  $('scatter-top').addEventListener('click', () => {
+    scatterView.top = !scatterView.top;
+    $('scatter-top').setAttribute('aria-pressed', String(scatterView.top));
+    if (view) renderScatter();
+  });
   window.addEventListener('hashchange', () => {
     const next = D.parseHash(location.hash, manifest);
     if (D.formatHash(next) !== D.formatHash(state)) { state = next; syncFilters(); refresh(); }
@@ -523,10 +531,15 @@ function drawTrends() {
 // ---------------------------------------------------------------- scatter
 
 function scatterData() {
-  return sampled('scatter', D.scatterPoints(view.cards), (p) => p.sufficient);
+  let pts = sampled('scatter', D.scatterPoints(view.cards), (p) => p.sufficient);
+  if (scatterView.top) pts = D.topPerAxis(pts, SCATTER_TOP);
+  return D.filterByName(pts, scatterView.query, cardName);
 }
 
 function renderScatter() {
+  const b = view.baseline;
+  const side = state.side === 'corp' ? 'Corp' : 'Runner';
+  $('scatter-note').textContent = `Across: inclusion, the share of ${side} decks with a known decklist in this filter that play the card. Up and down: the card's game winrate minus the baseline, which is the winrate of every ${side} deck with a known decklist in this filter (${fmtPct(b.winrate)} over ${fmtInt(b.games)} games). Point size shows games; hollow points are below the minimum sample.${scatterView.top ? ` Showing the ${SCATTER_TOP} most included cards and the ${SCATTER_TOP} with the best winrate difference.` : ''}`;
   drawScatter();
   const pts = scatterData();
   dataTable($('scatter-table'), [
@@ -541,7 +554,12 @@ function drawScatter() {
   const host = $('scatter-chart');
   if (!view || !host) return;
   const pts = scatterData();
-  if (!pts.length) { host.replaceChildren(el('p', { class: 'mr-note', text: hideSmall.scatter ? `No card has ${manifest.thresholds.min_games} games with decklists in this filter.` : 'No games with decklists in this filter.' })); return; }
+  if (!pts.length) {
+    const text = scatterView.query ? 'No card matches that name here.'
+      : hideSmall.scatter ? `No card has ${manifest.thresholds.min_games} games with decklists in this filter.` : 'No games with decklists in this filter.';
+    host.replaceChildren(el('p', { class: 'mr-note', text }));
+    return;
+  }
   const { s, width, m, iw, ih } = chartBox(host, 320);
   s.setAttribute('aria-label', 'Scatter of inclusion against winrate difference; the table below lists the same points');
   const color = JW.sideColor(state.side);
@@ -569,12 +587,23 @@ function drawScatter() {
       stroke: color, 'stroke-width': p.sufficient ? 1 : 1.5,
     }));
   }
-  const labelled = pts.filter((p) => p.sufficient).sort((a, b) => b.x - a.x).slice(0, 8);
-  for (const p of labelled) {
+  // Label every point of a short list (top per axis, a name filter); otherwise the 8 most included.
+  const labelled = pts.length <= 2 * SCATTER_TOP ? pts : pts.filter((p) => p.sufficient).sort((a, b) => b.x - a.x).slice(0, 8);
+  // Greedy placement, biggest points first: try beside the point, then a line above or below; a
+  // label that still overlaps one already placed is left out (hovering still names the card).
+  const placed = [];
+  const overlaps = (bx) => placed.some((o) => bx.x1 < o.x2 && bx.x2 > o.x1 && bx.y1 < o.y2 && bx.y2 > o.y1);
+  for (const p of [...labelled].sort((a, b) => b.games - a.games)) {
+    const name = cardName(p.card_id);
+    const w = name.length * 6.2;
     const right = x(p.x) > m.l + iw * 0.75;
     const dx = r(p.games) + 3;
-    s.append(svg('text', { class: 'chart-tick mr-label', x: right ? x(p.x) - dx : x(p.x) + dx, y: y(p.y) + 3,
-      'text-anchor': right ? 'end' : 'start' }, cardName(p.card_id)));
+    const lx = right ? x(p.x) - dx : x(p.x) + dx;
+    const spot = [0, -12, 12, -24, 24].map((dy) => ({ ly: y(p.y) + 3 + dy, box: { x1: right ? lx - w : lx, x2: right ? lx : lx + w, y1: y(p.y) - 6 + dy, y2: y(p.y) + 5 + dy } }))
+      .find((c) => !overlaps(c.box));
+    if (!spot) continue;
+    placed.push(spot.box);
+    s.append(svg('text', { class: 'chart-tick mr-label', x: lx, y: spot.ly, 'text-anchor': right ? 'end' : 'start' }, name));
   }
   const hit = svg('rect', { x: m.l, y: m.t, width: iw, height: ih, fill: 'transparent' });
   hit.addEventListener('pointermove', (ev) => {

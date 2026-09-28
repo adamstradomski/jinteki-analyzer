@@ -87,8 +87,14 @@
     <section class="panel" id="scatter" aria-labelledby="scatter-title">
       <div class="panel-header"><h2 id="scatter-title">Popularity vs winrate</h2><div class="header-controls"><button type="button" class="collapse-icon" aria-label="Collapse section">−</button></div></div>
       <div class="panel-body">
-        <p class="mr-note">Inclusion against winrate difference from the side's baseline. Point size shows games; hollow points are below the minimum sample and are not labelled.</p>
-        <div class="mr-toolbar"><button type="button" id="scatter-small" class="btn chip" aria-pressed="true">Hide small samples</button></div>
+        <p id="scatter-note" class="mr-note"></p>
+        <div class="mr-toolbar">
+          <label class="field" for="scatter-filter">Card name
+            <input id="scatter-filter" class="input" type="search" autocomplete="off" spellcheck="false" placeholder="Filter by name">
+          </label>
+          <button type="button" id="scatter-top" class="btn chip" aria-pressed="false">Top 10 per axis</button>
+          <button type="button" id="scatter-small" class="btn chip" aria-pressed="true">Hide small samples</button>
+        </div>
         <div id="scatter-chart" class="mr-chart"></div>
         <details class="mr-alt"><summary>Show as a table</summary><div id="scatter-table"></div></details>
       </div>

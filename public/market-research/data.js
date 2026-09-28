@@ -329,6 +329,20 @@ export function scatterPoints(cards) {
     }));
 }
 
+/** Points whose card title contains the query (case- and accent-insensitive); all when empty. */
+export function filterByName(points, query, title) {
+  const q = fold(String(query || '').trim());
+  return q ? points.filter((p) => fold(title(p.card_id)).includes(q)) : points;
+}
+
+/** The union of the n points furthest along each axis: most included and best winrate difference. */
+export function topPerAxis(points, n = 10) {
+  const byX = [...points].sort((a, b) => b.x - a.x || b.games - a.games).slice(0, n);
+  const byY = [...points].sort((a, b) => b.y - a.y || b.games - a.games).slice(0, n);
+  const keep = new Set([...byX, ...byY].map((p) => p.card_id));
+  return points.filter((p) => keep.has(p.card_id));
+}
+
 /** Generic sort for table columns; nulls always last. */
 export function sortRows(rows, key, dir = 'descending', text = (r) => r[key]) {
   const mult = dir === 'ascending' ? 1 : -1;
