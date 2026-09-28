@@ -88,6 +88,7 @@
       <div class="panel-header"><h2 id="scatter-title">Popularity vs winrate</h2><div class="header-controls"><button type="button" class="collapse-icon" aria-label="Collapse section">−</button></div></div>
       <div class="panel-body">
         <p class="mr-note">Inclusion against winrate difference from the side's baseline. Point size shows games; hollow points are below the minimum sample and are not labelled.</p>
+        <div class="mr-toolbar"><button type="button" id="scatter-small" class="btn chip" aria-pressed="true">Hide small samples</button></div>
         <div id="scatter-chart" class="mr-chart"></div>
         <details class="mr-alt"><summary>Show as a table</summary><div id="scatter-table"></div></details>
       </div>
@@ -95,7 +96,9 @@
 
     <section class="panel" id="winrate" aria-labelledby="winrate-title">
       <div class="panel-header"><h2 id="winrate-title">Winrate</h2><div class="header-controls"><button type="button" class="collapse-icon" aria-label="Collapse section">−</button></div></div>
-      <div class="panel-body"><p id="winrate-note" class="mr-note"></p><div id="winrate-body"></div></div>
+      <div class="panel-body"><p id="winrate-note" class="mr-note"></p>
+        <div class="mr-toolbar"><button type="button" id="winrate-small" class="btn chip" aria-pressed="true">Hide small samples</button></div>
+        <div id="winrate-body"></div></div>
     </section>
 
     <section class="panel" id="conversion" aria-labelledby="conversion-title">

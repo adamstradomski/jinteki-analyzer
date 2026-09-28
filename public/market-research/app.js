@@ -22,6 +22,8 @@ let identities = null;
 let trendCards = []; // [{ id, slot }] – colour slots stay with the card
 let detailCard = null;
 let sideToggle = null;
+// Per-panel "Hide small samples" switches (cards under the minimum games); on by default.
+const hideSmall = { winrate: true, scatter: true };
 
 // ---------------------------------------------------------------- DOM helpers
 
@@ -131,6 +133,8 @@ async function boot() {
   state = D.parseHash(location.hash, manifest);
   setupFilters();
   setupSearch();
+  setupSampleToggle('winrate-small', 'winrate', renderWinrate);
+  setupSampleToggle('scatter-small', 'scatter', renderScatter);
   window.addEventListener('hashchange', () => {
     const next = D.parseHash(location.hash, manifest);
     if (D.formatHash(next) !== D.formatHash(state)) { state = next; syncFilters(); refresh(); }
@@ -253,6 +257,18 @@ function renderStats() {
     : 'No Standard tournaments match this filter.';
 }
 
+function setupSampleToggle(id, key, render) {
+  const btn = $(id);
+  btn.addEventListener('click', () => {
+    hideSmall[key] = !hideSmall[key];
+    btn.setAttribute('aria-pressed', String(hideSmall[key]));
+    if (view) render();
+  });
+}
+
+/** Drops cards below the minimum games when the panel's switch is on. */
+const sampled = (key, rows, ok) => (hideSmall[key] ? rows.filter(ok) : rows);
+
 // ---------------------------------------------------------------- tables
 
 /** A sortable table with real header buttons and an optional "show all" button. */
@@ -324,15 +340,16 @@ function renderIdentities() {
 }
 
 function renderWinrate() {
-  $('winrate-note').textContent = `Game winrate of decks with the card minus the ${state.side === 'corp' ? 'Corp' : 'Runner'} baseline over games with decklists (${fmtPct(view.baseline.winrate)}), with the Wilson 95% interval. Draws count as half a win; intentional draws are excluded. Rows under ${manifest.thresholds.min_games} games are greyed and listed last.`;
-  const rows = D.winrateRows(view.cards);
+  const min = manifest.thresholds.min_games;
+  $('winrate-note').textContent = `Game winrate of decks with the card minus the ${state.side === 'corp' ? 'Corp' : 'Runner'} baseline over games with decklists (${fmtPct(view.baseline.winrate)}), with the Wilson 95% interval. Draws count as half a win; intentional draws are excluded. ${hideSmall.winrate ? `Cards under ${min} games are hidden.` : `Rows under ${min} games are greyed and listed last.`}`;
+  const rows = sampled('winrate', D.winrateRows(view.cards), (r) => r.winrate_status === 'ok');
   dataTable($('winrate-body'), [
     { key: 'title', label: 'Card', value: (r) => cardName(r.card_id), cell: (r) => cardCell(r.card_id) },
     { key: 'winrate_diff_pp', label: 'Winrate vs baseline', num: true, cell: (r) => diffCell(r.winrate_diff_pp, r.winrate_status !== 'ok') },
     { key: 'wilson_low_pp', label: '95% interval', num: true, sortable: false, cell: (r) => el('td', { class: 'num', text: `${fmtPp(r.wilson_low_pp)} → ${fmtPp(r.wilson_high_pp)}` }) },
     { key: 'winrate', label: 'Winrate', num: true, cell: (r) => el('td', { class: 'num', text: fmtPct(r.winrate) }) },
     { key: 'games', label: 'Games', num: true, cell: (r) => el('td', { class: 'num', text: fmtN(r.games) }) },
-  ], rows, { rowClass: (r) => (r.winrate_status !== 'ok' ? 'mr-insufficient' : ''), empty: 'No games with decklists in this filter.' });
+  ], rows, { rowClass: (r) => (r.winrate_status !== 'ok' ? 'mr-insufficient' : ''), empty: hideSmall.winrate ? `No card has ${min} games with decklists in this filter.` : 'No games with decklists in this filter.' });
 }
 
 function renderConversion() {
@@ -505,9 +522,13 @@ function drawTrends() {
 
 // ---------------------------------------------------------------- scatter
 
+function scatterData() {
+  return sampled('scatter', D.scatterPoints(view.cards), (p) => p.sufficient);
+}
+
 function renderScatter() {
   drawScatter();
-  const pts = D.scatterPoints(view.cards);
+  const pts = scatterData();
   dataTable($('scatter-table'), [
     { key: 'title', label: 'Card', value: (r) => cardName(r.card_id), cell: (r) => cardCell(r.card_id) },
     { key: 'x', label: 'Inclusion', num: true, cell: (r) => el('td', { class: 'num', text: `${r.x.toFixed(1)}%` }) },
@@ -519,8 +540,8 @@ function renderScatter() {
 function drawScatter() {
   const host = $('scatter-chart');
   if (!view || !host) return;
-  const pts = D.scatterPoints(view.cards);
-  if (!pts.length) { host.replaceChildren(el('p', { class: 'mr-note', text: 'No games with decklists in this filter.' })); return; }
+  const pts = scatterData();
+  if (!pts.length) { host.replaceChildren(el('p', { class: 'mr-note', text: hideSmall.scatter ? `No card has ${manifest.thresholds.min_games} games with decklists in this filter.` : 'No games with decklists in this filter.' })); return; }
   const { s, width, m, iw, ih } = chartBox(host, 320);
   s.setAttribute('aria-label', 'Scatter of inclusion against winrate difference; the table below lists the same points');
   const color = JW.sideColor(state.side);
