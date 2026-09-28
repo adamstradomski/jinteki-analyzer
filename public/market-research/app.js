@@ -565,18 +565,36 @@ function trendRange() {
   return state.from && state.to ? { from: state.from, to: state.to } : null;
 }
 
-function lineChart(host, series, markers, { height = 260, label, band = null }) {
+// Ticks for a value axis: a nice step covering [lo, hi], widened to whole steps.
+function niceAxis(lo, hi, ticks = 4) {
+  if (hi <= lo) hi = lo + 1;
+  const step = niceMax((hi - lo) / ticks);
+  return { lo: Math.floor(lo / step + 1e-9) * step, hi: Math.ceil(hi / step - 1e-9) * step, step };
+}
+
+// Monthly line chart. Each series plots `value` (the option, or its own), drawn dashed when it
+// has `dash`; `interval` shades a band for the first series; points `hollow` flags are drawn open.
+function lineChart(host, series, markers, {
+  height = 260, label, band = null, value = (p) => p.popularity, interval = null, hollow = null,
+  axis = null, tick = (v) => `${Math.round(v * 100)}%`, zero = false, tip = null,
+}) {
   const months = series[0]?.points.map((p) => p.month) || [];
   if (!months.length) { host.replaceChildren(el('p', { class: 'mr-note', text: 'No data in this period.' })); return; }
+  const val = (ser, p) => (ser.value || value)(p);
+  const all = series.flatMap((ser) => ser.points.map((p) => val(ser, p)))
+    .concat(interval ? series[0].points.flatMap(interval) : []).filter((v) => v !== null && v !== undefined);
+  if (!all.length) { host.replaceChildren(el('p', { class: 'mr-note', text: 'No data in this period.' })); return; }
   const { s, width, m, iw, ih } = chartBox(host, height);
   s.setAttribute('aria-label', label);
-  const maxV = niceMax(Math.max(0.01, ...series.flatMap((x) => x.points.map((p) => p.popularity || 0))));
+  const ax = axis ? axis(all) : (() => { const hi = niceMax(Math.max(0.01, ...all)); return { lo: 0, hi, step: hi / 4 }; })();
   const x = (i) => m.l + (months.length === 1 ? iw / 2 : (i * iw) / (months.length - 1));
-  const y = (v) => m.t + ih - (v / maxV) * ih;
-  for (let k = 0; k <= 4; k++) {
-    const v = (maxV * k) / 4;
-    s.append(svg('line', { class: k === 0 ? 'chart-axis' : 'chart-grid', x1: m.l, x2: width - m.r, y1: y(v), y2: y(v) }));
-    s.append(svg('text', { class: 'chart-tick', x: m.l - 6, y: y(v) + 3, 'text-anchor': 'end' }, `${Math.round(v * 100)}%`));
+  const y = (v) => m.t + ih - ((v - ax.lo) / (ax.hi - ax.lo)) * ih;
+  const n = Math.round((ax.hi - ax.lo) / ax.step);
+  for (let k = 0; k <= n; k++) {
+    const v = ax.lo + k * ax.step;
+    const isAxis = zero ? Math.abs(v) < ax.step / 1e6 : k === 0;
+    s.append(svg('line', { class: isAxis ? 'chart-axis' : 'chart-grid', x1: m.l, x2: width - m.r, y1: y(v), y2: y(v) }));
+    s.append(svg('text', { class: 'chart-tick', x: m.l - 6, y: y(v) + 3, 'text-anchor': 'end' }, tick(v)));
   }
   if (band) {
     // Shade the months selected in the filters; the rest of the timeline stays for context.
@@ -608,15 +626,43 @@ function lineChart(host, series, markers, { height = 260, label, band = null }) 
     taken.push([x0, x0 + w]);
     s.append(svg('text', { class: 'chart-tick', x: x(i) + (right ? -4 : 4), y: m.t + 9, 'text-anchor': right ? 'end' : 'start' }, mk.name));
   }
+  if (interval) {
+    // One closed area per run of months that have an interval.
+    const ser = series[0];
+    let run = [];
+    const flush = () => {
+      if (run.length) {
+        const top = run.map((i) => `${x(i).toFixed(1)} ${y(interval(ser.points[i])[1]).toFixed(1)}`);
+        const bottom = run.slice().reverse().map((i) => `${x(i).toFixed(1)} ${y(interval(ser.points[i])[0]).toFixed(1)}`);
+        const d = run.length === 1
+          ? `M${x(run[0]) - 2} ${y(interval(ser.points[run[0]])[1])} h4 V${y(interval(ser.points[run[0]])[0])} h-4 Z`
+          : `M${top.join(' L')} L${bottom.join(' L')} Z`;
+        s.append(svg('path', { d, fill: ser.color, 'fill-opacity': 0.15, stroke: 'none' }));
+      }
+      run = [];
+    };
+    ser.points.forEach((p, i) => { if (interval(p)[0] === null || interval(p)[0] === undefined) flush(); else run.push(i); });
+    flush();
+  }
   for (const ser of series) {
     let d = '';
+    let gap = true;
     ser.points.forEach((p, i) => {
-      if (p.popularity === null) return;
-      d += `${d ? 'L' : 'M'}${x(i).toFixed(1)} ${y(p.popularity).toFixed(1)} `;
+      const v = val(ser, p);
+      if (v === null || v === undefined) { gap = true; return; }
+      d += `${gap ? 'M' : 'L'}${x(i).toFixed(1)} ${y(v).toFixed(1)} `;
+      gap = false;
     });
-    s.append(svg('path', { d, fill: 'none', stroke: ser.color, 'stroke-width': 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }));
+    s.append(svg('path', { d, fill: 'none', stroke: ser.color, 'stroke-width': ser.dash ? 1.5 : 2, 'stroke-dasharray': ser.dash ? '5 4' : null, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }));
+    if (ser.dash) continue;
     ser.points.forEach((p, i) => {
-      if (p.popularity !== null && ser.points.length <= 24) s.append(svg('circle', { cx: x(i), cy: y(p.popularity), r: 3, fill: ser.color }));
+      const v = val(ser, p);
+      if (v === null || v === undefined) return;
+      const open = hollow && hollow(p);
+      // Open points always show (they flag small samples); filled ones only on short timelines.
+      if (open || ser.points.length <= 24) {
+        s.append(svg('circle', { cx: x(i), cy: y(v), r: 3, fill: open ? 'var(--panel)' : ser.color, stroke: ser.color, 'stroke-width': open ? 1.5 : 0 }));
+      }
     });
   }
   const cross = svg('line', { class: 'chart-axis', x1: 0, x2: 0, y1: m.t, y2: m.t + ih, visibility: 'hidden' });
@@ -629,10 +675,10 @@ function lineChart(host, series, markers, { height = 260, label, band = null }) 
     cross.setAttribute('x1', x(i));
     cross.setAttribute('x2', x(i));
     cross.setAttribute('visibility', 'visible');
-    showTip(ev.clientX, ev.clientY, [monthName(months[i]), ...series.map((ser) => {
+    showTip(ev.clientX, ev.clientY, [monthName(months[i]), ...(tip ? tip(i) : series.map((ser) => {
       const p = ser.points[i];
       return `${ser.name}: ${fmtPct(p.popularity)} (${fmtN(p.decks)} of ${fmtInt(p.total)})`;
-    })]);
+    }))]);
   });
   hit.addEventListener('pointerleave', () => { cross.setAttribute('visibility', 'hidden'); hideTip(); });
   s.append(hit);
@@ -841,7 +887,9 @@ async function openDetail(id, scroll = true) {
       stat(m.copies_mode ? `${m.copies_mode}×` : '–', 'Most common copy count'),
       stat(fmtPp(m.winrate_diff_pp), `Winrate vs baseline (${fmtN(m.games)}${m.winrate_status === 'ok' ? '' : ', small sample'})`),
       stat(`${fmtPp(m.wilson_low_pp)} → ${fmtPp(m.wilson_high_pp)}`, '95% interval')];
-  body.replaceChildren(head, el('div', { class: 'summary-grid mr-stats' }, ...stats), el('h3', { text: 'Inclusion by month' }), el('p', { class: 'mr-note', text: 'Every month and every ban list; the months selected in Filters are shaded.' }), el('div', { id: 'detail-chart', class: 'mr-chart' }));
+  const charts = isIdentity ? [el('div', { id: 'detail-chart', class: 'mr-chart' })] : detailCharts();
+  body.replaceChildren(head, el('div', { class: 'summary-grid mr-stats' }, ...stats),
+    el('p', { class: 'mr-note', text: `Charts show every month and every ban list; the months selected in Filters are shaded.${isIdentity ? '' : ` Open winrate points are months with fewer than ${fmtInt(manifest.thresholds.min_games)} games.`}` }), ...charts);
   if (scroll) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
   try {
     setBusy(['detail'], true);
@@ -854,17 +902,77 @@ async function openDetail(id, scroll = true) {
   }
 }
 
+// Headings, notes and hosts for the card's monthly charts; drawDetailChart fills the hosts.
+function detailCharts() {
+  const side = state.side === 'corp' ? 'Corp' : 'Runner';
+  const color = JW.sideColor(state.side);
+  const key = (swatch, text) => el('span', { class: 'legend-item' }, el('span', { class: 'legend-swatch', style: swatch }), text);
+  return [
+    el('h3', { text: 'Inclusion by month' }),
+    el('div', { id: 'detail-chart', class: 'mr-chart' }),
+    el('h3', { text: 'Winrate by month' }),
+    el('div', { class: 'legend' }, key(`background: ${color}`, 'Game winrate'), key(`background: ${color}; opacity: 0.25; height: 10px`, '95% interval'),
+      key('background: repeating-linear-gradient(90deg, var(--dim) 0 5px, transparent 5px 9px); width: 18px; height: 2px', `Baseline (every ${side} deck)`)),
+    el('div', { id: 'detail-winrate', class: 'mr-chart' }),
+    el('h3', { text: 'Winrate vs baseline by month' }),
+    el('p', { class: 'mr-note', text: `The card's winrate minus that month's baseline, with the 95% interval shaded.` }),
+    el('div', { id: 'detail-diff', class: 'mr-chart' }),
+    el('h3', { text: 'Average copies by month' }),
+    el('div', { id: 'detail-copies', class: 'mr-chart' }),
+  ];
+}
+
 function drawDetailChart() {
   const host = document.getElementById('detail-chart');
   if (!host || !detailCard || !detailTrends || !detailTrends.cards[detailCard]) {
-    if (host && detailCard && detailTrends) host.replaceChildren(el('p', { class: 'mr-note', text: 'Identities have no deck-inclusion series.' }));
+    if (host && detailCard && detailTrends) host.replaceChildren(el('p', { class: 'mr-note', text: 'Identities have no monthly series.' }));
     return;
   }
+  const name = cardName(detailCard);
   const points = D.monthlySeries(detailTrends, detailCard, null);
   const months = points.map((p) => p.month);
+  const markers = D.banlistMarkers(manifest, months);
   const range = trendRange();
-  lineChart(host, [{ name: cardName(detailCard), color: JW.sideColor(state.side), points }], D.banlistMarkers(manifest, months),
-    { height: 200, band: range, label: `Monthly inclusion of ${cardName(detailCard)} over every month, all ban lists${range ? `; ${monthName(range.from)} to ${monthName(range.to)} is shaded` : ''}` });
+  const shaded = range ? `; ${monthName(range.from)} to ${monthName(range.to)} is shaded` : '';
+  const color = JW.sideColor(state.side);
+  const card = [{ name, color, points }];
+  const small = (p) => p.games > 0 && p.games < manifest.thresholds.min_games;
+  const pctAxis = (vals) => niceAxis(Math.max(0, Math.min(...vals)), Math.min(1, Math.max(...vals)));
+  const opts = { height: 200, band: range };
+  lineChart(host, card, markers,
+    { ...opts, label: `Monthly inclusion of ${name} over every month, all ban lists${shaded}` });
+  const wr = $('detail-winrate');
+  if (wr) {
+    lineChart(wr, [...card, { name: 'Baseline', color: 'var(--dim)', points, value: (p) => p.baseline_winrate, dash: true }], markers, {
+      ...opts, value: (p) => p.winrate, interval: (p) => [p.winrate_low, p.winrate_high], hollow: small, axis: pctAxis,
+      label: `Monthly game winrate of ${name} with its 95% interval, against the baseline${shaded}`,
+      tip: (i) => {
+        const p = points[i];
+        return [`${name}: ${fmtPct(p.winrate)} (${fmtN(p.games)})`, `95% interval: ${fmtPct(p.winrate_low)} → ${fmtPct(p.winrate_high)}`, `Baseline: ${fmtPct(p.baseline_winrate)}`];
+      },
+    });
+  }
+  const diff = $('detail-diff');
+  if (diff) {
+    lineChart(diff, card, markers, {
+      ...opts, value: (p) => p.winrate_diff_pp, interval: (p) => [p.wilson_low_pp, p.wilson_high_pp], hollow: small, zero: true,
+      axis: (vals) => { const ext = Math.max(5, ...vals.map(Math.abs)); return niceAxis(-ext, ext); },
+      tick: (v) => `${v > 0 ? '+' : v < 0 ? MINUS : ''}${Math.abs(+v.toFixed(1))} pp`,
+      label: `Monthly winrate of ${name} minus the baseline, with its 95% interval${shaded}`,
+      tip: (i) => {
+        const p = points[i];
+        return [`vs baseline: ${fmtPp(p.winrate_diff_pp)} (${fmtN(p.games)})`, `95% interval: ${fmtPp(p.wilson_low_pp)} → ${fmtPp(p.wilson_high_pp)}`];
+      },
+    });
+  }
+  const copies = $('detail-copies');
+  if (copies) {
+    lineChart(copies, card, markers, {
+      ...opts, value: (p) => p.avg_copies, axis: (vals) => niceAxis(0, Math.max(3, ...vals)), tick: (v) => `${+v.toFixed(2)}×`,
+      label: `Monthly average copies of ${name} in the decks that play it${shaded}`,
+      tip: (i) => [`Average copies: ${fmtNum(points[i].avg_copies)} (${fmtN(points[i].decks)} decks)`],
+    });
+  }
 }
 
 // ---------------------------------------------------------------- quality footer
