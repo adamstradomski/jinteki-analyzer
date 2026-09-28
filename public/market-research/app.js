@@ -98,6 +98,36 @@ function cardCell(id) {
   return el('td', { class: 'card' }, btn, ' ', el('span', { class: `faction ${f.className}`, text: f.name }));
 }
 
+// ---------------------------------------------------------------- loading state
+
+// Panels whose content comes from the card slices; Trends and the card detail load on their own.
+const DATA_PANELS = ['stats', 'played', 'identities', 'scatter', 'winrate'];
+
+/** Blurs the given panels under a spinning wheel (on) or reveals them (off). */
+function setBusy(ids, on) {
+  for (const id of ids) {
+    const n = $(id);
+    if (!n) continue;
+    if (on && !n.querySelector(':scope > .mr-spinner')) n.append(el('div', { class: 'mr-spinner', 'aria-hidden': 'true' }));
+    n.classList.toggle('mr-busy', on);
+    n.setAttribute('aria-busy', String(on));
+  }
+}
+
+/** Empty placeholder tables and charts, shown blurred until the first data arrives. */
+function showSkeletons() {
+  const skelTable = (cols, rows = 8) => el('div', { class: 'mr-scroll' }, el('table', { class: 'data-table' },
+    el('thead', {}, el('tr', {}, ...Array.from({ length: cols }, () => el('th', {}, el('span', { class: 'mr-skel' }))))),
+    el('tbody', {}, ...Array.from({ length: rows }, () => el('tr', {}, ...Array.from({ length: cols }, () => el('td', {}, el('span', { class: 'mr-skel' }))))))));
+  $('stats').replaceChildren(...Array.from({ length: 5 }, () => el('div', { class: 'stat' },
+    el('span', { class: 'num', text: '––' }), el('span', { class: 'label' }, el('span', { class: 'mr-skel' })))));
+  $('played-body').replaceChildren(skelTable(7));
+  $('identities-body').replaceChildren(skelTable(7));
+  $('winrate-body').replaceChildren(skelTable(5));
+  $('trend-chart').replaceChildren(el('div', { class: 'mr-skel-chart' }));
+  $('scatter-chart').replaceChildren(el('div', { class: 'mr-skel-chart' }));
+}
+
 // ---------------------------------------------------------------- data
 
 async function getJson(url) {
@@ -123,11 +153,15 @@ async function boot() {
   JW.mountThemeSwitcher($('theme-switcher'));
   JW.mountModeToggle($('mode-toggle'));
   JW.enablePanelCollapse();
+  showSkeletons();
+  setBusy([...DATA_PANELS, 'trends'], true);
   try {
     manifest = await getJson(D.joinUrl(base, 'manifest.json'));
   } catch {
     let last = null;
     try { last = localStorage.getItem(LAST_SEEN_KEY); } catch { /* storage may be blocked */ }
+    $('app').hidden = true;
+    $('status').hidden = false;
     $('status').textContent = `Market Research data is unavailable right now.${last ? ` Last updated ${last}.` : ''} Try again later.`;
     return;
   }
@@ -152,7 +186,6 @@ async function boot() {
   document.addEventListener('jw:themechange', () => { drawTrends(); drawScatter(); drawDetailChart(); });
   window.addEventListener('resize', debounce(() => { drawTrends(); drawScatter(); drawDetailChart(); }, 150));
   $('detail-close').addEventListener('click', () => { detailCard = null; $('detail').hidden = true; });
-  $('app').hidden = false;
   await refresh();
   loadQuality();
 }
@@ -219,8 +252,8 @@ let refreshToken = 0;
 
 async function refresh() {
   const token = ++refreshToken;
-  $('status').hidden = false;
-  $('status').textContent = 'Loading data…';
+  $('status').hidden = true;
+  setBusy([...DATA_PANELS, 'trends'], true);
   document.documentElement.style.setProperty('--mr-side', `var(--${state.side})`);
   try {
     const summary = await slice('summary');
@@ -233,10 +266,12 @@ async function refresh() {
     if (token !== refreshToken) return;
     view = v;
     if (!state.custom && view.period) { state.from = view.period.from; state.to = view.period.to; syncFilters(); }
-    $('status').hidden = true;
     renderAll();
+    setBusy(DATA_PANELS, false);
   } catch (e) {
     if (token !== refreshToken) return;
+    setBusy([...DATA_PANELS, 'trends'], false);
+    $('status').hidden = false;
     $('status').textContent = 'This slice could not be loaded. Try another filter or reload the page.';
   }
 }
@@ -477,13 +512,16 @@ async function renderTrends() {
     } }, '×')));
   $('trend-chips').replaceChildren(...chips);
   $('trend-add').disabled = false;
-  $('trend-chart').replaceChildren(el('p', { class: 'mr-note', text: 'Loading trends…' }));
+  setBusy(['trends'], true);
   try {
     const t = await slice('trends', s);
     if (D.formatHash(s) !== D.formatHash(state)) return;
     trendsData = t;
     drawTrends();
+    setBusy(['trends'], false);
   } catch {
+    if (D.formatHash(s) !== D.formatHash(state)) return;
+    setBusy(['trends'], false);
     $('trend-chart').replaceChildren(el('p', { class: 'mr-note', text: 'Trends could not be loaded.' }));
   }
 }
@@ -771,9 +809,12 @@ async function openDetail(id, scroll = true) {
   body.replaceChildren(head, el('div', { class: 'summary-grid mr-stats' }, ...stats), el('h3', { text: 'Inclusion by month' }), el('p', { class: 'mr-note', text: 'Every month and every ban list; the months selected in Filters are shaded.' }), el('div', { id: 'detail-chart', class: 'mr-chart' }));
   if (scroll) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
   try {
+    setBusy(['detail'], true);
     detailTrends = await slice('trends', { ...state, restriction: 'all' }); // whole timeline, every ban list
     drawDetailChart();
+    setBusy(['detail'], false);
   } catch {
+    setBusy(['detail'], false);
     $('detail-chart').replaceChildren(el('p', { class: 'mr-note', text: 'Trends could not be loaded.' }));
   }
 }
