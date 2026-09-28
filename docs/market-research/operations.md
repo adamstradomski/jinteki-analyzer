@@ -123,6 +123,15 @@ The backfill is the only way to load history (no source offers a bulk export), s
    are skipped and it continues where it stopped. `--phase N` runs a single phase.
 6. Re-enable the daily schedule, then check the quality report.
 
+## Reloading single tournaments
+
+`docker run … market-research:<tag> backfill --cobra ID --abr ID` (each repeatable) fetches just
+those tournaments again, in full, whatever the frontier says: results or entries, settings, deck
+pages, claimed decklists and their daily lists. The date window and the Cobra format check of
+discovery are skipped; normalization still decides whether an event counts. It then normalizes and
+publishes once. Use it after fixing a parser or a rule, to check a few events before a full
+backfill. Every ID is looked up first; if one does not exist, it exits `1` without writing anything.
+
 ## Run logs
 
 Every command that fetches or publishes (`ingest`, `normalize`, `compute`, `run-all`, `backfill`,

@@ -10,7 +10,7 @@ import pytest
 
 from helpers import make_env
 from market_research.frontier import Frontier
-from market_research.ingest import Ingestor
+from market_research.ingest import Ingestor, ReloadNotFound
 from market_research.records import CobraTournament, dump
 from market_research.sources.common import ParseError, opt_printing
 from market_research.testing import normalize_url
@@ -267,6 +267,72 @@ def test_backfill_rechecks_event_skipped_for_missing_format(tmp_path, clock):
     assert env.stores.source.get_json("cobra/tournament/5015.json")["results_fetched"]
     # An event whose format is set to another one stays skipped.
     assert ing.frontier.items["cobra:tournament:5020"].last_status == "skipped_not_standard"
+
+
+def _serve_cobra_show(env, tid):
+    doc = json.loads(env.routes.body(COBRA_INDEX))
+    item = next(i for i in doc["data"] if i["id"] == str(tid))
+    env.routes.override(
+        f"https://tournaments.nullsignal.games/api/v1/public/tournaments/{tid}",
+        httpx.Response(200, json={"data": item}),
+    )
+
+
+def _reloader(env):
+    return Ingestor(env.settings, env.clock, env.http(), env.stores, parallel=False)
+
+
+def test_reload_cobra_fetches_the_tournament_and_its_decks_again(tmp_path, clock):
+    env = make_env(tmp_path, clock)
+    run(env)
+    _serve_cobra_show(env, 4990)
+    env.routes.calls.clear()
+    ing = _reloader(env)
+    ing.reload(cobra_ids=[4990])
+    fetched = urls(env)
+    assert sum(u.endswith("/tournaments/4990.json") for u in fetched) == 1  # results, unconditionally
+    assert sum("/tournaments/4990/players/" in u for u in fetched) == 16  # every deck page again
+    assert all("4990" in u or "robots.txt" in u for u in fetched), fetched  # nothing else
+    assert all(
+        i.frozen for k, i in ing.frontier.items.items() if k.startswith("cobra:deck:4990:")
+    )  # settled again afterwards
+
+
+def test_reload_abr_fetches_entries_even_outside_discovery_rules(tmp_path, clock):
+    env = make_env(tmp_path, clock)
+    run(env)
+    env.routes.calls.clear()
+    ing = _reloader(env)
+    # 5305 has no claims and no match data: discovery never reads its entries.
+    ing.reload(abr_ids=[5305, 5250])
+    fetched = urls(env)
+    assert any("/api/tournaments/results" in u for u in fetched)
+    assert any("entries?id=5305" in u for u in fetched)
+    assert ing.frontier.items["abr:entries:5305"].last_status is not None
+    # Unchanged entries still have their claimed decklists looked up again, in the daily lists.
+    assert any("entries?id=5250" in u for u in fetched)
+    assert any("/decklists/by_date/2026-06-" in u for u in fetched)
+
+
+def test_reload_keeps_stored_results_when_refetch_fails(tmp_path, clock):
+    env = make_env(tmp_path, clock)
+    run(env)
+    _serve_cobra_show(env, 4990)
+    env.routes.override("https://tournaments.nullsignal.games/tournaments/4990.json", httpx.Response(500))
+    _reloader(env).reload(cobra_ids=[4990])
+    stored = env.stores.source.get_json("cobra/tournament/4990.json")
+    assert stored["results_fetched"] and stored["pairings"]
+
+
+def test_reload_of_unknown_tournament_writes_nothing(tmp_path, clock):
+    env = make_env(tmp_path, clock)
+    run(env)
+    _serve_cobra_show(env, 4990)
+    before = len(env.stores.source.puts)  # type: ignore[attr-defined]
+    with pytest.raises(ReloadNotFound) as e:
+        _reloader(env).reload(cobra_ids=[4990, 999999], abr_ids=[5305, 1])
+    assert e.value.missing == ["cobra:999999", "abr:1"]
+    assert len(env.stores.source.puts) == before  # type: ignore[attr-defined]
 
 
 def test_abr_string_null_identity_is_missing():

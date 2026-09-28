@@ -8,7 +8,17 @@ from datetime import date
 import httpx
 
 from helpers import make_env
-from market_research.runner import Runtime, backfill, default_since, format_plan, plan
+from market_research.ingest import Ingestor
+from market_research.runner import (
+    EXIT_FAILURE,
+    EXIT_OK,
+    Runtime,
+    backfill,
+    default_since,
+    format_plan,
+    plan,
+    reload,
+)
 from market_research.testing import FixtureTransport, normalize_url
 
 SINCE = date(2026, 6, 1)
@@ -120,3 +130,20 @@ def test_plan_quarantines_unparsable_cobra_event_and_keeps_listing(tmp_path, clo
     p = plan(rt(env), SINCE)
     assert p["hosts"]["cobra"]["requests"] == {"0": 5, "1": 3 + 16 + 10, "2": 0, "3": 0}
     assert '"key": "cobra:index:5024"' in env.log.getvalue()
+
+
+def test_reload_fails_on_unknown_tournament_without_publishing(tmp_path, clock):
+    env = make_env(tmp_path, clock)
+    res = reload(rt(env), cobra_ids=[999999], abr_ids=[])
+    assert res.exit_code == EXIT_FAILURE
+    assert env.stores.source.puts == [] and env.stores.published.puts == []  # type: ignore[attr-defined]
+
+
+def test_reload_publishes_once(tmp_path, clock):
+    env = make_env(tmp_path, clock)
+    Ingestor(
+        env.settings, env.clock, env.http(), env.stores, parallel=False
+    ).run()  # card data to publish with
+    res = reload(rt(env), cobra_ids=[], abr_ids=[5305])
+    assert res.exit_code == EXIT_OK
+    assert [k for k in env.stores.published.puts if k == "manifest.json"] == ["manifest.json"]  # type: ignore[attr-defined]

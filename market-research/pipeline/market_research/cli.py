@@ -28,6 +28,7 @@ from market_research.runner import (
     format_plan,
     parse_now,
     plan,
+    reload,
     run_all,
 )
 from market_research.storage import ObjectStore, Stores, stores_from_settings
@@ -163,11 +164,27 @@ def backfill_cmd(
         bool, typer.Option("--plan", help="Only list, then print requests and duration per host.")
     ] = False,
     phase: Annotated[int | None, typer.Option(min=1, max=3, help="Run only this phase.")] = None,
+    cobra: Annotated[
+        list[int] | None,
+        typer.Option("--cobra", help="Reload only this Cobra tournament, in full (repeatable)."),
+    ] = None,
+    abr: Annotated[
+        list[int] | None,
+        typer.Option("--abr", help="Reload only this AlwaysBeRunning tournament, in full (repeatable)."),
+    ] = None,
     dry_run: DryRun = False,
     fixtures: Fixtures = None,
     now: Now = None,
 ) -> None:
-    """Initial load: no per-run budget, newest and biggest first, publishes after each phase; resumable."""
+    """Initial load: no per-run budget, newest and biggest first, publishes after each phase; resumable.
+
+    With --cobra/--abr it only reloads those tournaments, then publishes once."""
+    if (cobra or abr) and (since or plan_only or phase):
+        typer.echo("--cobra/--abr cannot be combined with --since, --plan or --phase.", err=True)
+        raise typer.Exit(EXIT_FAILURE)
+    if cobra or abr:
+        rt = _runtime(dry_run, fixtures, now, command="backfill-reload")
+        _finish(reload(rt, cobra_ids=cobra or [], abr_ids=abr or []), "backfill-reload")
     rt = _runtime(dry_run, fixtures, now, command="backfill-plan" if plan_only else "backfill")
     today = rt.clock.now().date()
     start = date.fromisoformat(since) if since else default_since(today, rt.stores)

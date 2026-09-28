@@ -173,6 +173,7 @@ market-research normalize
 market-research compute  [--no-publish]
 market-research run-all  [--budget N] [--dry-run]         # ingest -> normalize -> compute/publish
 market-research backfill [--since YYYY-MM-DD] [--plan] [--phase 1|2|3] [--dry-run]
+market-research backfill --cobra ID ... --abr ID ... [--dry-run]    # reload single tournaments
 market-research report                                     # print the latest quality report
 market-research fixtures refresh --cobra ID | --abr ID [--out DIR]   # manual only
 ```
@@ -187,6 +188,7 @@ Without `--dry-run` it uses the R2 buckets, or the directory in `MR_LOCAL_STORE`
 | `compute` | Computes every slice from the canonical tables, validates it against the schemas and publishes a new `v=<version>/`, `manifest.json` last. | none | published snapshot | yes | yes |
 | `run-all` | `ingest`, then `normalize`, then `compute`. The daily scheduled command. | all three hosts | all of the above | yes | yes |
 | `backfill` | The initial or extended history load: no per-run budget, in three phases, publishing after each; resumable. | all three hosts | all of the above | after each phase | yes, also after each phase |
+| `backfill --cobra ID --abr ID` | Reloads only these tournaments, in full, whatever the frontier says (results or entries, settings, deck pages, decklists and their daily lists), without the date window or the Cobra format check; then normalizes and publishes once. | the tournaments' hosts | all of the above | yes, once | yes |
 | `backfill --plan` | Makes only the listing requests and prints requests and estimated duration per host and phase. | listings only | nothing but its log | no | yes |
 | `report` | Prints the latest published `quality/report.json`. | none | nothing | no | no |
 | `fixtures refresh` | Fetches one live tournament, anonymises it with canaries and writes fixture files for review. | the chosen host | files in `--out` only | no | no |
@@ -202,6 +204,7 @@ Options:
 | `--plan` | `backfill` | Plan only (see above). |
 | `--phase 1\|2\|3` | `backfill` | Run one phase: 1 = events of the last 90 days, 2 = older Megacity+ events, 3 = everything else. Listings, card data and daily decklist files (phase 0) run with every phase. |
 | `--dry-run` | `ingest`, `run-all`, `backfill` | Use a `LocalObjectStore` in a new temporary directory instead of R2; its path is logged as `dry_run_store`. |
+| `--cobra ID` / `--abr ID` | `backfill` | Reload this Cobra / AlwaysBeRunning tournament (repeatable, both may be given). Every ID is looked up first; an unknown one exits `1` and writes nothing. Not combinable with `--since`, `--plan` or `--phase`. AlwaysBeRunning has no single-event API, so its results listing is read until every ID is found. |
 | `--cobra ID` / `--abr ID` | `fixtures refresh` | The tournament to capture; give exactly one. |
 | `--out DIR` | `fixtures refresh` | Output directory (default `tests/fixtures/refresh`). |
 | `--fixtures DIR` (hidden) | `ingest`, `normalize`, `run-all`, `backfill`, `report` | Serve every HTTP request from a recorded fixture directory. Development and tests only. |

@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import threading
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
@@ -74,6 +74,14 @@ class Deferred(Exception):
     """The item cannot be handled yet (it waits for another item)."""
 
 
+class ReloadNotFound(Exception):
+    """Some tournaments asked for by a reload do not exist at their source."""
+
+    def __init__(self, missing: list[str]) -> None:
+        super().__init__(", ".join(missing))
+        self.missing = missing
+
+
 @dataclass
 class Plan:
     """Collected in --plan mode instead of fetching."""
@@ -125,6 +133,7 @@ class Ingestor:
         self._since_flush = 0
         self._last_flush = time.monotonic()
         self._stopped: set[str] = set()
+        self._reload: set[str] | None = None  # during reload(): the keys it fetches again
         prev_q = stores.canonical.get_json(QUALITY_KEY)
         self._prev_quality: dict[str, Any] = prev_q if isinstance(prev_q, dict) else {}
         links = stores.canonical.get_json(LINKS_KEY)
@@ -203,6 +212,10 @@ class Ingestor:
                 priority=priority,
                 event_date=event_date,
             )
+            if self._reload is not None and key not in self._reload:
+                # A reload fetches everything under its tournaments again, once, in full.
+                self._reload.add(key)
+                self.frontier.reopen(key, self.now)
             return created
 
     def seed(self) -> None:
@@ -278,9 +291,14 @@ class Ingestor:
     # ------------------------------------------------------------------ loop
 
     def run(
-        self, *, sources: set[str] | None = None, accept: Callable[[Item], bool] | None = None
+        self,
+        *,
+        sources: set[str] | None = None,
+        accept: Callable[[Item], bool] | None = None,
+        seed: bool = True,
     ) -> RunStats:
-        self.seed()
+        if seed:
+            self.seed()
         groups = sorted({SOURCE_GROUP[s] for s in (sources or {"abr", "cobra", "nrdb"})})
         try:
             while True:
@@ -383,6 +401,84 @@ class Ingestor:
             self._since_flush = 0
             self._last_flush = time.monotonic()
 
+    # ------------------------------------------------------------------ reload
+
+    def reload(self, *, cobra_ids: Iterable[int] = (), abr_ids: Iterable[int] = ()) -> RunStats:
+        """Fetches the given tournaments again in full, with everything under them (results,
+        entries, settings, deck pages, decklists and their daily lists), whatever the frontier
+        says. Discovery rules (date window, Cobra format) are not applied; normalization still
+        decides what counts. Every tournament is looked up first: if one is missing, nothing is
+        written and ReloadNotFound is raised."""
+        abr_list = list(dict.fromkeys(abr_ids))
+        cobra_meta = {tid: self.reload_cobra_meta(tid) for tid in dict.fromkeys(cobra_ids)}
+        abr_events = self.reload_abr_events(abr_list)
+        missing = [f"cobra:{tid}" for tid, m in cobra_meta.items() if m is None]
+        missing += [f"abr:{aid}" for aid in abr_list if aid not in abr_events]
+        if missing:
+            raise ReloadNotFound(missing)
+        self._reload = set()
+        try:
+            types = self.cobra_catalog("tournament_types")
+            for meta in (m for m in cobra_meta.values() if m is not None):
+                key = f"cobra:tournament:{meta.id}"
+                self._collect_cobra_tournament(key, meta, date.fromisoformat(meta.date), types)
+                log.info("reload", key=key, date=meta.date, format_id=meta.format_id)
+            for ev in abr_events.values():
+                self._collect_reloaded_abr_event(ev)
+            reloading = self._reload
+            return self.run(seed=False, accept=lambda it: it.key in reloading)
+        finally:
+            self._reload = None
+
+    def _collect_reloaded_abr_event(self, ev: AbrTournament) -> None:
+        """Stores an ABR event and queues its entries, whether or not discovery would keep it."""
+        self.write(f"abr/tournament/{ev.id}.json", ev)
+        key = f"abr:event:{ev.id}"
+        with self._lock:
+            self.frontier.mark_known(
+                key, source="abr", kind="abr_event", entity_id=str(ev.id), now=self.now, status="seen"
+            )
+            self.frontier.items[key].record_hash = ev.record_hash
+            self.frontier.items[key].event_date = ev.date
+        _, group = self.tiers.abr_tier(ev.type_id)
+        days = (self.today - date.fromisoformat(ev.date)).days
+        pr = event_priority(group, ev.players_count, recency_days=days)
+        ekey = f"abr:entries:{ev.id}"
+        self.enqueue(ekey, "abr", "abr_entries", str(ev.id), priority=pr, event_date=ev.date)
+        log.info("reload", key=ekey, date=ev.date, format=ev.format, skip_reason=self.abr_eligible(ev))
+
+    def reload_cobra_meta(self, tid: int) -> CobraTournament | None:
+        """A Cobra tournament's current metadata, keeping the results already stored (they are
+        fetched again right after, and must not be lost if that fails)."""
+        r = self.http.get(cobra.show_url(tid), accept="application/vnd.api+json, application/json")
+        if r.status == 404:
+            return None
+        if r.status != 200:
+            raise NotFound(f"status {r.status}")
+        meta = cobra.parse_show(r.json(), self.quality, self.fetched_at())
+        stored = self.read(f"cobra/tournament/{tid}.json")
+        if isinstance(stored, dict):
+            old = CobraTournament.model_validate(stored)
+            keep = ("results_fetched", "stages", "players", "pairings")
+            meta = meta.model_copy(update={k: getattr(old, k) for k in keep}).hashed()
+        return meta
+
+    def reload_abr_events(self, ids: list[int]) -> dict[int, AbrTournament]:
+        """ABR has no single-event endpoint: its results listing is read until every ID is found."""
+        found: dict[int, AbrTournament] = {}
+        wanted = set(ids)
+        offset = 0
+        while wanted - found.keys():
+            r = self.http.get(abr.results_url(offset, self.settings.abr_page_size))
+            if r.status != 200:
+                raise NotFound(f"status {r.status}")
+            page = abr.parse_events(r.json(), self.quality, self.fetched_at())
+            found.update((ev.id, ev) for ev in page if ev.id in wanted)
+            if len(page) < self.settings.abr_page_size:
+                break
+            offset += self.settings.abr_page_size
+        return found
+
     # ------------------------------------------------------------------ ABR
 
     def abr_list_urls(self, it: Item) -> list[str] | None:
@@ -481,7 +577,7 @@ class Ingestor:
         rec = abr.parse_entries(tid, r.json(), self.quality)
         changed = self.write(f"abr/entries/{tid}.json", rec, known_hash=it.record_hash)
         base = it.priority % SIGNAL_BONUS
-        if changed:
+        if changed or self._reload is not None:
             ev_date = date.fromisoformat(it.event_date) if it.event_date else self.today
             refs = [
                 (s.deck_ref.kind, s.deck_ref.id)

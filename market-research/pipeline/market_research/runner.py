@@ -19,7 +19,7 @@ from market_research.clock import Clock
 from market_research.config import Settings
 from market_research.frontier import SIGNAL_BONUS, TIER_WEIGHT, Item
 from market_research.http import PoliteHttp
-from market_research.ingest import Ingestor
+from market_research.ingest import Ingestor, ReloadNotFound
 from market_research.normalize import normalize
 from market_research.publish import PublishError, build, publish
 from market_research.records import AbrTournament, CobraTournament
@@ -220,6 +220,35 @@ def backfill(rt: Runtime, since: date, *, phase: int | None = None) -> RunResult
                 break
             res.phases_published.append(p)
             logs.upload(rt.stores.canonical)  # a long backfill leaves its log so far after every phase
+    finally:
+        http.close()
+        res.absorb_http(http)
+    if res.tripped and res.exit_code == EXIT_OK:
+        res.exit_code = EXIT_PARTIAL
+    return res
+
+
+def reload(rt: Runtime, *, cobra_ids: list[int], abr_ids: list[int]) -> RunResult:
+    """Fetches the given tournaments again in full (see Ingestor.reload), then normalizes and
+    publishes once. Exits with failure, writing nothing, when a tournament cannot be found."""
+    res = RunResult()
+    started_at = rt.clock.now()
+    http = rt.http(unlimited=True)
+    ing = Ingestor(rt.settings, rt.clock, http, rt.stores, parallel=rt.parallel)
+    try:
+        try:
+            stats = ing.reload(cobra_ids=cobra_ids, abr_ids=abr_ids)
+        except ReloadNotFound as e:
+            log.error("reload_not_found", tournaments=e.missing)
+            res.exit_code = EXIT_FAILURE
+            return res
+        res.new_records += stats.new_records
+        res.decks_added += stats.decks_added
+        do_normalize(rt)
+        try:
+            do_compute(rt, res, started_at=started_at)
+        except PublishError:
+            res.exit_code = EXIT_FAILURE
     finally:
         http.close()
         res.absorb_http(http)
