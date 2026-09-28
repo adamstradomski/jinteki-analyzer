@@ -2,7 +2,7 @@
   "name": "jinteki-analyzer",
   "private": true,
   "type": "module",
-  "description": "jinteki.net Netrunner log analyzer and its link shortener Worker",
+  "description": "jinteki.win: the Trace log analyzer, Market Research page and link shortener Worker",
   "scripts": {
     "build": "node scripts/render-config.mjs"
   },
