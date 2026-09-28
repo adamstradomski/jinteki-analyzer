@@ -17,27 +17,33 @@
   "additionalProperties": false,
   "properties": {
     "schema": {
+      "description": "Schema ID and major version of this file.",
       "const": "mr.identities/1"
     },
     "version": {
+      "description": "Snapshot version this file belongs to: the UTC start time of the pipeline run that published it, as YYYY-MM-DDTHHMMSSZ. Same as the v=<version>/ folder the file is in and the manifest's version.",
       "type": "string",
       "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{6}Z$"
     },
     "side": {
+      "description": "Side this slice covers: corp or runner.",
       "enum": [
         "corp",
         "runner"
       ]
     },
     "restriction": {
+      "description": "Ban list of this slice: a NetrunnerDB Standard restriction ID (e.g. standard_ban_list_26_05), or all for every ban list combined.",
       "type": "string",
       "pattern": "^(all|[a-z0-9_]{1,80})$"
     },
     "tier_group": {
+      "description": "Tier group of this slice (an id from the manifest's tier_groups, e.g. gnk, store, megacity, online), or all for every tier combined.",
       "type": "string",
       "pattern": "^(all|[a-z0-9_]{1,40})$"
     },
     "period": {
+      "description": "Current period, the same as summary.json's (always the default period). Null when the slice has no decks.",
       "type": [
         "object",
         "null"
@@ -49,16 +55,19 @@
       "additionalProperties": false,
       "properties": {
         "from": {
+          "description": "First month of the period (YYYY-MM, inclusive).",
           "type": "string",
           "pattern": "^\\d{4}-\\d{2}$"
         },
         "to": {
+          "description": "Last month of the period (YYYY-MM, inclusive).",
           "type": "string",
           "pattern": "^\\d{4}-\\d{2}$"
         }
       }
     },
     "baseline": {
+      "description": "Totals for the whole side in the current period, which the identity metrics are compared with.",
       "type": "object",
       "required": [
         "entries",
@@ -72,27 +81,34 @@
       "additionalProperties": false,
       "properties": {
         "entries": {
+          "description": "Entries on this side with a known identity. The denominator of share.",
           "type": "integer"
         },
         "games": {
+          "description": "Every reported game of those entries on this side, excluding intentional draws.",
           "type": "integer"
         },
         "wins": {
+          "description": "Wins in those games; a draw counts as half a win.",
           "type": "number"
         },
         "winrate": {
+          "description": "wins / games (0-1). Null without games.",
           "type": [
             "number",
             "null"
           ]
         },
         "cut_entries": {
+          "description": "Entries in tournaments with a top cut in which identities are known for at least thresholds.coverage_hc of the entries. The denominator of the side's cut rate.",
           "type": "integer"
         },
         "cut_made": {
+          "description": "Of those entries, the ones that made the top cut.",
           "type": "integer"
         },
         "cut_rate": {
+          "description": "cut_made / cut_entries (0-1): the side's average top-cut rate. Null without entries.",
           "type": [
             "number",
             "null"
@@ -101,6 +117,7 @@
       }
     },
     "identities": {
+      "description": "Every identity played in the current period, most played first.",
       "type": "array",
       "items": {
         "type": "object",
@@ -125,78 +142,94 @@
         "additionalProperties": false,
         "properties": {
           "card_id": {
+            "description": "Card ID of the identity (from the catalog).",
             "type": "string",
             "pattern": "^[a-z0-9_]{1,80}$"
           },
           "rank": {
+            "description": "Position by entries (1 = most played; ties by card_id).",
             "type": "integer",
             "minimum": 1
           },
           "entries": {
+            "description": "Entries on this identity.",
             "type": "integer",
             "minimum": 0
           },
           "share": {
+            "description": "entries / baseline.entries (0-1).",
             "type": [
               "number",
               "null"
             ]
           },
           "games": {
+            "description": "Every reported game of those entries, excluding intentional draws.",
             "type": "integer"
           },
           "wins": {
+            "description": "Wins in those games; a draw counts as half a win.",
             "type": "number"
           },
           "winrate": {
+            "description": "wins / games (0-1). Null without games.",
             "type": [
               "number",
               "null"
             ]
           },
           "winrate_diff_pp": {
+            "description": "winrate - baseline.winrate, in percentage points. Null when either is null.",
             "type": [
               "number",
               "null"
             ]
           },
           "wilson_low_pp": {
+            "description": "Lower bound of the Wilson 95% interval of winrate, minus baseline.winrate, in percentage points. Null without games or without a baseline winrate.",
             "type": [
               "number",
               "null"
             ]
           },
           "wilson_high_pp": {
+            "description": "Upper bound of the Wilson 95% interval of winrate, minus baseline.winrate, in percentage points. Null without games or without a baseline winrate.",
             "type": [
               "number",
               "null"
             ]
           },
           "winrate_status": {
+            "description": "ok when games is at least thresholds.min_games (manifest), otherwise insufficient: too small a sample for the winrate to be meaningful.",
             "enum": [
               "ok",
               "insufficient"
             ]
           },
           "cut_entries": {
+            "description": "Entries on this identity in tournaments with a top cut in which identities are known for at least thresholds.coverage_hc of the entries.",
             "type": "integer"
           },
           "cut_made": {
+            "description": "Of those entries, the ones that made the top cut.",
             "type": "integer"
           },
           "conversion": {
+            "description": "cut_made / cut_entries (0-1). Null without entries.",
             "type": [
               "number",
               "null"
             ]
           },
           "conversion_ratio": {
+            "description": "conversion / baseline.cut_rate: 1 = the side's average. Null when either is null or zero.",
             "type": [
               "number",
               "null"
             ]
           },
           "conversion_status": {
+            "description": "ok when cut_entries is at least thresholds.min_entries (manifest), otherwise insufficient: too small a sample for the conversion to be meaningful.",
             "enum": [
               "ok",
               "insufficient"

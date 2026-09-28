@@ -13,12 +13,15 @@
   "additionalProperties": false,
   "properties": {
     "schema": {
+      "description": "Schema ID and major version of this file.",
       "const": "mr.catalog/1"
     },
     "version": {
+      "description": "Snapshot version this file belongs to: the UTC start time of the pipeline run that published it, as YYYY-MM-DDTHHMMSSZ. Same as the v=<version>/ folder the file is in and the manifest's version.",
       "type": "string"
     },
     "restrictions": {
+      "description": "Ban lists the snapshot has data for, oldest first (the same IDs as the manifest, without all).",
       "type": "array",
       "items": {
         "type": "string",
@@ -26,6 +29,7 @@
       }
     },
     "cards": {
+      "description": "Every card legal in Standard under at least one of those ban lists, sorted by id.",
       "type": "array",
       "items": {
         "type": "object",
@@ -41,28 +45,34 @@
         "additionalProperties": false,
         "properties": {
           "id": {
+            "description": "Card ID from the catalog (the NetrunnerDB card ID, the same across printings).",
             "type": "string",
             "pattern": "^[a-z0-9_]{1,80}$"
           },
           "title": {
+            "description": "Card title from the NetrunnerDB catalog.",
             "type": "string",
             "maxLength": 120
           },
           "side": {
+            "description": "Side the card belongs to: corp or runner.",
             "enum": [
               "corp",
               "runner"
             ]
           },
           "type": {
+            "description": "Card type ID from NetrunnerDB, e.g. ice, agenda, program, corp_identity.",
             "type": "string",
             "pattern": "^[a-z0-9_]{1,80}$"
           },
           "faction": {
+            "description": "Faction ID from NetrunnerDB, e.g. jinteki, anarch, neutral_corp.",
             "type": "string",
             "pattern": "^[a-z0-9_]{1,80}$"
           },
           "printings": {
+            "description": "NetrunnerDB printing IDs of the card, sorted.",
             "type": "array",
             "items": {
               "type": "string",
@@ -70,6 +80,7 @@
             }
           },
           "legal_in": {
+            "description": "Ban lists (from restrictions) under which the card is legal in Standard.",
             "type": "array",
             "items": {
               "type": "string",

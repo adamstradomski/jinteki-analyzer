@@ -14,21 +14,26 @@
   "additionalProperties": false,
   "properties": {
     "schema": {
+      "description": "Schema ID and major version of this file.",
       "const": "mr.tournaments/1"
     },
     "version": {
+      "description": "Snapshot version this file belongs to: the UTC start time of the pipeline run that published it, as YYYY-MM-DDTHHMMSSZ. Same as the v=<version>/ folder the file is in and the manifest's version.",
       "type": "string",
       "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{6}Z$"
     },
     "restriction": {
+      "description": "Ban list these tournaments are filtered to, or all.",
       "type": "string",
       "pattern": "^(all|[a-z0-9_]{1,80})$"
     },
     "tier_group": {
+      "description": "Tier group these tournaments are filtered to, or all.",
       "type": "string",
       "pattern": "^(all|[a-z0-9_]{1,40})$"
     },
     "tournaments": {
+      "description": "Every tournament the slice's statistics count (Standard, with a ban list, at least thresholds.min_players players), newest first.",
       "type": "array",
       "items": {
         "type": "object",
@@ -53,10 +58,12 @@
         "additionalProperties": false,
         "properties": {
           "tid": {
+            "description": "Tournament ID: c<Cobra ID> for Cobra tournaments (linked to ABR or not), a<ABR ID> for ABR-only events.",
             "type": "string",
             "pattern": "^[ca][0-9]{1,9}$"
           },
           "name": {
+            "description": "Public tournament name. Null when the sources have none.",
             "type": [
               "string",
               "null"
@@ -64,37 +71,45 @@
             "maxLength": 120
           },
           "date": {
+            "description": "Tournament date (YYYY-MM-DD).",
             "type": "string",
             "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
           },
           "restriction": {
+            "description": "Ban list the tournament was played under (after any override in the quality report).",
             "type": "string",
             "pattern": "^[a-z0-9_]{1,80}$"
           },
           "tier": {
+            "description": "Tier group ID of the tournament (see the manifest's tier_groups).",
             "type": "string",
             "pattern": "^[a-z0-9_]{1,40}$"
           },
           "type": {
+            "description": "Tournament type as the source names it, lower case (e.g. store championship, intercontinental championship). Null when unknown.",
             "type": [
               "string",
               "null"
             ]
           },
           "online": {
+            "description": "Whether the tournament was played online.",
             "type": "boolean"
           },
           "country": {
+            "description": "Country as AlwaysBeRunning lists it. Null when the event isn't linked to ABR or has none.",
             "type": [
               "string",
               "null"
             ]
           },
           "players": {
+            "description": "Number of players.",
             "type": "integer",
             "minimum": 0
           },
           "swiss_format": {
+            "description": "single_sided (one game per round) or double_sided (a game on each side per round). Null when unknown.",
             "enum": [
               "single_sided",
               "double_sided",
@@ -102,25 +117,30 @@
             ]
           },
           "cut_size": {
+            "description": "Players in the top cut; 0 when there was no cut.",
             "type": "integer",
             "minimum": 0
           },
           "cobra_id": {
+            "description": "NSG Cobra tournament ID. Null for ABR-only events.",
             "type": [
               "integer",
               "null"
             ]
           },
           "abr_id": {
+            "description": "AlwaysBeRunning.net event ID. Null when not linked to ABR.",
             "type": [
               "integer",
               "null"
             ]
           },
           "has_games": {
+            "description": "Whether game results (pairings) are known, i.e. whether the tournament counts towards winrates.",
             "type": "boolean"
           },
           "decklist_coverage": {
+            "description": "Entry-sides with a decklist / (2 x players), 0-1.",
             "type": "number",
             "minimum": 0,
             "maximum": 1

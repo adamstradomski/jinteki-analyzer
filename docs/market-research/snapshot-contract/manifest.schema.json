@@ -25,37 +25,45 @@
   "additionalProperties": false,
   "properties": {
     "schema": {
+      "description": "Schema ID and major version of this file.",
       "const": "mr.manifest/1"
     },
     "version": {
+      "description": "Snapshot version: the UTC start time of the pipeline run that published it, as YYYY-MM-DDTHHMMSSZ. Every file of the snapshot carries the same value.",
       "type": "string",
       "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{6}Z$"
     },
     "base_path": {
+      "description": "Folder of this snapshot's files, v=<version>/. Every path in paths is relative to it.",
       "type": "string",
       "pattern": "^v=\\d{4}-\\d{2}-\\d{2}T\\d{6}Z/$"
     },
     "generated_at": {
+      "description": "UTC start time of the pipeline run that built the snapshot (ISO 8601, e.g. 2026-09-27T04:02:20Z).",
       "type": "string"
     },
     "data_as_of": {
+      "description": "Date of the newest tournament in the data (YYYY-MM-DD). Null when there are no tournaments.",
       "type": [
         "string",
         "null"
       ]
     },
     "formats": {
+      "description": "Game formats the snapshot covers. Only Standard.",
       "const": [
         "standard"
       ]
     },
     "sides": {
+      "description": "Sides that have slices: corp and runner.",
       "const": [
         "corp",
         "runner"
       ]
     },
     "restrictions": {
+      "description": "Ban lists with slices, oldest first, after an all entry that combines them. Fills {restriction} in paths.",
       "type": "array",
       "items": {
         "type": "object",
@@ -66,13 +74,16 @@
         "additionalProperties": false,
         "properties": {
           "id": {
+            "description": "Ban list ID (a NetrunnerDB restriction ID), or all.",
             "type": "string",
             "pattern": "^(all|[a-z0-9_]+)$"
           },
           "name": {
+            "description": "Display name, e.g. Standard Ban List 26.05.",
             "type": "string"
           },
           "date_start": {
+            "description": "Date the ban list took effect (YYYY-MM-DD). Null for all or when unknown.",
             "type": [
               "string",
               "null"
@@ -83,6 +94,7 @@
       "minItems": 1
     },
     "tier_groups": {
+      "description": "Tournament tier groups with slices, after an all entry that combines them. Fills {tier_group} in paths.",
       "type": "array",
       "items": {
         "type": "object",
@@ -93,13 +105,16 @@
         "additionalProperties": false,
         "properties": {
           "id": {
+            "description": "Tier group ID, or all.",
             "type": "string",
             "pattern": "^(all|[a-z0-9_]+)$"
           },
           "name": {
+            "description": "Display name, e.g. Megacity+.",
             "type": "string"
           },
           "date_start": {
+            "description": "Unused for tier groups; always absent.",
             "type": [
               "string",
               "null"
@@ -110,6 +125,7 @@
       "minItems": 1
     },
     "months": {
+      "description": "Every month from the first to the last month with data (YYYY-MM), in order. The month indexes in trends.json point into this list.",
       "type": "array",
       "items": {
         "type": "string",
@@ -117,10 +133,12 @@
       }
     },
     "period_months": {
+      "description": "Length of the current period in months (the default view): the last period_months months up to a slice's latest month with data. The previous period is the same length just before it.",
       "type": "integer",
       "minimum": 1
     },
     "thresholds": {
+      "description": "Settings the metrics were computed with.",
       "type": "object",
       "required": [
         "min_games",
@@ -131,20 +149,25 @@
       "additionalProperties": false,
       "properties": {
         "min_games": {
+          "description": "Minimum games for a winrate to be marked ok rather than insufficient.",
           "type": "integer"
         },
         "min_entries": {
+          "description": "Minimum high-coverage entries for a top-cut conversion to be marked ok.",
           "type": "integer"
         },
         "coverage_hc": {
+          "description": "Minimum decklist coverage (0-1) for a tournament with a top cut to count as high-coverage, i.e. to be used for conversion.",
           "type": "number"
         },
         "min_players": {
+          "description": "Minimum players for a tournament to be counted at all.",
           "type": "integer"
         }
       }
     },
     "paths": {
+      "description": "File path templates relative to base_path. {side}, {restriction} and {tier_group} are filled from sides, restrictions and tier_groups.",
       "type": "object",
       "required": [
         "catalog",
@@ -159,38 +182,48 @@
       "additionalProperties": false,
       "properties": {
         "catalog": {
+          "description": "The card catalog (mr.catalog).",
           "type": "string"
         },
         "summary": {
+          "description": "Current-period card metrics of a slice (mr.summary).",
           "type": "string"
         },
         "trends": {
+          "description": "Monthly additive card counts of a slice (mr.trends).",
           "type": "string"
         },
         "identities": {
+          "description": "Identity metrics of a slice (mr.identities).",
           "type": "string"
         },
         "quality": {
+          "description": "The data quality report (mr.quality).",
           "type": "string"
         },
         "summary_cut": {
+          "description": "Like summary, over top-cut decks only.",
           "type": "string"
         },
         "trends_cut": {
+          "description": "Like trends, over top-cut decks only.",
           "type": "string"
         },
         "tournaments": {
+          "description": "The tournaments a ban list and tier group counts, the same for both sides (mr.tournaments).",
           "type": "string"
         }
       }
     },
     "schemas": {
+      "description": "Schema ID of each file kind (e.g. summary: mr.summary/1), keyed like paths plus manifest.",
       "type": "object",
       "additionalProperties": {
         "type": "string"
       }
     },
     "attribution": {
+      "description": "Credit for the data sources, to show with the data.",
       "type": "object",
       "required": [
         "text",
@@ -199,9 +232,11 @@
       "additionalProperties": false,
       "properties": {
         "text": {
+          "description": "One sentence naming where each kind of data comes from.",
           "type": "string"
         },
         "links": {
+          "description": "Links to the data sources.",
           "type": "array",
           "items": {
             "type": "object",
@@ -212,9 +247,11 @@
             "additionalProperties": false,
             "properties": {
               "name": {
+                "description": "Source name, e.g. NetrunnerDB.",
                 "type": "string"
               },
               "url": {
+                "description": "Source website.",
                 "type": "string",
                 "format": "uri"
               }
@@ -224,6 +261,7 @@
       }
     },
     "disclaimer": {
+      "description": "Notice to show with the data (a fan project, not affiliated with Null Signal Games).",
       "type": "string"
     }
   }
