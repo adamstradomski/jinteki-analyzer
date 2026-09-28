@@ -29,7 +29,6 @@ dev = [
   "pytest-socket>=0.8,<0.9",
   "pytest-xdist>=3,<4",
   "respx>=0.23,<0.24",
-  "freezegun>=1.5,<2",
   "hypothesis>=6,<7",
   "ruff>=0.16,<0.17",
   "mypy>=2.3,<3",

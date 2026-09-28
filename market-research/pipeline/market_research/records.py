@@ -41,9 +41,6 @@ class Record(BaseModel):
             return self
         return self.model_copy(update={"record_hash": self.compute_hash()})
 
-    def to_json_obj(self) -> dict[str, Any]:
-        return self.model_dump(mode="json")
-
 
 class Part(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)

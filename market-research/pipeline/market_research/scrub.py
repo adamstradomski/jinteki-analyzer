@@ -52,7 +52,3 @@ class IngestQuality:
             "quarantine": sorted(self.quarantine, key=lambda e: (e["key"], e["error"])),
             "rejected_deck_refs": self.rejected_refs,
         }
-
-
-def keys_of(obj: Any) -> list[str]:
-    return list(obj.keys()) if isinstance(obj, dict) else []

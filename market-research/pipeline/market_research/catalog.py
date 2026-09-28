@@ -5,7 +5,6 @@ from __future__ import annotations
 import re
 import unicodedata
 from dataclasses import dataclass
-from datetime import date
 
 from market_research.records import CatCard, CatRestriction, CatSnapshot, NrdbCatalog
 
@@ -176,7 +175,3 @@ class Catalog:
             if agenda_points not in (need, need + 1):
                 issues.append("agenda_points")
         return Legality(not issues, issues)
-
-
-def month_of(d: str) -> str:
-    return date.fromisoformat(d).strftime("%Y-%m")

@@ -35,7 +35,6 @@ from market_research.records import (
     AbrTournament,
     CobraTournament,
     NrdbByDate,
-    NrdbCatalog,
     Record,
     dump,
 )
@@ -80,17 +79,6 @@ class ReloadNotFound(Exception):
     def __init__(self, missing: list[str]) -> None:
         super().__init__(", ".join(missing))
         self.missing = missing
-
-
-@dataclass
-class Plan:
-    """Collected in --plan mode instead of fetching."""
-
-    requests: dict[str, dict[int, int]] = field(default_factory=dict)
-
-    def add(self, group: str, phase: int, n: int = 1) -> None:
-        self.requests.setdefault(group, {}).setdefault(phase, 0)
-        self.requests[group][phase] += n
 
 
 def _cobra_index_data(r: HttpResult) -> list[Any]:
@@ -960,8 +948,3 @@ class Ingestor:
                 record_hash=rec.record_hash,
                 last_modified=r.last_modified,
             )
-
-
-def catalog_record(stores: Stores, kind: str) -> NrdbCatalog | None:
-    raw = stores.source.get_json(f"nrdb/catalog/{kind}.json")
-    return NrdbCatalog.model_validate(raw) if isinstance(raw, dict) else None

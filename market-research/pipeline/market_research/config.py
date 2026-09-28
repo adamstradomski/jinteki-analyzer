@@ -76,7 +76,6 @@ class Settings(BaseModel):
     abr_page_size: int = 200
     flush_every_items: int = 100
     flush_every_s: float = 300.0
-    data_base_url: str = "https://data.jinteki.win"
 
     @property
     def user_agent(self) -> str:
