@@ -44,10 +44,10 @@ def test_every_slice_path_exists_and_is_deterministic(built):
     for side in m["sides"]:
         for r in m["restrictions"]:
             for g in m["tier_groups"]:
-                for kind in ("summary", "trends", "identities"):
+                for kind in ("summary", "trends", "identities", "summary_cut", "trends_cut"):
                     path = m["paths"][kind].format(side=side, restriction=r["id"], tier_group=g["id"])
                     assert path in snap.files, path
-    expected = 2 * len(m["restrictions"]) * len(m["tier_groups"]) * 3 + 2
+    expected = 2 * len(m["restrictions"]) * len(m["tier_groups"]) * 5 + 2
     assert len(snap.files) == expected
     assert m["base_path"] == f"v={m['version']}/"
 

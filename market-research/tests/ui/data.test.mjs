@@ -32,7 +32,7 @@ test('every slice path built from the manifest exists', () => {
   for (const side of manifest.sides) {
     for (const r of manifest.restrictions) {
       for (const t of manifest.tier_groups) {
-        for (const kind of ['summary', 'trends', 'identities']) {
+        for (const kind of ['summary', 'trends', 'identities', 'summary_cut', 'trends_cut']) {
           const url = D.sliceUrl('/snap/', manifest, kind, { side, restriction: r.id, tier: t.id });
           assert.ok(existsSync(path.join(root, url.slice(6))), url);
         }
@@ -43,13 +43,14 @@ test('every slice path built from the manifest exists', () => {
   assert.throws(() => D.sliceUrl('/snap/', manifest, 'summary', { side: 'corp', restriction: '../x', tier: 'all' }));
 });
 
-test('summing trends over the summary period reproduces summary.json', () => {
+test('summing trends over the summary period reproduces summary.json (every deck and top-cut decks)', () => {
+  for (const [summaryKind, trendsKind] of [['summary', 'trends'], ['summary_cut', 'trends_cut']]) {
   for (const side of manifest.sides) {
     for (const r of manifest.restrictions) {
       for (const t of manifest.tier_groups) {
         const s = { side, restriction: r.id, tier: t.id };
-        const summary = slice('summary', s);
-        const trends = slice('trends', s);
+        const summary = slice(summaryKind, s);
+        const trends = slice(trendsKind, s);
         if (!summary.period) {
           assert.equal(summary.cards.length, 0);
           continue;
@@ -83,6 +84,19 @@ test('summing trends over the summary period reproduces summary.json', () => {
         assert.deepEqual(mine.fallers, summary.fallers);
       }
     }
+  }
+  }
+});
+
+test('top-cut slices are a subset of every deck', () => {
+  for (const side of manifest.sides) {
+    const s = { side, restriction: 'all', tier: 'all' };
+    const all = slice('summary', s);
+    const cut = slice('summary_cut', s);
+    assert.deepEqual(cut.period, all.period);
+    assert.ok(cut.baseline.decks <= all.baseline.decks && cut.baseline.games <= all.baseline.games);
+    const decks = new Map(all.cards.map((c) => [c.card_id, c.decks]));
+    for (const c of cut.cards) assert.ok(c.decks <= (decks.get(c.card_id) ?? 0), c.card_id);
   }
 });
 

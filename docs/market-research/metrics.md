@@ -23,6 +23,16 @@ Because every ratio is a sum divided by a sum, the UI can combine any months or 
 popularity, winrate, conversion and the Wilson interval itself (`public/market-research/data.js`).
 The default views are precomputed anyway (`summary.json`, `identities.json`).
 
+## Top-cut decks
+
+Each slice also has a top-cut scope, `cut/summary.json` and `cut/trends.json` (manifest paths
+`summary_cut`, `trends_cut`): the same card and baseline counts, computed only over decks that made
+the cut in events that had one (`cut_size > 0`), and the games those decks played. Popularity is then
+the share of top-cut decks playing a card, and winrate is compared with the winrate of all top-cut
+decks. `side_games_all` / `side_wins_all` count every game of the players who made the cut. The period
+is always the one of the all-decks scope, so both scopes cover the same months. The page's "Top-cut
+decks only" switch reads these files; identities have no top-cut scope.
+
 ## Definitions
 
 - popularity = decks_with_card / decks_total

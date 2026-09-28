@@ -151,7 +151,9 @@
         "summary",
         "trends",
         "identities",
-        "quality"
+        "quality",
+        "summary_cut",
+        "trends_cut"
       ],
       "additionalProperties": false,
       "properties": {
@@ -168,6 +170,12 @@
           "type": "string"
         },
         "quality": {
+          "type": "string"
+        },
+        "summary_cut": {
+          "type": "string"
+        },
+        "trends_cut": {
           "type": "string"
         }
       }

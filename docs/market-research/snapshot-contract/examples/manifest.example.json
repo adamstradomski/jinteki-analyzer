@@ -67,6 +67,8 @@
     "catalog": "catalog/cards.json",
     "summary": "meta/{side}/{restriction}/{tier_group}/summary.json",
     "trends": "meta/{side}/{restriction}/{tier_group}/trends.json",
+    "summary_cut": "meta/{side}/{restriction}/{tier_group}/cut/summary.json",
+    "trends_cut": "meta/{side}/{restriction}/{tier_group}/cut/trends.json",
     "identities": "meta/{side}/{restriction}/{tier_group}/identities.json",
     "quality": "quality/report.json"
   },

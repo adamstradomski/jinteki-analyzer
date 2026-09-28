@@ -49,8 +49,73 @@ def ratio(a: float, b: float) -> float | None:
     return a / b if b else None
 
 
+def _counts_sql(suffix: str, d: str, dg: str, g: str, t: str) -> str:
+    """card_counts{suffix} and side_counts{suffix} over the given deck, deck-game, game and event tables."""
+    return f"""
+        CREATE OR REPLACE TABLE card_counts{suffix} AS
+        WITH per_deck AS (
+            SELECT d.*, dc.card_id, dc.qty FROM {d} d JOIN deck_card dc USING (deck_id)
+            JOIN legal l ON l.card_id = dc.card_id AND l.restriction_id = d.restriction_id
+        ),
+        decks AS (
+            SELECT side, restriction_id, tier, month, card_id,
+                   count(*) AS decks_with_card, sum(qty) AS copies_sum,
+                   count(*) FILTER (WHERE qty = 1) AS qty1, count(*) FILTER (WHERE qty = 2) AS qty2,
+                   count(*) FILTER (WHERE qty >= 3) AS qty3,
+                   count(*) FILTER (WHERE hc) AS entries_with_card_hc,
+                   count(*) FILTER (WHERE hc AND made_cut) AS cut_with_card_hc,
+                   count(DISTINCT tid) FILTER (WHERE hc) AS tournaments_hc_with_card
+            FROM per_deck GROUP BY ALL
+        ),
+        games AS (
+            SELECT dg.side, dg.restriction_id, dg.tier, dg.month, dc.card_id,
+                   count(*) AS games_total, sum(dg.won) AS games_won
+            FROM {dg} dg JOIN deck_card dc USING (deck_id)
+            JOIN legal l ON l.card_id = dc.card_id AND l.restriction_id = dg.restriction_id
+            GROUP BY ALL
+        )
+        SELECT decks.side, decks.restriction_id, decks.tier, decks.month, decks.card_id,
+               decks_with_card, copies_sum, qty1, qty2, qty3,
+               coalesce(games_total, 0) AS games_total, coalesce(games_won, 0.0) AS games_won,
+               entries_with_card_hc, cut_with_card_hc, tournaments_hc_with_card
+        FROM decks LEFT JOIN games USING (side, restriction_id, tier, month, card_id);
+
+        CREATE OR REPLACE TABLE side_counts{suffix} AS
+        WITH sides AS (SELECT * FROM (VALUES ('corp'), ('runner')) s(side)),
+        dk AS (
+            SELECT side, restriction_id, tier, month, count(*) AS side_decks,
+                   count(*) FILTER (WHERE hc) AS side_entries_hc,
+                   count(*) FILTER (WHERE hc AND made_cut) AS side_cut_hc
+            FROM {d} GROUP BY ALL
+        ),
+        gm AS (
+            SELECT side, restriction_id, tier, month, count(*) AS side_games, sum(won) AS side_wins
+            FROM {dg} GROUP BY ALL
+        ),
+        -- Every game, deck known or not: the headline side winrate (corp + runner = 100%).
+        ga AS (
+            SELECT side, restriction_id, tier, month, count(*) AS side_games_all, sum(won) AS side_wins_all
+            FROM {g} GROUP BY ALL
+        ),
+        tn AS (
+            SELECT restriction_id, tier, month, count(*) AS tournaments, count(*) FILTER (WHERE hc) AS tournaments_hc
+            FROM {t} GROUP BY ALL
+        )
+        SELECT s.side, tn.restriction_id, tn.tier, tn.month,
+               coalesce(dk.side_decks, 0) AS side_decks, coalesce(gm.side_games, 0) AS side_games,
+               coalesce(gm.side_wins, 0.0) AS side_wins, coalesce(dk.side_entries_hc, 0) AS side_entries_hc,
+               coalesce(dk.side_cut_hc, 0) AS side_cut_hc, tn.tournaments, tn.tournaments_hc,
+               coalesce(ga.side_games_all, 0) AS side_games_all, coalesce(ga.side_wins_all, 0.0) AS side_wins_all
+        FROM tn CROSS JOIN sides s
+        LEFT JOIN dk ON dk.side = s.side AND dk.restriction_id = tn.restriction_id AND dk.tier = tn.tier AND dk.month = tn.month
+        LEFT JOIN gm ON gm.side = s.side AND gm.restriction_id = tn.restriction_id AND gm.tier = tn.tier AND gm.month = tn.month
+        LEFT JOIN ga ON ga.side = s.side AND ga.restriction_id = tn.restriction_id AND ga.tier = tn.tier AND ga.month = tn.month;
+    """
+
+
 def compute_counts(con: duckdb.DuckDBPyConnection, catalog: Catalog, settings: Settings) -> None:
-    """Creates card_counts, side_counts, identity_counts and identity_side_counts from canonical tables."""
+    """Creates card_counts, side_counts, identity_counts and identity_side_counts from canonical tables,
+    plus card_counts_cut and side_counts_cut for decks that made the cut in events that had one."""
     t = settings.thresholds
     con.execute("CREATE OR REPLACE TABLE legal (card_id VARCHAR, restriction_id VARCHAR)")
     restrictions = [
@@ -86,65 +151,7 @@ def compute_counts(con: duckdb.DuckDBPyConnection, catalog: Catalog, settings: S
         SELECT d.deck_id, g.won, d.side, d.restriction_id, d.tier, d.month
         FROM g JOIN d ON d.tid = g.tid AND d.entry_no = g.entry_no AND d.side = g.side;
 
-        CREATE OR REPLACE TABLE card_counts AS
-        WITH per_deck AS (
-            SELECT d.*, dc.card_id, dc.qty FROM d JOIN deck_card dc USING (deck_id)
-            JOIN legal l ON l.card_id = dc.card_id AND l.restriction_id = d.restriction_id
-        ),
-        decks AS (
-            SELECT side, restriction_id, tier, month, card_id,
-                   count(*) AS decks_with_card, sum(qty) AS copies_sum,
-                   count(*) FILTER (WHERE qty = 1) AS qty1, count(*) FILTER (WHERE qty = 2) AS qty2,
-                   count(*) FILTER (WHERE qty >= 3) AS qty3,
-                   count(*) FILTER (WHERE hc) AS entries_with_card_hc,
-                   count(*) FILTER (WHERE hc AND made_cut) AS cut_with_card_hc,
-                   count(DISTINCT tid) FILTER (WHERE hc) AS tournaments_hc_with_card
-            FROM per_deck GROUP BY ALL
-        ),
-        games AS (
-            SELECT dg.side, dg.restriction_id, dg.tier, dg.month, dc.card_id,
-                   count(*) AS games_total, sum(dg.won) AS games_won
-            FROM dg JOIN deck_card dc USING (deck_id)
-            JOIN legal l ON l.card_id = dc.card_id AND l.restriction_id = dg.restriction_id
-            GROUP BY ALL
-        )
-        SELECT decks.side, decks.restriction_id, decks.tier, decks.month, decks.card_id,
-               decks_with_card, copies_sum, qty1, qty2, qty3,
-               coalesce(games_total, 0) AS games_total, coalesce(games_won, 0.0) AS games_won,
-               entries_with_card_hc, cut_with_card_hc, tournaments_hc_with_card
-        FROM decks LEFT JOIN games USING (side, restriction_id, tier, month, card_id);
-
-        CREATE OR REPLACE TABLE side_counts AS
-        WITH sides AS (SELECT * FROM (VALUES ('corp'), ('runner')) s(side)),
-        dk AS (
-            SELECT side, restriction_id, tier, month, count(*) AS side_decks,
-                   count(*) FILTER (WHERE hc) AS side_entries_hc,
-                   count(*) FILTER (WHERE hc AND made_cut) AS side_cut_hc
-            FROM d GROUP BY ALL
-        ),
-        gm AS (
-            SELECT side, restriction_id, tier, month, count(*) AS side_games, sum(won) AS side_wins
-            FROM dg GROUP BY ALL
-        ),
-        -- Every game, deck known or not: the headline side winrate (corp + runner = 100%).
-        ga AS (
-            SELECT side, restriction_id, tier, month, count(*) AS side_games_all, sum(won) AS side_wins_all
-            FROM g GROUP BY ALL
-        ),
-        tn AS (
-            SELECT restriction_id, tier, month, count(*) AS tournaments, count(*) FILTER (WHERE hc) AS tournaments_hc
-            FROM t GROUP BY ALL
-        )
-        SELECT s.side, tn.restriction_id, tn.tier, tn.month,
-               coalesce(dk.side_decks, 0) AS side_decks, coalesce(gm.side_games, 0) AS side_games,
-               coalesce(gm.side_wins, 0.0) AS side_wins, coalesce(dk.side_entries_hc, 0) AS side_entries_hc,
-               coalesce(dk.side_cut_hc, 0) AS side_cut_hc, tn.tournaments, tn.tournaments_hc,
-               coalesce(ga.side_games_all, 0) AS side_games_all, coalesce(ga.side_wins_all, 0.0) AS side_wins_all
-        FROM tn CROSS JOIN sides s
-        LEFT JOIN dk ON dk.side = s.side AND dk.restriction_id = tn.restriction_id AND dk.tier = tn.tier AND dk.month = tn.month
-        LEFT JOIN gm ON gm.side = s.side AND gm.restriction_id = tn.restriction_id AND gm.tier = tn.tier AND gm.month = tn.month
-        LEFT JOIN ga ON ga.side = s.side AND ga.restriction_id = tn.restriction_id AND ga.tier = tn.tier AND ga.month = tn.month;
-
+        {_counts_sql("", "d", "dg", "g", "t")}
         CREATE OR REPLACE TABLE ie AS
         SELECT e.tid, e.entry_no, s.side,
                CASE WHEN s.side = 'corp' THEN e.corp_identity ELSE e.runner_identity END AS identity,
@@ -179,6 +186,19 @@ def compute_counts(con: duckdb.DuckDBPyConnection, catalog: Catalog, settings: S
         SELECT side, restriction_id, tier, month, sum(entries) AS side_entries, sum(games_total) AS side_games,
                sum(games_won) AS side_wins, sum(cut_entries) AS side_cut_entries, sum(cut_made) AS side_cut_made
         FROM identity_counts GROUP BY ALL;
+        """
+    )
+    # Top-cut scope: only decks (and players) that made the cut, in events that had one. The same
+    # counts as above, so the page can switch every card view to what top-cut decks played.
+    con.execute(
+        f"""
+        CREATE OR REPLACE TABLE t_cut AS SELECT t.* FROM t JOIN tournament tn USING (tid) WHERE tn.cut_size > 0;
+        CREATE OR REPLACE TABLE d_cut AS SELECT d.* FROM d JOIN t_cut USING (tid) WHERE d.made_cut;
+        CREATE OR REPLACE TABLE dg_cut AS SELECT dg.* FROM dg JOIN d_cut USING (deck_id);
+        CREATE OR REPLACE TABLE g_cut AS
+        SELECT g.* FROM g JOIN t_cut USING (tid)
+        JOIN entry e ON e.tid = g.tid AND e.entry_no = g.entry_no WHERE e.made_cut;
+        {_counts_sql("_cut", "d_cut", "dg_cut", "g_cut", "t_cut")}
         """
     )
 

@@ -46,6 +46,9 @@ PATHS = {
     "catalog": "catalog/cards.json",
     "summary": "meta/{side}/{restriction}/{tier_group}/summary.json",
     "trends": "meta/{side}/{restriction}/{tier_group}/trends.json",
+    # The same card stats over top-cut decks only (decks that made the cut in events with a cut).
+    "summary_cut": "meta/{side}/{restriction}/{tier_group}/cut/summary.json",
+    "trends_cut": "meta/{side}/{restriction}/{tier_group}/cut/trends.json",
     "identities": "meta/{side}/{restriction}/{tier_group}/identities.json",
     "quality": "quality/report.json",
 }
@@ -142,6 +145,19 @@ class SnapshotBuilder:
             con, "card_counts", ["side", "restriction_id", "tier", "month", "card_id"], CARD_COLUMNS
         )
         self.base = _rows(con, "side_counts", ["side", "restriction_id", "tier", "month"], BASELINE_COLUMNS)
+        # (card rows, baseline rows) per deck scope: every deck, or top-cut decks only.
+        self.scopes = {
+            "all": (self.cards, self.base),
+            "cut": (
+                _rows(
+                    con,
+                    "card_counts_cut",
+                    ["side", "restriction_id", "tier", "month", "card_id"],
+                    CARD_COLUMNS,
+                ),
+                _rows(con, "side_counts_cut", ["side", "restriction_id", "tier", "month"], BASELINE_COLUMNS),
+            ),
+        }
         self.idents = _rows(
             con, "identity_counts", ["side", "restriction_id", "tier", "month", "identity"], IDENTITY_COLUMNS
         )
@@ -176,12 +192,16 @@ class SnapshotBuilder:
         prev = month_range(add_months(to, -(2 * p - 1)), add_months(to, -p))
         return cur, prev
 
-    def summary(self, side: str, restriction: str, group: str) -> tuple[dict[str, Any], dict[str, Any]]:
+    def summary(
+        self, side: str, restriction: str, group: str, scope: str = "all"
+    ) -> tuple[dict[str, Any], dict[str, Any]]:
+        """The summary for one deck scope; its period is always that of every deck, so both scopes align."""
         cur, prev = self._period(side, restriction, group)
+        card_rows, base_rows = self.scopes[scope]
         cs, ps = set(cur), set(prev)
         base_c = dict.fromkeys(BASELINE_COLUMNS, 0.0)
         base_p = dict.fromkeys(BASELINE_COLUMNS, 0.0)
-        for r in self.base:
+        for r in base_rows:
             if self._match(r, side, restriction, group):
                 tgt = base_c if r[3] in cs else base_p if r[3] in ps else None
                 if tgt is not None:
@@ -189,7 +209,7 @@ class SnapshotBuilder:
                         tgt[col] += r[4 + i]
         per_c: dict[str, dict[str, float]] = defaultdict(lambda: dict.fromkeys(CARD_COLUMNS, 0.0))
         per_p: dict[str, dict[str, float]] = defaultdict(lambda: dict.fromkeys(CARD_COLUMNS, 0.0))
-        for r in self.cards:
+        for r in card_rows:
             if self._match(r, side, restriction, group) and (r[3] in cs or r[3] in ps):
                 tgt = per_c[r[4]] if r[3] in cs else per_p[r[4]]
                 for i, col in enumerate(CARD_COLUMNS):
@@ -282,11 +302,12 @@ class SnapshotBuilder:
             "identities": rows,
         }
 
-    def trends(self, side: str, restriction: str, group: str) -> dict[str, Any]:
+    def trends(self, side: str, restriction: str, group: str, scope: str = "all") -> dict[str, Any]:
+        card_rows, base_rows = self.scopes[scope]
         m_idx = {m: i for i, m in enumerate(self.months)}
         r_idx = {r: i for i, r in enumerate(self.restrictions)}
         base: dict[tuple[int, int], list[float]] = defaultdict(lambda: [0.0] * len(BASELINE_COLUMNS))
-        for r in self.base:
+        for r in base_rows:
             if self._match(r, side, restriction, group):
                 acc = base[(m_idx[r[3]], r_idx[r[1]])]
                 for i in range(len(BASELINE_COLUMNS)):
@@ -294,7 +315,7 @@ class SnapshotBuilder:
         cards: dict[str, dict[tuple[int, int], list[float]]] = defaultdict(
             lambda: defaultdict(lambda: [0.0] * len(CARD_COLUMNS))
         )
-        for r in self.cards:
+        for r in card_rows:
             if self._match(r, side, restriction, group):
                 acc = cards[r[4]][(m_idx[r[3]], r_idx[r[1]])]
                 for i in range(len(CARD_COLUMNS)):
@@ -367,6 +388,10 @@ class SnapshotBuilder:
                     files[PATHS["summary"].format(**fmt)] = summary
                     files[PATHS["identities"].format(**fmt)] = idents
                     files[PATHS["trends"].format(**fmt)] = self.trends(side, restriction, group)
+                    files[PATHS["summary_cut"].format(**fmt)] = self.summary(side, restriction, group, "cut")[
+                        0
+                    ]
+                    files[PATHS["trends_cut"].format(**fmt)] = self.trends(side, restriction, group, "cut")
         files[PATHS["quality"]] = {"schema": SCHEMAS["quality"], "version": self.version, **quality}
         as_of = self.data_as_of[0] if self.data_as_of else None
         manifest = {
@@ -484,6 +509,10 @@ def validate(snap: Snapshot, con: duckdb.DuckDBPyConnection) -> list[str]:
         row = con.execute("SELECT count(*) FROM dg WHERE side = ?", [side]).fetchone()
         if games != (row[0] if row else 0):
             errors.append(f"{side}: published games {games} != canonical")
+        cut = snap.files[PATHS["trends_cut"].format(side=side, restriction="all", tier_group="all")]
+        row = con.execute("SELECT count(*) FROM d_cut WHERE side = ?", [side]).fetchone()
+        if sum(r[2] for r in cut["baseline"]) != (row[0] if row else 0):
+            errors.append(f"{side}: published top-cut decks != canonical")
     return errors
 
 
