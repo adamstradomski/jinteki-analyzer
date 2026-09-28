@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import json
 from dataclasses import replace
 from pathlib import Path
@@ -22,11 +23,20 @@ from market_research.storage import LocalObjectStore
 DOCS = Path(__file__).resolve().parents[2] / "docs" / "market-research" / "snapshot-contract"
 
 
+@pytest.fixture(scope="module")
+def snapshot(fixture_run, tmp_path_factory):
+    """One snapshot built from the shared fixture run; tests get a copy through `built`."""
+    env, _, _, _ = fixture_run
+    stores = replace(env.stores, published=LocalObjectStore(tmp_path_factory.mktemp("published")))
+    return build(stores, env.settings, env.clock.now())
+
+
 @pytest.fixture
-def built(fixture_run, tmp_path):
+def built(fixture_run, snapshot, tmp_path):
+    """(stores with an empty published store, a copy of the snapshot, its validation errors)."""
     env, _, _, _ = fixture_run
     stores = replace(env.stores, published=LocalObjectStore(tmp_path / "published"))
-    snap, errors = build(stores, env.settings, env.clock.now())
+    snap, errors = copy.deepcopy(snapshot)
     return stores, snap, errors
 
 
@@ -95,11 +105,11 @@ def test_invalid_snapshot_publishes_nothing(built):
     assert stores.published.get("manifest.json") == old
 
 
-def test_validation_catches_bad_content(fixture_run, tmp_path):
+def test_validation_catches_bad_content(fixture_run, built, tmp_path):
     from market_research import publish as pub
 
     env, _, _, _ = fixture_run
-    snap, errors = build(env.stores, env.settings, env.clock.now())
+    _, snap, errors = built
     assert not errors
     s = snap.files[PATHS["summary"].format(side="corp", restriction="all", tier_group="all")]
     s["cards"][0]["card_id"] = "made_up_card"
