@@ -65,6 +65,8 @@ body { margin: 0; background: var(--bg); }
 .mr-guide dd { margin: 0; color: var(--dim); }
 @media (max-width: 560px) { .mr-guide dl { grid-template-columns: 1fr; } .mr-guide dd { margin-bottom: var(--space-2); } }
 .mr-band { fill: var(--accent); fill-opacity: 0.12; }
+/* Months the card was banned (card detail charts). */
+.mr-ban { fill: var(--neg); fill-opacity: 0.18; }
 /* Loading: the panel's content is blurred under a spinning wheel until its data arrives. The
    header stays sharp; the filters themselves are never blocked. */
 .mr-busy { position: relative; }

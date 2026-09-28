@@ -573,9 +573,10 @@ function niceAxis(lo, hi, ticks = 4) {
 }
 
 // Monthly line chart. Each series plots `value` (the option, or its own), drawn dashed when it
-// has `dash`; `interval` shades a band for the first series; points `hollow` flags are drawn open.
+// has `dash`; `interval` shades a band for the first series; points `hollow` flags are drawn open;
+// `bans` (from D.banPeriods) shades in red the months the card was banned.
 function lineChart(host, series, markers, {
-  height = 260, label, band = null, value = (p) => p.popularity, interval = null, hollow = null,
+  height = 260, label, band = null, bans = [], value = (p) => p.popularity, interval = null, hollow = null,
   axis = null, tick = (v) => `${Math.round(v * 100)}%`, zero = false, tip = null,
 }) {
   const months = series[0]?.points.map((p) => p.month) || [];
@@ -596,17 +597,18 @@ function lineChart(host, series, markers, {
     s.append(svg('line', { class: isAxis ? 'chart-axis' : 'chart-grid', x1: m.l, x2: width - m.r, y1: y(v), y2: y(v) }));
     s.append(svg('text', { class: 'chart-tick', x: m.l - 6, y: y(v) + 3, 'text-anchor': 'end' }, tick(v)));
   }
-  if (band) {
-    // Shade the months selected in the filters; the rest of the timeline stays for context.
-    const i0 = months.indexOf(band.from);
-    const i1 = months.indexOf(band.to);
-    if (i0 >= 0 && i1 >= i0) {
-      const half = months.length > 1 ? iw / (months.length - 1) / 2 : iw / 2;
-      const x0 = Math.max(m.l, x(i0) - half);
-      const x1 = Math.min(m.l + iw, x(i1) + half);
-      s.append(svg('rect', { class: 'mr-band', x: x0, y: m.t, width: Math.max(1, x1 - x0), height: ih }));
-    }
-  }
+  // Shade the months from index i0 to i1, each month spanning half a step either side of its point.
+  const shade = (i0, i1, cls) => {
+    if (i0 < 0 || i1 < i0) return;
+    const half = months.length > 1 ? iw / (months.length - 1) / 2 : iw / 2;
+    const x0 = Math.max(m.l, x(i0) - half);
+    const x1 = Math.min(m.l + iw, x(i1) + half);
+    s.append(svg('rect', { class: cls, x: x0, y: m.t, width: Math.max(1, x1 - x0), height: ih }));
+  };
+  const banned = months.map((mo) => bans.find((b) => mo >= b.from && mo <= b.to));
+  for (const b of bans) shade(months.findIndex((mo) => mo >= b.from), months.findLastIndex((mo) => mo <= b.to), 'mr-ban');
+  // Shade the months selected in the filters; the rest of the timeline stays for context.
+  if (band) shade(months.indexOf(band.from), months.indexOf(band.to), 'mr-band');
   const step = Math.ceil(months.length / Math.max(2, Math.floor(iw / 70)));
   months.forEach((mo, i) => {
     if (i % step === 0 || i === months.length - 1) {
@@ -678,7 +680,7 @@ function lineChart(host, series, markers, {
     showTip(ev.clientX, ev.clientY, [monthName(months[i]), ...(tip ? tip(i) : series.map((ser) => {
       const p = ser.points[i];
       return `${ser.name}: ${fmtPct(p.popularity)} (${fmtN(p.decks)} of ${fmtInt(p.total)})`;
-    }))]);
+    })), ...(banned[i] ? [`Banned (${banned[i].names.join(', ')})`] : [])]);
   });
   hit.addEventListener('pointerleave', () => { cross.setAttribute('visibility', 'hidden'); hideTip(); });
   s.append(hit);
@@ -889,7 +891,7 @@ async function openDetail(id, scroll = true) {
       stat(`${fmtPp(m.wilson_low_pp)} → ${fmtPp(m.wilson_high_pp)}`, '95% interval')];
   const charts = isIdentity ? [el('div', { id: 'detail-chart', class: 'mr-chart' })] : detailCharts();
   body.replaceChildren(head, el('div', { class: 'summary-grid mr-stats' }, ...stats),
-    el('p', { class: 'mr-note', text: `Charts show every month and every ban list; the months selected in Filters are shaded.${isIdentity ? '' : ` Open winrate points are months with fewer than ${fmtInt(manifest.thresholds.min_games)} games.`}` }), ...charts);
+    el('p', { class: 'mr-note', text: `Charts show every month and every ban list; the months selected in Filters are shaded.${c.banned_in?.length ? ' Red shading marks the months a ban list banned the card.' : ''}${isIdentity ? '' : ` Open winrate points are months with fewer than ${fmtInt(manifest.thresholds.min_games)} games.`}` }), ...charts);
   if (scroll) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
   try {
     setBusy(['detail'], true);
@@ -933,12 +935,14 @@ function drawDetailChart() {
   const months = points.map((p) => p.month);
   const markers = D.banlistMarkers(manifest, months);
   const range = trendRange();
-  const shaded = range ? `; ${monthName(range.from)} to ${monthName(range.to)} is shaded` : '';
+  const bans = D.banPeriods(manifest, cards.get(detailCard), months);
+  const shaded = (range ? `; ${monthName(range.from)} to ${monthName(range.to)} is shaded` : '')
+    + bans.map((b) => `; banned ${b.from === b.to ? `in ${monthName(b.from)}` : `from ${monthName(b.from)} to ${monthName(b.to)}`}`).join('');
   const color = JW.sideColor(state.side);
   const card = [{ name, color, points }];
   const small = (p) => p.games > 0 && p.games < manifest.thresholds.min_games;
   const pctAxis = (vals) => niceAxis(Math.max(0, Math.min(...vals)), Math.min(1, Math.max(...vals)));
-  const opts = { height: 200, band: range };
+  const opts = { height: 200, band: range, bans };
   lineChart(host, card, markers,
     { ...opts, label: `Monthly inclusion of ${name} over every month, all ban lists${shaded}` });
   const wr = $('detail-winrate');

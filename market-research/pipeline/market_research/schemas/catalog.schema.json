@@ -40,7 +40,8 @@
           "type",
           "faction",
           "printings",
-          "legal_in"
+          "legal_in",
+          "banned_in"
         ],
         "additionalProperties": false,
         "properties": {
@@ -87,6 +88,14 @@
               "pattern": "^[a-z0-9_]{1,80}$"
             },
             "minItems": 1
+          },
+          "banned_in": {
+            "description": "Ban lists (from restrictions) that ban the card. A ban list missing from both this and legal_in left the card out of its card pool (not yet released, or rotated).",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z0-9_]{1,80}$"
+            }
           }
         }
       }

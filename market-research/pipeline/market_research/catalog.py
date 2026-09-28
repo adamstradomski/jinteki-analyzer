@@ -103,6 +103,11 @@ class Catalog:
             return False
         return not (r and card_id in r.verdicts.banned)
 
+    def banned_in(self, card_id: str, rid: str) -> bool:
+        """Whether the ban list itself bans the card (not rotation or a card pool it is missing from)."""
+        r = self.restrictions.get(rid)
+        return bool(r and card_id in r.verdicts.banned)
+
     def type_rank(self, card_id: str) -> int:
         t = self.cards[card_id].card_type_id if card_id in self.cards else ""
         return TYPE_ORDER.index(t) if t in TYPE_ORDER else len(TYPE_ORDER)

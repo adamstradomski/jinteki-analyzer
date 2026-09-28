@@ -396,6 +396,7 @@ class SnapshotBuilder:
                     "faction": c.faction_id,
                     "printings": sorted(c.printing_ids),
                     "legal_in": legal,
+                    "banned_in": [r for r in self.restrictions if self.catalog.banned_in(cid, r)],
                 }
             )
         return {

@@ -331,6 +331,42 @@ export function banlistMarkers(manifest, months) {
   return out;
 }
 
+function prevMonth(m) {
+  const [y, mo] = m.split('-').map(Number);
+  return mo === 1 ? `${y - 1}-12` : `${y}-${String(mo - 1).padStart(2, '0')}`;
+}
+
+/**
+ * Month ranges in which a ban list banned the card, within `months`: [{ from, to, names }]. A
+ * list covers the months from its start to the month before the next list starts; neighbouring
+ * banned lists merge into one range. `card` is a catalog entry; an older catalog without
+ * banned_in gives none.
+ */
+export function banPeriods(manifest, card, months) {
+  const banned = new Set(card?.banned_in || []);
+  if (!banned.size || !months.length) return [];
+  const lists = manifest.restrictions.filter((r) => r.id !== 'all' && r.date_start)
+    .sort((a, b) => a.date_start.localeCompare(b.date_start));
+  const first = months[0];
+  const last = months[months.length - 1];
+  const out = [];
+  lists.forEach((r, i) => {
+    if (!banned.has(r.id)) return;
+    const from = r.date_start.slice(0, 7);
+    const to = i + 1 < lists.length ? prevMonth(lists[i + 1].date_start.slice(0, 7)) : last;
+    const prev = out[out.length - 1];
+    if (prev && prev.to >= prevMonth(from)) {
+      if (to > prev.to) prev.to = to;
+      prev.names.push(r.name);
+    } else if (to >= from) {
+      out.push({ from, to, names: [r.name] });
+    }
+  });
+  return out
+    .map((p) => ({ ...p, from: p.from < first ? first : p.from, to: p.to > last ? last : p.to }))
+    .filter((p) => p.from <= p.to);
+}
+
 /** Winrate table order: sufficient samples first by difference, insufficient rows last. */
 export function winrateRows(cards) {
   return cards

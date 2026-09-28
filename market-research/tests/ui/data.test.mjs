@@ -274,3 +274,20 @@ test('catalog search, factions and types', () => {
   const summary = slice('summary', { side: 'runner', restriction: 'all', tier: 'all' });
   assert.ok(summary.cards.every((c) => idx.has(c.card_id)));
 });
+
+test('ban periods: a list covers its months until the next list; neighbours merge; clipped to the chart', () => {
+  const m = { restrictions: [
+    { id: 'all', name: 'All', date_start: null },
+    { id: 'b', name: 'B', date_start: '2025-10-03' },
+    { id: 'a', name: 'A', date_start: '2025-08-01' },
+    { id: 'c', name: 'C', date_start: '2025-12-01' },
+    { id: 'd', name: 'D', date_start: '2026-03-13' },
+  ] };
+  const months = ['2025-09', '2025-10', '2025-11', '2025-12', '2026-01', '2026-02', '2026-03', '2026-04'];
+  assert.deepEqual(D.banPeriods(m, { banned_in: ['a', 'b'] }, months), [{ from: '2025-09', to: '2025-11', names: ['A', 'B'] }]);
+  assert.deepEqual(D.banPeriods(m, { banned_in: ['b', 'd'] }, months), [
+    { from: '2025-10', to: '2025-11', names: ['B'] }, { from: '2026-03', to: '2026-04', names: ['D'] }]);
+  assert.deepEqual(D.banPeriods(m, { banned_in: [] }, months), []);
+  assert.deepEqual(D.banPeriods(m, { legal_in: ['a'] }, months), []); // catalog from before banned_in
+  assert.deepEqual(D.banPeriods(m, { banned_in: ['a'] }, ['2026-01']), []); // outside the chart
+});

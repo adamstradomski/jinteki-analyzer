@@ -160,3 +160,6 @@ def test_catalog_contains_only_standard_legal_cards(built):
     assert "account_siphon" not in ids  # rotated out of Standard
     assert "hedge_fund" in ids
     assert all(c["legal_in"] for c in cat["cards"])
+    rlc = next(c for c in cat["cards"] if c["id"] == "red_level_clearance")
+    assert rlc["legal_in"] == ["standard_ban_list_26_05"]
+    assert rlc["banned_in"] == ["standard_balance_update_26_08"]
