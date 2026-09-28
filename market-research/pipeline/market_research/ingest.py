@@ -209,6 +209,16 @@ class Ingestor:
             self.enqueue(f"nrdb:catalog:{k}", "nrdb", "nrdb_catalog", k, priority=pr + 1)
         for k in ("cards", "printings"):
             self.enqueue(f"nrdb:catalog:{k}", "nrdb", "nrdb_catalog_bulk", k, priority=pr)
+        if self.backfill:
+            # A backfill may reach further back than earlier runs did, so it always re-reads the full
+            # ABR list and the Cobra index, even if a recent run already completed them.
+            with self._lock:
+                for key in ("abr:list:full", "cobra:index"):
+                    it = self.frontier.get(key)
+                    if it is not None and (it.next_due > self.now or it.frozen):
+                        it.next_due = self.now
+                        it.frozen = False
+                        self.frontier.dirty = True
         days = [self.today - timedelta(days=1), self.today]
         if self.backfill and self.since:
             days = [self.since + timedelta(days=i) for i in range((self.today - self.since).days + 1)]
@@ -520,7 +530,7 @@ class Ingestor:
         while not stop:
             r = self.http.get(
                 cobra.index_url(page, size),
-                etag=it.etag if page == 1 else None,
+                etag=it.etag if page == 1 and not self.backfill else None,
                 accept="application/vnd.api+json, application/json",
             )
             if r.not_modified:
@@ -546,6 +556,8 @@ class Ingestor:
                     continue
                 key = f"cobra:tournament:{meta.id}"
                 if self.frontier.get(key) is not None:
+                    if self.backfill:
+                        continue  # a backfill reads on to its start date: older events may be new
                     stop = True  # newest first: everything after this is known
                     break
                 d = date.fromisoformat(meta.date)
