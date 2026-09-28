@@ -2738,18 +2738,18 @@ function renderSummary(data){
     const b = data.chatBadges[p] || {};
     const side = data.playerSide[p] || '';
     const chips = [];
-    const chip = (label, desc, extra = '') =>
-      chips.push(`<span class="badge ${side}" tabindex="0" data-desc="${esc(desc)}"${extra}>${esc(label)}<span class="visually-hidden">: ${esc(desc)}</span></span>`);
+    const chip = (label, desc, cls = '') =>
+      chips.push(`<span class="badge ${side}${cls}" tabindex="0" data-desc="${esc(desc)}">${esc(label)}<span class="visually-hidden">: ${esc(desc)}</span></span>`);
     if (b.glhf) chip('GLHF', 'Wished good luck / have fun in chat.');
     if (b.gg) chip('GG', 'Said “good game” in chat.');
     if (b.ty) chip('TY4TG', 'Thanked the opponent for the game in chat.');
     if (b.kurwa) chip('Bober *****', 'The player is probably Polish');
     if (b.savedReplay) chip('💾 SAVED', 'Saved a replay of this game.');
-    if (data.concededPlayer === p) chip('CONCEDE', 'Conceded the game.', ' style="border-color:var(--neg);color:var(--neg);"');
+    if (data.concededPlayer === p) chip('CONCEDE', 'Conceded the game.', ' concede');
     if (!chips.length){
       if (side === 'runner') chip('Silencer', 'No chat detected from this player.');
       else if (side === 'corp') chip('Subliminal Messaging', 'No chat detected from this player.');
-      else chips.push('<span style="color:var(--dim);">no chat detected</span>');
+      else chips.push('<span class="no-chat">no chat detected</span>');
     }
     if (NET_CELEBRITIES.has(p.toLowerCase())) chip('Net Celebrity', 'Twitch/YouTube content creator.');
     (earned[p] || []).forEach(a => {
@@ -2823,7 +2823,7 @@ function wireBasicActionsToggles(){
     cb.addEventListener('change', () => {
       const tableId = cb.dataset.hideuntriggered;
       document.querySelectorAll(`#${tableId} tbody tr`).forEach(tr => {
-        tr.style.display = (cb.checked && +tr.dataset.count === 0) ? 'none' : '';
+        tr.hidden = cb.checked && +tr.dataset.count === 0;
       });
     });
   });
@@ -2851,14 +2851,14 @@ function renderInstalledTable(tableId, tbody, rows, hideZero){
     if (expanded){
       if (!r.triggerLog.length){
         const sub = document.createElement('tr');
-        sub.style.background = 'var(--panel-2)';
-        sub.innerHTML = `<td colspan="9" style="padding-left:28px;color:var(--dim);">No individual triggers recorded for this card.</td>`;
+        sub.className = 'sub-row';
+        sub.innerHTML = `<td colspan="9">No individual triggers recorded for this card.</td>`;
         tbody.appendChild(sub);
       }
       r.triggerLog.forEach(ev => {
         const sub = document.createElement('tr');
-        sub.style.background = 'var(--panel-2)';
-        sub.innerHTML = `<td colspan="9" style="padding-left:28px;color:var(--dim);">Turn ${ev.turn} — ${benefitLabel(ev.kind)}: ${fmt(ev.amount)}</td>`;
+        sub.className = 'sub-row';
+        sub.innerHTML = `<td colspan="9">Turn ${ev.turn} — ${benefitLabel(ev.kind)}: ${fmt(ev.amount)}</td>`;
         tbody.appendChild(sub);
       });
     }
@@ -2895,9 +2895,9 @@ function renderOpsTable(tableId, tbody, rows, hideZero){
     if (expanded){
       r.perTurnRows.forEach(pt => {
         const sub = document.createElement('tr');
-        sub.style.background = 'var(--panel-2)';
+        sub.className = 'sub-row';
         sub.innerHTML =
-          `<td style="padding-left:28px;color:var(--dim);">turn ${pt.turn}${pt.nth ? ` #${pt.nth}` : ''}</td>` +
+          `<td>turn ${pt.turn}${pt.nth ? ` #${pt.nth}` : ''}</td>` +
           `<td></td>` +
           `<td class="num">${fmt(pt.cost)}</td>` +
           `<td class="num">${fmt(pt.gain)}</td>` +
@@ -2940,7 +2940,7 @@ function buildPlayerSections(data){
     const basicActionsTableId = `basicactions-${idx}`;
     const actionRowsHtml = basicActionRows(data, player, side).map(r => {
       const creditCell = r.credits === null ? '<td class="num">—</td>' : netCell(r.credits);
-      const hiddenInitially = r.count === 0 ? ' style="display:none;"' : '';
+      const hiddenInitially = r.count === 0 ? ' hidden' : '';
       return `<tr data-count="${r.count}"${hiddenInitially}><td class="card">${esc(r.label)}</td><td class="num">${fmt(r.count)}</td>${creditCell}</tr>`;
     }).join('');
 
@@ -2993,7 +2993,7 @@ function buildPlayerSections(data){
         </thead>
         <tbody></tbody>
       </table></div>
-      <div class="empty-note" data-empty="${instTableId}" style="display:none;">${permEmptyNote}</div>
+      <div class="empty-note" data-empty="${instTableId}" hidden>${permEmptyNote}</div>
 
       <div class="table-actions">
         <h3>${opsTitle}</h3>
@@ -3016,7 +3016,7 @@ function buildPlayerSections(data){
         </thead>
         <tbody></tbody>
       </table></div>
-      <div class="empty-note" data-empty="${opsTableId}" style="display:none;">${opsEmptyNote}</div>
+      <div class="empty-note" data-empty="${opsTableId}" hidden>${opsEmptyNote}</div>
 
       </div>
     `;
@@ -3031,6 +3031,7 @@ function buildPlayerSections(data){
   wireAllSorts();
   wireHideZeroToggles();
   wireBasicActionsToggles();
+  JW.enablePanelCollapse(container);
   renderAllTables();
 }
 
@@ -3043,7 +3044,7 @@ function renderAllTables(){
     let shown;
     if (state.type === 'installed') shown = renderInstalledTable(tableId, tbody, state.rows, hideZero);
     else shown = renderOpsTable(tableId, tbody, state.rows, hideZero);
-    if (emptyEl) emptyEl.style.display = shown ? 'none' : 'block';
+    if (emptyEl) emptyEl.hidden = !!shown;
   });
 }
 
@@ -3106,8 +3107,8 @@ function renderFlagged(flagged){
   const list = document.getElementById('flaggedList');
   const empty = document.getElementById('flaggedEmpty');
   list.innerHTML = '';
-  if (!flagged.length){ empty.style.display = 'block'; return; }
-  empty.style.display = 'none';
+  if (!flagged.length){ empty.hidden = false; return; }
+  empty.hidden = true;
   const details = document.createElement('details');
   const summary = document.createElement('summary');
   summary.textContent = `${flagged.length} flagged line(s): parsing gaps, credit-tracking mismatches and undo commands`;
@@ -3156,7 +3157,7 @@ function renderLineChart(ids, series, players, rounds, opts){
   const xFor = t => padL + (rounds > 0 ? (t / rounds) * plotW : plotW / 2);
   const yFor = v => padT + plotH - ((v - minVal) / (maxVal - minVal)) * plotH;
 
-  let svg = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;font-family:var(--mono);">`;
+  let svg = `<svg class="chart-svg" viewBox="0 0 ${W} ${H}">`;
   svg += `<line x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT+plotH}" stroke="var(--line)" />`;
   svg += `<line x1="${padL}" y1="${padT+plotH}" x2="${padL+plotW}" y2="${padT+plotH}" stroke="var(--line)" />`;
   svg += `<text x="${padL+plotW}" y="${labelsOn ? 12 : padT-4}" font-size="10" fill="var(--dim)" text-anchor="end">Last turn: ${rounds}</text>`;
@@ -3260,7 +3261,10 @@ function renderLineChart(ids, series, players, rounds, opts){
     const color = (opts.colors && opts.colors[idx]) || seriesColor(idx);
     const div = document.createElement('div');
     div.className = 'legend-item';
-    div.innerHTML = `<span class="legend-swatch" style="background:${esc(color)};"></span>${esc(p)}`;
+    const swatch = document.createElement('span');
+    swatch.className = 'legend-swatch';
+    swatch.style.background = color; // CSSOM, which the CSP allows (a style attribute isn't)
+    div.append(swatch, p);
     legend.appendChild(div);
   });
 
@@ -3428,23 +3432,26 @@ function runParse(){
   }
   currentData = parseLog(text);
   if (currentData.playerCountError){
-    results.style.display = 'none';
+    results.hidden = true;
     statusMsg.textContent = '⚠ ' + currentData.playerCountError;
-    statusMsg.style.color = 'var(--neg)';
+    statusMsg.classList.add('error');
     return;
   }
-  statusMsg.style.color = '';
+  statusMsg.classList.remove('error');
   renderSummary(currentData);
   renderGameStats(currentData);
   renderAllCharts(currentData);
   buildPlayerSections(currentData);
   renderFlagged(currentData.flagged);
-  results.style.display = 'block';
+  results.hidden = false;
   statusMsg.textContent = `Parsed ${text.trim().split(/\r?\n/).length} lines. Players: ${currentData.players.join(', ')}`;
 }
 
-JW.mountThemeSwitcher(document.getElementById('themeSwitcher'));
-JW.mountModeToggle(document.getElementById('modeToggle'));
+JW.mountThemeSwitcher(document.getElementById('theme-switcher'));
+JW.mountModeToggle(document.getElementById('mode-toggle'));
+// Collapsible panels use the design system's helper, like Market Research; the per-player
+// panels are added after each parse (buildPlayerSections).
+JW.enablePanelCollapse();
 document.addEventListener('jw:themechange', () => {
   if (currentData && !currentData.playerCountError) renderAllCharts(currentData);
 });
@@ -3455,19 +3462,6 @@ document.addEventListener('click', (e) => {
     try { localStorage.setItem('valueLabelMode', valueLabelMode); } catch (err) {}
     syncValueLabelToggles();
     if (currentData && !currentData.playerCountError) renderAllCharts(currentData);
-    return;
-  }
-  const header = e.target.closest('.panel-header');
-  if (!header) return;
-  const panel = header.closest('.panel');
-  if (!panel) return;
-  panel.classList.toggle('collapsed');
-  const icon = header.querySelector('.collapse-icon');
-  if (icon){
-    const open = !panel.classList.contains('collapsed');
-    icon.textContent = open ? '−' : '+';
-    icon.setAttribute('aria-expanded', String(open));
-    icon.setAttribute('aria-label', (open ? 'Collapse' : 'Expand') + ' section');
   }
 });
 
@@ -3494,8 +3488,8 @@ document.getElementById('bookmarkletBtn').addEventListener('click', warnAgainstB
 document.getElementById('skipCopyPasteBtn').addEventListener('click', () => {
   const section = document.getElementById('bookmarkSection');
   const btn = document.getElementById('skipCopyPasteBtn');
-  const showing = section.style.display !== 'none';
-  section.style.display = showing ? 'none' : 'block';
+  const showing = !section.hidden;
+  section.hidden = showing;
   btn.textContent = showing ? 'How to skip copy-paste' : 'Hide Bookmark info';
   btn.setAttribute('aria-expanded', String(!showing));
 });
@@ -3513,7 +3507,7 @@ document.getElementById('example2Btn').addEventListener('click', () => {
 });
 document.getElementById('clearBtn').addEventListener('click', () => {
   logInput.value = '';
-  results.style.display = 'none';
+  results.hidden = true;
   statusMsg.textContent = '';
 });
 
@@ -3620,7 +3614,7 @@ document.getElementById('permalinkBtn').addEventListener('click', async () => {
     const encoded = await encodeLogForUrl(text);
     const url = HOSTED_SITE_URL + '#log=' + encoded;
     shareInput.value = url;
-    permalinkRow.style.display = 'flex';
+    permalinkRow.hidden = false;
     shareInput.select();
     statusMsg.textContent = `Share link ready (${Math.round(url.length / 1024 * 10) / 10} KB). Note: the whole log is embedded in this link, not stored on a server — anyone with the link can read the full log content, so share it the same way you'd share the log itself.`;
   } catch (e) {
@@ -3728,7 +3722,7 @@ document.getElementById('shortenPermalinkBtn').addEventListener('click', async (
   // The overlay hides this from view entirely; it's still worth doing so the
   // shift doesn't get measured, since CLS doesn't know it was occluded.
   results.classList.add('loading');
-  results.style.display = 'block';
+  results.hidden = false;
   try {
     statusMsg.textContent = 'Decoding shared log…';
     const text = await decodeLogFromUrl(decodeURIComponent(encoded));
@@ -3736,7 +3730,7 @@ document.getElementById('shortenPermalinkBtn').addEventListener('click', async (
     runParse();
     statusMsg.textContent += ' Loaded from shared link.';
   } catch (e) {
-    results.style.display = 'none';
+    results.hidden = true;
     statusMsg.textContent = 'Could not load the log from this link: ' + e.message;
   } finally {
     results.classList.remove('loading');

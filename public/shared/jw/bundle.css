@@ -64,6 +64,9 @@
 .header-controls { display: flex; align-items: center; gap: 8px; }
 .collapse-icon { font-family: var(--font-mono); font-size: 13px; color: var(--dim); background: transparent; border: 1px solid var(--line); border-radius: var(--radius-md); width: 22px; height: 22px; padding: 0; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; line-height: 1; }
 .collapse-icon:hover { color: var(--text); border-color: var(--accent-dim); }
+/* A collapsible panel's whole header toggles it (enablePanelCollapse in bundle.js). */
+.panel[data-collapsible] > .panel-header { cursor: pointer; }
+.panel[data-collapsible] > .panel-header:hover .collapse-icon { color: var(--text); border-color: var(--accent-dim); }
 
 /* ---------- Buttons ---------- */
 .btn { font-family: var(--font-mono); font-size: 13px; font-weight: 600; cursor: pointer; background: var(--accent); color: var(--on-accent); border: 0; padding: 10px 18px; border-radius: var(--radius-md); box-shadow: var(--glow); transition: filter 0.15s; }
