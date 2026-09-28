@@ -1,15 +1,18 @@
 // Market Research page: fetches the manifest, builds slice paths from it and renders panels.
-// All arithmetic is in data.js; this module only formats and draws. Every value is written with
-// textContent (never innerHTML), even though snapshots carry no free text.
+// All arithmetic is in data.js; this module holds the page state, filters and loading, and wires
+// the panels to the table (table.js), chart (charts.js) and combobox (combo.js) components. Every
+// value is written with textContent (never innerHTML), even though snapshots carry no free text.
 import * as D from './data.js';
+import { $, el, debounce } from './dom.js';
+import { MINUS, fmtInt, fmtN, fmtPct, fmtPp, fmtRatio, fmtNum, monthName } from './format.js';
+import { dataTable as table, changeCell, diffCell, meterCell } from './table.js';
+import { lineChart, scatterChart, niceAxis } from './charts.js';
+import { cardCombo } from './combo.js';
 
 const JW = window.JW;
-const SVGNS = 'http://www.w3.org/2000/svg';
-const TABLE_ROWS = 25;
 const MAX_TREND_CARDS = 6;
 const LAST_SEEN_KEY = 'mr-last-generated';
 
-const $ = (id) => document.getElementById(id);
 const base = D.dataBase(location.search);
 const cache = new Map();
 
@@ -28,64 +31,10 @@ const hideSmall = { winrate: true, scatter: true };
 const scatterView = { query: '', top: false };
 const SCATTER_TOP = 10;
 
-// ---------------------------------------------------------------- DOM helpers
+// ---------------------------------------------------------------- cards and tables
 
-function el(tag, attrs = {}, ...children) {
-  const n = document.createElement(tag);
-  for (const [k, v] of Object.entries(attrs)) {
-    if (v === null || v === undefined || v === false) continue;
-    if (k === 'class') n.className = v;
-    else if (k === 'text') n.textContent = v;
-    else if (k === 'style') setStyle(n, v);
-    else if (k.startsWith('on')) n.addEventListener(k.slice(2), v);
-    else n.setAttribute(k, v === true ? '' : String(v));
-  }
-  for (const c of children) {
-    if (c === null || c === undefined || c === false) continue;
-    n.append(typeof c === 'string' || typeof c === 'number' ? document.createTextNode(String(c)) : c);
-  }
-  return n;
-}
-
-// The page's CSP forbids style attributes; the CSSOM is allowed.
-function setStyle(n, css) {
-  for (const decl of String(css).split(';')) {
-    const i = decl.indexOf(':');
-    if (i > 0) n.style.setProperty(decl.slice(0, i).trim(), decl.slice(i + 1).trim());
-  }
-}
-
-function svg(tag, attrs = {}, text) {
-  const n = document.createElementNS(SVGNS, tag);
-  for (const [k, v] of Object.entries(attrs)) if (v !== null && v !== undefined) n.setAttribute(k, String(v));
-  if (text !== undefined) n.textContent = text;
-  return n;
-}
-
-// ---------------------------------------------------------------- formatting
-
-const nf = new Intl.NumberFormat('en-GB');
-const MINUS = '−';
-const fmtInt = (v) => (v === null || v === undefined ? '–' : nf.format(v));
-const fmtN = (v) => `n=${fmtInt(v)}`;
-const fmtPct = (v, d = 1) => (v === null || v === undefined ? '–' : `${(v * 100).toFixed(d)}%`);
-const sign = (v, d) => (v > 0 ? '+' : v < 0 ? MINUS : '±') + Math.abs(v).toFixed(d);
-const fmtPp = (v, d = 1) => (v === null || v === undefined ? '–' : `${sign(v, d)} pp`);
-const fmtRatio = (v) => (v === null || v === undefined ? '–' : `${v.toFixed(2)}×`);
-const fmtNum = (v, d = 2) => (v === null || v === undefined ? '–' : v.toFixed(d));
-const monthName = (m) => new Date(`${m}-01T00:00:00Z`).toLocaleDateString('en-GB', { month: 'short', year: 'numeric', timeZone: 'UTC' });
-const shortMonth = (m) => new Date(`${m}-01T00:00:00Z`).toLocaleDateString('en-GB', { month: 'short', timeZone: 'UTC' });
-
-function changeCell(v) {
-  if (v === null || v === undefined) return el('td', { class: 'num', text: '–' });
-  const arrow = v > 0 ? '▲ ' : v < 0 ? '▼ ' : '';
-  return el('td', { class: `num ${v > 0 ? 'pos' : v < 0 ? 'neg' : ''}`, text: arrow + fmtPp(v) });
-}
-
-function diffCell(v, insufficient) {
-  const cls = insufficient ? '' : v > 0 ? 'pos' : v < 0 ? 'neg' : '';
-  return el('td', { class: `num ${cls}`, text: fmtPp(v) });
-}
+/** A sortable table (table.js) coloured for the selected side. */
+const dataTable = (host, columns, rows, opts) => table(host, columns, rows, { side: () => state.side, ...opts });
 
 function cardName(id) {
   const c = cards.get(id);
@@ -183,8 +132,8 @@ async function boot() {
   document.addEventListener('jw:themechange', () => { drawTrends(); drawScatter(); drawDetailChart(); });
   window.addEventListener('resize', debounce(() => { drawTrends(); drawScatter(); drawDetailChart(); }, 150));
   $('detail-close').addEventListener('click', () => { detailCard = null; $('detail').hidden = true; });
+  loadQuality(); // the footer needs only the manifest, so it loads alongside the first slices
   await refresh();
-  loadQuality();
 }
 
 /** Replaces the page with a notice when the data can't be loaded, instead of leaving it on placeholders. */
@@ -194,11 +143,6 @@ function showUnavailable() {
   $('app').hidden = true;
   $('status').hidden = false;
   $('status').textContent = `Market Research data is unavailable right now.${last ? ` Last updated ${last}.` : ''} Try again later.`;
-}
-
-function debounce(fn, ms) {
-  let t = null;
-  return () => { clearTimeout(t); t = setTimeout(fn, ms); };
 }
 
 // ---------------------------------------------------------------- filters
@@ -262,16 +206,25 @@ async function refresh() {
   setBusy([...DATA_PANELS, 'trends'], true);
   document.documentElement.style.setProperty('--mr-side', `var(--${state.side})`);
   try {
-    const summary = await slice('summary');
-    identities = await slice('identities');
-    const evs = manifest.paths.tournaments ? await slice('tournaments') : null;
+    // Start every slice this filter needs at once rather than one round trip after another.
+    // Trends are always started: renderTrends asks for the same slice (the cache shares the
+    // request), and a custom period needs them here. They are only awaited for a custom period,
+    // so a trends failure is left to renderTrends to report, as before.
+    const trendsReq = slice('trends');
+    trendsReq.catch(() => {});
+    const [summary, ids, evs] = await Promise.all([
+      slice('summary'),
+      slice('identities'),
+      manifest.paths.tournaments ? slice('tournaments') : null,
+    ]);
     let v = summary;
     if (state.custom && summary.period && (state.from !== summary.period.from || state.to !== summary.period.to)) {
-      const trends = await slice('trends');
+      const trends = await trendsReq;
       v = D.summarize(trends, { from: state.from, to: state.to }, manifest.thresholds, 'all');
     }
     if (token !== refreshToken) return;
     view = v;
+    identities = ids;
     events = evs;
     if (!state.custom && view.period) { state.from = view.period.from; state.to = view.period.to; syncFilters(); }
     renderAll();
@@ -385,61 +338,7 @@ function renderEvents() {
   ], list, { sortKey: 'date', sortDir: 'descending', noun: 'tournaments', empty: 'No tournaments match this filter.' });
 }
 
-// ---------------------------------------------------------------- tables
-
-// Tables whose column guide the viewer opened, so it stays open when the table redraws.
-const openGuides = new Set();
-
-/** "What do the columns mean?": the header tooltips as a list, for touch screens and screen readers. */
-function columnGuide(host, columns) {
-  const described = columns.filter((c) => c.help);
-  if (!described.length) return null;
-  const d = el('details', { class: 'mr-alt mr-guide' }, el('summary', { text: 'What do the columns mean?' }),
-    el('dl', {}, ...described.flatMap((c) => [el('dt', { text: c.label }), el('dd', { text: c.help })])));
-  d.open = openGuides.has(host.id);
-  d.addEventListener('toggle', () => { if (d.open) openGuides.add(host.id); else openGuides.delete(host.id); });
-  return d;
-}
-
-/** A sortable table with real header buttons and an optional "show all" button. */
-function dataTable(host, columns, rows, { initial, sortKey = null, sortDir = 'descending', rowClass = () => '', limit = TABLE_ROWS, empty = 'No cards in this filter.', noun = 'cards' }) {
-  let key = sortKey;
-  let dir = sortDir;
-  let all = false;
-  const draw = () => {
-    const col = columns.find((c) => c.key === key);
-    const sorted = key ? D.sortRows(rows, key, dir, col?.value || ((r) => r[key])) : initial ? initial(rows) : rows;
-    const shown = all ? sorted : sorted.slice(0, limit);
-    const head = el('tr', {}, ...columns.map((c) => {
-      const th = el('th', { class: c.num ? 'num' : '', scope: 'col', 'aria-sort': c.key === key ? dir : null, title: c.help || null });
-      if (c.sortable === false) th.textContent = c.label;
-      else th.append(el('button', { type: 'button', class: 'mr-sort', onclick: () => {
-        if (key === c.key) dir = dir === 'descending' ? 'ascending' : 'descending';
-        else { key = c.key; dir = c.num ? 'descending' : 'ascending'; }
-        draw();
-      } }, c.label));
-      return th;
-    }));
-    const body = shown.map((r) => el('tr', { class: rowClass(r) || null }, ...columns.map((c) => c.cell(r))));
-    const table = el('table', { class: 'data-table', style: `--side: var(--${state.side})` }, el('thead', {}, head), el('tbody', {}, ...body));
-    const parts = [rows.length ? el('div', { class: 'mr-scroll' }, table) : el('p', { class: 'mr-note', text: empty })];
-    if (sorted.length > limit) {
-      parts.push(el('button', { type: 'button', class: 'btn secondary mr-more', onclick: () => { all = !all; draw(); } },
-        all ? `Show top ${limit}` : `Show all ${fmtInt(sorted.length)} ${noun}`));
-    }
-    const guide = rows.length ? columnGuide(host, columns) : null;
-    if (guide) parts.push(guide);
-    host.replaceChildren(...parts);
-  };
-  draw();
-}
-
-function meterCell(v) {
-  const pct = v === null ? 0 : Math.max(0, Math.min(100, v * 100));
-  return el('td', {}, el('div', { class: 'meter' },
-    el('div', { class: 'meter-track' }, el('div', { class: 'meter-fill', style: `width:${pct.toFixed(1)}%` })),
-    el('span', { class: 'num', text: fmtPct(v) })));
-}
+// ---------------------------------------------------------------- card tables
 
 function renderPlayed() {
   const h = help();
@@ -486,36 +385,6 @@ function renderWinrate() {
     { key: 'winrate', label: 'Winrate', num: true, help: h.winrate, cell: (r) => el('td', { class: 'num', text: fmtPct(r.winrate) }) },
     { key: 'games', label: 'Games', num: true, help: h.games, cell: (r) => el('td', { class: 'num', text: fmtN(r.games) }) },
   ], rows, { rowClass: (r) => (r.winrate_status !== 'ok' ? 'mr-insufficient' : ''), empty: hideSmall.winrate ? `No card has ${min} games with decklists in this filter.` : 'No games with decklists in this filter.' });
-}
-
-// ---------------------------------------------------------------- tooltip
-
-function showTip(x, y, lines) {
-  const tip = $('tip');
-  tip.replaceChildren(...lines.map((l, i) => el('div', { class: i === 0 ? 'mr-tip-title' : '' }, l)));
-  tip.hidden = false;
-  const r = tip.getBoundingClientRect();
-  const left = Math.min(window.innerWidth - r.width - 8, Math.max(8, x + 14));
-  const top = y - r.height - 12 < 8 ? y + 16 : y - r.height - 12;
-  tip.style.left = `${left + window.scrollX}px`;
-  tip.style.top = `${top + window.scrollY}px`;
-}
-
-function hideTip() { $('tip').hidden = true; }
-
-// ---------------------------------------------------------------- charts: shared axes
-
-function chartBox(host, height) {
-  const width = Math.max(300, host.clientWidth || 720);
-  const m = { l: 44, r: 16, t: 14, b: 30 };
-  const s = svg('svg', { viewBox: `0 0 ${width} ${height}`, width: '100%', height, role: 'img' });
-  return { s, width, height, m, iw: width - m.l - m.r, ih: height - m.t - m.b };
-}
-
-function niceMax(v) {
-  if (v <= 0) return 1;
-  const p = 10 ** Math.floor(Math.log10(v));
-  return [1, 2, 2.5, 5, 10].map((k) => k * p).find((k) => k >= v);
 }
 
 // ---------------------------------------------------------------- trends
@@ -568,126 +437,6 @@ async function renderTrends() {
 
 function trendRange() {
   return state.from && state.to ? { from: state.from, to: state.to } : null;
-}
-
-// Ticks for a value axis: a nice step covering [lo, hi], widened to whole steps.
-function niceAxis(lo, hi, ticks = 4) {
-  if (hi <= lo) hi = lo + 1;
-  const step = niceMax((hi - lo) / ticks);
-  return { lo: Math.floor(lo / step + 1e-9) * step, hi: Math.ceil(hi / step - 1e-9) * step, step };
-}
-
-// Monthly line chart. Each series plots `value` (the option, or its own), drawn dashed when it
-// has `dash`; `interval` shades a band for the first series; points `hollow` flags are drawn open.
-function lineChart(host, series, markers, {
-  height = 260, label, band = null, value = (p) => p.popularity, interval = null, hollow = null,
-  axis = null, tick = (v) => `${Math.round(v * 100)}%`, zero = false, tip = null,
-}) {
-  const months = series[0]?.points.map((p) => p.month) || [];
-  if (!months.length) { host.replaceChildren(el('p', { class: 'mr-note', text: 'No data in this period.' })); return; }
-  const val = (ser, p) => (ser.value || value)(p);
-  const all = series.flatMap((ser) => ser.points.map((p) => val(ser, p)))
-    .concat(interval ? series[0].points.flatMap(interval) : []).filter((v) => v !== null && v !== undefined);
-  if (!all.length) { host.replaceChildren(el('p', { class: 'mr-note', text: 'No data in this period.' })); return; }
-  const { s, width, m, iw, ih } = chartBox(host, height);
-  s.setAttribute('aria-label', label);
-  const ax = axis ? axis(all) : (() => { const hi = niceMax(Math.max(0.01, ...all)); return { lo: 0, hi, step: hi / 4 }; })();
-  const x = (i) => m.l + (months.length === 1 ? iw / 2 : (i * iw) / (months.length - 1));
-  const y = (v) => m.t + ih - ((v - ax.lo) / (ax.hi - ax.lo)) * ih;
-  const n = Math.round((ax.hi - ax.lo) / ax.step);
-  for (let k = 0; k <= n; k++) {
-    const v = ax.lo + k * ax.step;
-    const isAxis = zero ? Math.abs(v) < ax.step / 1e6 : k === 0;
-    s.append(svg('line', { class: isAxis ? 'chart-axis' : 'chart-grid', x1: m.l, x2: width - m.r, y1: y(v), y2: y(v) }));
-    s.append(svg('text', { class: 'chart-tick', x: m.l - 6, y: y(v) + 3, 'text-anchor': 'end' }, tick(v)));
-  }
-  if (band) {
-    // Shade the months selected in the filters; the rest of the timeline stays for context.
-    const i0 = months.indexOf(band.from);
-    const i1 = months.indexOf(band.to);
-    if (i0 >= 0 && i1 >= i0) {
-      const half = months.length > 1 ? iw / (months.length - 1) / 2 : iw / 2;
-      const x0 = Math.max(m.l, x(i0) - half);
-      const x1 = Math.min(m.l + iw, x(i1) + half);
-      s.append(svg('rect', { class: 'mr-band', x: x0, y: m.t, width: Math.max(1, x1 - x0), height: ih }));
-    }
-  }
-  const step = Math.ceil(months.length / Math.max(2, Math.floor(iw / 70)));
-  months.forEach((mo, i) => {
-    if (i % step === 0 || i === months.length - 1) {
-      s.append(svg('text', { class: 'chart-tick', x: x(i), y: m.t + ih + 16, 'text-anchor': 'middle' }, shortMonth(mo)));
-    }
-  });
-  // Every ban list gets its line; a label that would overlap one already drawn is left out.
-  const taken = [];
-  for (const mk of markers) {
-    const i = months.indexOf(mk.month);
-    if (i < 0) continue;
-    s.append(svg('line', { class: 'chart-marker', x1: x(i), x2: x(i), y1: m.t, y2: m.t + ih }));
-    const right = x(i) > m.l + iw * 0.6;
-    const w = mk.name.length * 5.6;
-    const x0 = right ? x(i) - 4 - w : x(i) + 4;
-    if (taken.some(([a0, a1]) => x0 < a1 + 6 && x0 + w > a0 - 6)) continue;
-    taken.push([x0, x0 + w]);
-    s.append(svg('text', { class: 'chart-tick', x: x(i) + (right ? -4 : 4), y: m.t + 9, 'text-anchor': right ? 'end' : 'start' }, mk.name));
-  }
-  if (interval) {
-    // One closed area per run of months that have an interval.
-    const ser = series[0];
-    let run = [];
-    const flush = () => {
-      if (run.length) {
-        const top = run.map((i) => `${x(i).toFixed(1)} ${y(interval(ser.points[i])[1]).toFixed(1)}`);
-        const bottom = run.slice().reverse().map((i) => `${x(i).toFixed(1)} ${y(interval(ser.points[i])[0]).toFixed(1)}`);
-        const d = run.length === 1
-          ? `M${x(run[0]) - 2} ${y(interval(ser.points[run[0]])[1])} h4 V${y(interval(ser.points[run[0]])[0])} h-4 Z`
-          : `M${top.join(' L')} L${bottom.join(' L')} Z`;
-        s.append(svg('path', { d, fill: ser.color, 'fill-opacity': 0.15, stroke: 'none' }));
-      }
-      run = [];
-    };
-    ser.points.forEach((p, i) => { if (interval(p)[0] === null || interval(p)[0] === undefined) flush(); else run.push(i); });
-    flush();
-  }
-  for (const ser of series) {
-    let d = '';
-    let gap = true;
-    ser.points.forEach((p, i) => {
-      const v = val(ser, p);
-      if (v === null || v === undefined) { gap = true; return; }
-      d += `${gap ? 'M' : 'L'}${x(i).toFixed(1)} ${y(v).toFixed(1)} `;
-      gap = false;
-    });
-    s.append(svg('path', { d, fill: 'none', stroke: ser.color, 'stroke-width': ser.dash ? 1.5 : 2, 'stroke-dasharray': ser.dash ? '5 4' : null, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }));
-    if (ser.dash) continue;
-    ser.points.forEach((p, i) => {
-      const v = val(ser, p);
-      if (v === null || v === undefined) return;
-      const open = hollow && hollow(p);
-      // Open points always show (they flag small samples); filled ones only on short timelines.
-      if (open || ser.points.length <= 24) {
-        s.append(svg('circle', { cx: x(i), cy: y(v), r: 3, fill: open ? 'var(--panel)' : ser.color, stroke: ser.color, 'stroke-width': open ? 1.5 : 0 }));
-      }
-    });
-  }
-  const cross = svg('line', { class: 'chart-axis', x1: 0, x2: 0, y1: m.t, y2: m.t + ih, visibility: 'hidden' });
-  s.append(cross);
-  const hit = svg('rect', { x: m.l, y: m.t, width: iw, height: ih, fill: 'transparent' });
-  hit.addEventListener('pointermove', (ev) => {
-    const r = s.getBoundingClientRect();
-    const px = ((ev.clientX - r.left) / r.width) * width;
-    const i = Math.max(0, Math.min(months.length - 1, Math.round(((px - m.l) / iw) * (months.length - 1))));
-    cross.setAttribute('x1', x(i));
-    cross.setAttribute('x2', x(i));
-    cross.setAttribute('visibility', 'visible');
-    showTip(ev.clientX, ev.clientY, [monthName(months[i]), ...(tip ? tip(i) : series.map((ser) => {
-      const p = ser.points[i];
-      return `${ser.name}: ${fmtPct(p.popularity)} (${fmtN(p.decks)} of ${fmtInt(p.total)})`;
-    }))]);
-  });
-  hit.addEventListener('pointerleave', () => { cross.setAttribute('visibility', 'hidden'); hideTip(); });
-  s.append(hit);
-  host.replaceChildren(s);
 }
 
 function drawTrends() {
@@ -744,102 +493,10 @@ function drawScatter() {
     host.replaceChildren(el('p', { class: 'mr-note', text }));
     return;
   }
-  const { s, width, m, iw, ih } = chartBox(host, 320);
-  s.setAttribute('aria-label', 'Scatter of inclusion against winrate difference; the table below lists the same points');
-  const color = JW.sideColor(state.side);
-  const maxX = niceMax(Math.max(...pts.map((p) => p.x)));
-  const ext = niceMax(Math.max(5, ...pts.map((p) => Math.abs(p.y))));
-  const maxGames = Math.max(...pts.map((p) => p.games));
-  const x = (v) => m.l + (v / maxX) * iw;
-  const y = (v) => m.t + ih / 2 - (v / ext) * (ih / 2);
-  const r = (g) => 3 + 9 * Math.sqrt(g / maxGames);
-  for (let k = -2; k <= 2; k++) {
-    const v = (ext * k) / 2;
-    s.append(svg('line', { class: k === 0 ? 'chart-axis' : 'chart-grid', x1: m.l, x2: width - m.r, y1: y(v), y2: y(v) }));
-    s.append(svg('text', { class: 'chart-tick', x: m.l - 6, y: y(v) + 3, 'text-anchor': 'end' }, `${v > 0 ? '+' : v < 0 ? MINUS : ''}${Math.abs(v)} pp`));
-  }
-  for (let k = 0; k <= 4; k++) {
-    const v = (maxX * k) / 4;
-    s.append(svg('text', { class: 'chart-tick', x: x(v), y: m.t + ih + 16, 'text-anchor': 'middle' }, `${Math.round(v)}%`));
-  }
-  s.append(svg('text', { class: 'chart-tick', x: width - m.r, y: m.t + ih + 28, 'text-anchor': 'end' }, 'inclusion →'));
-  const ordered = [...pts].sort((a, b) => b.games - a.games);
-  for (const p of ordered) {
-    s.append(svg('circle', {
-      cx: x(p.x), cy: y(p.y), r: r(p.games),
-      fill: p.sufficient ? color : 'none', 'fill-opacity': p.sufficient ? 0.75 : null,
-      stroke: color, 'stroke-width': p.sufficient ? 1 : 1.5,
-    }));
-  }
-  // Label every point of a short list (top per axis, a name filter); otherwise the 8 most included.
-  const labelled = pts.length <= 2 * SCATTER_TOP ? pts : pts.filter((p) => p.sufficient).sort((a, b) => b.x - a.x).slice(0, 8);
-  // Greedy placement, biggest points first: try beside the point, then a line above or below; a
-  // label that still overlaps one already placed is left out (hovering still names the card).
-  const placed = [];
-  const overlaps = (bx) => placed.some((o) => bx.x1 < o.x2 && bx.x2 > o.x1 && bx.y1 < o.y2 && bx.y2 > o.y1);
-  for (const p of [...labelled].sort((a, b) => b.games - a.games)) {
-    const name = cardName(p.card_id);
-    const w = name.length * 6.2;
-    const right = x(p.x) > m.l + iw * 0.75;
-    const dx = r(p.games) + 3;
-    const lx = right ? x(p.x) - dx : x(p.x) + dx;
-    const spot = [0, -12, 12, -24, 24].map((dy) => ({ ly: y(p.y) + 3 + dy, box: { x1: right ? lx - w : lx, x2: right ? lx : lx + w, y1: y(p.y) - 6 + dy, y2: y(p.y) + 5 + dy } }))
-      .find((c) => !overlaps(c.box));
-    if (!spot) continue;
-    placed.push(spot.box);
-    s.append(svg('text', { class: 'chart-tick mr-label', x: lx, y: spot.ly, 'text-anchor': right ? 'end' : 'start' }, name));
-  }
-  const hit = svg('rect', { x: m.l, y: m.t, width: iw, height: ih, fill: 'transparent' });
-  hit.addEventListener('pointermove', (ev) => {
-    const b = s.getBoundingClientRect();
-    const px = ((ev.clientX - b.left) / b.width) * width;
-    const py = ((ev.clientY - b.top) / b.height) * s.viewBox.baseVal.height;
-    let best = null;
-    let bestD = 18 * 18;
-    for (const p of pts) {
-      const d = (x(p.x) - px) ** 2 + (y(p.y) - py) ** 2;
-      if (d < bestD) { best = p; bestD = d; }
-    }
-    if (!best) { hideTip(); return; }
-    showTip(ev.clientX, ev.clientY, [cardName(best.card_id), `Inclusion ${best.x.toFixed(1)}%`,
-      `Winrate ${fmtPp(best.y)} vs baseline`, `${fmtN(best.games)} games${best.sufficient ? '' : ' (below minimum sample)'}`]);
-  });
-  hit.addEventListener('pointerleave', hideTip);
-  hit.addEventListener('click', () => { /* the table below offers keyboard access to each card */ });
-  s.append(hit);
-  host.replaceChildren(s);
+  scatterChart(host, pts, { color: JW.sideColor(state.side), name: cardName, labelAll: 2 * SCATTER_TOP });
 }
 
 // ---------------------------------------------------------------- search and card detail
-
-/** A card-name combobox: `find(query)` returns catalog cards, `onPick(card)` handles a choice. */
-function cardCombo(input, list, { find, onPick, clearOnPick = false }) {
-  let active = -1;
-  let hits = [];
-  const close = () => { list.hidden = true; input.setAttribute('aria-expanded', 'false'); input.removeAttribute('aria-activedescendant'); active = -1; };
-  const pick = (c) => { input.value = clearOnPick ? '' : c.title; close(); onPick(c); };
-  const draw = () => {
-    hits = find(input.value);
-    list.replaceChildren(...hits.map((c, i) => {
-      const f = D.faction(c.faction);
-      const li = el('li', { id: `${list.id}-${i}`, role: 'option', class: 'mr-option', 'aria-selected': i === active ? 'true' : 'false' },
-        el('span', { text: c.title }), ' ', el('span', { class: `faction ${f.className}`, text: `${f.name} · ${c.side === 'corp' ? 'Corp' : 'Runner'}` }));
-      li.addEventListener('mousedown', (e) => { e.preventDefault(); pick(c); });
-      return li;
-    }));
-    list.hidden = !hits.length;
-    input.setAttribute('aria-expanded', String(!!hits.length));
-    if (active >= 0) input.setAttribute('aria-activedescendant', `${list.id}-${active}`);
-  };
-  input.addEventListener('input', () => { active = -1; draw(); });
-  input.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowDown') { active = Math.min(hits.length - 1, active + 1); draw(); e.preventDefault(); }
-    else if (e.key === 'ArrowUp') { active = Math.max(0, active - 1); draw(); e.preventDefault(); }
-    else if (e.key === 'Enter' && hits.length) { pick(hits[Math.max(0, active)]); e.preventDefault(); }
-    else if (e.key === 'Escape') close();
-  });
-  input.addEventListener('blur', () => setTimeout(close, 100));
-}
 
 function setupSearch() {
   cardCombo($('card-search'), $('card-options'), {
