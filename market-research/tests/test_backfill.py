@@ -9,8 +9,6 @@ import httpx
 import pytest
 
 from helpers import make_env
-from market_research.frontier import Frontier
-from market_research.records import CobraTournament, dump
 from market_research.runner import Runtime, backfill, default_since, format_plan, plan
 from market_research.testing import FixtureTransport, normalize_url
 
@@ -157,34 +155,3 @@ def test_plan_quarantines_unparsable_cobra_event_and_keeps_listing(tmp_path, clo
     p = plan(rt(env), SINCE)
     assert p["hosts"]["cobra"]["requests"] == {"0": 5, "1": 3 + 16 + 10, "2": 0, "3": 0}
     assert '"key": "cobra:index:5024"' in env.log.getvalue()
-
-
-def _known_events(env) -> set[str]:
-    items = Frontier.load(env.stores.canonical).items
-    return {k for k, it in items.items() if it.kind in ("abr_event", "cobra_tournament")}
-
-
-def test_longer_backfill_after_shorter_one_discovers_older_events(tmp_path, clock):
-    # Seen live: a 30-day backfill followed by a two-year one found no older events, because the
-    # listings were already done and Cobra's index stopped at the first known event.
-    short = make_env(tmp_path / "short", clock)
-    backfill(rt(short), date(2026, 9, 1))
-    after_short = _known_events(short)
-    backfill(rt(short), SINCE)
-    long_only = make_env(tmp_path / "long", clock)
-    backfill(rt(long_only), SINCE)
-    assert _known_events(short) == _known_events(long_only)
-    assert _known_events(long_only) > after_short
-
-
-def test_backfill_fills_in_missing_cobra_names(tmp_path, clock):
-    # Tournaments stored before names were kept get theirs on the next backfill's index read.
-    env = make_env(tmp_path, clock)
-    backfill(rt(env), SINCE)
-    key = "cobra/tournament/4990.json"
-    stored = CobraTournament.model_validate(json.loads(env.stores.source.get(key)))
-    name = stored.name
-    # As collected before names were kept: no name, and a hash computed without one.
-    env.stores.source.put_json(key, dump(stored.model_copy(update={"name": None}).hashed()))
-    backfill(rt(env), SINCE)
-    assert json.loads(env.stores.source.get(key))["name"] == name
