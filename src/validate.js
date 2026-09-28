@@ -1,6 +1,7 @@
 // Only jinteki.win share payloads are accepted, never arbitrary URLs, so the
 // shortener can't be used as an open redirect or for phishing links.
-export const MAX_PAYLOAD_CHARS = 64 * 1024;
+// Real games compress to a few KB (the 25-round log in test/ is about 5.5K characters).
+export const MAX_PAYLOAD_CHARS = 32 * 1024;
 const MAX_DECODED_BYTES = 2 * 1024 * 1024; // zip-bomb guard
 const PAYLOAD_RE = /^(gz|raw)\.[A-Za-z0-9_-]+$/;
 // Same turn-start phrasing the page's parser recognises (turnStartRe), with
@@ -45,7 +46,7 @@ async function gunzipCapped(bytes) {
   return out;
 }
 
-// Mirrors decodeLogFromUrl() in public/trace/index.html: the payload must decode to text
+// Mirrors decodeLogFromUrl() in public/trace/app.js: the payload must decode to text
 // that actually looks like a jinteki.net game log.
 export async function validatePayload(payload) {
   if (typeof payload !== 'string' || payload.length > MAX_PAYLOAD_CHARS || !PAYLOAD_RE.test(payload)) {
