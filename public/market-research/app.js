@@ -132,8 +132,8 @@ async function boot() {
   document.addEventListener('jw:themechange', () => { drawTrends(); drawScatter(); drawDetailChart(); });
   window.addEventListener('resize', debounce(() => { drawTrends(); drawScatter(); drawDetailChart(); }, 150));
   $('detail-close').addEventListener('click', () => { detailCard = null; $('detail').hidden = true; });
+  loadQuality(); // the footer needs only the manifest, so it loads alongside the first slices
   await refresh();
-  loadQuality();
 }
 
 /** Replaces the page with a notice when the data can't be loaded, instead of leaving it on placeholders. */
@@ -206,16 +206,25 @@ async function refresh() {
   setBusy([...DATA_PANELS, 'trends'], true);
   document.documentElement.style.setProperty('--mr-side', `var(--${state.side})`);
   try {
-    const summary = await slice('summary');
-    identities = await slice('identities');
-    const evs = manifest.paths.tournaments ? await slice('tournaments') : null;
+    // Start every slice this filter needs at once rather than one round trip after another.
+    // Trends are always started: renderTrends asks for the same slice (the cache shares the
+    // request), and a custom period needs them here. They are only awaited for a custom period,
+    // so a trends failure is left to renderTrends to report, as before.
+    const trendsReq = slice('trends');
+    trendsReq.catch(() => {});
+    const [summary, ids, evs] = await Promise.all([
+      slice('summary'),
+      slice('identities'),
+      manifest.paths.tournaments ? slice('tournaments') : null,
+    ]);
     let v = summary;
     if (state.custom && summary.period && (state.from !== summary.period.from || state.to !== summary.period.to)) {
-      const trends = await slice('trends');
+      const trends = await trendsReq;
       v = D.summarize(trends, { from: state.from, to: state.to }, manifest.thresholds, 'all');
     }
     if (token !== refreshToken) return;
     view = v;
+    identities = ids;
     events = evs;
     if (!state.custom && view.period) { state.from = view.period.from; state.to = view.period.to; syncFilters(); }
     renderAll();
