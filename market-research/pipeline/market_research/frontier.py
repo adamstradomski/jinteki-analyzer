@@ -217,6 +217,24 @@ class Frontier:
         it.last_status = status
         self.dirty = True
 
+    def reopen(self, key: str, now: datetime, *, priority: float | None = None) -> None:
+        """Makes a known item due now as if it were new: unfrozen and without validators or its
+        stored hash, so it is fetched and compared in full."""
+        it = self.items.get(key)
+        if it is None:
+            return
+        it.frozen = False
+        it.next_due = now
+        it.interval_s = FIXED_INTERVAL.get(it.kind, MIN_INTERVAL.get(it.kind, DAY))
+        it.etag = None
+        it.last_modified = None
+        it.record_hash = None
+        it.last_status = None
+        it.fail_count = 0
+        if priority is not None:
+            it.priority = priority
+        self.dirty = True
+
     def due(self, now: datetime, source: str | None = None) -> list[Item]:
         out = [
             i

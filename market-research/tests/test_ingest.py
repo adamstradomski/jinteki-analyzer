@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from datetime import date
 
 import httpx
 import pytest
@@ -194,6 +195,57 @@ def test_live_tournament_rechecked_and_decks_wait(tmp_path, clock):
     assert any(
         i.kind == "cobra_deck" for i in ing2.frontier.items.values() if i.entity_id.startswith("4990:")
     )
+
+
+COBRA_INDEX = (
+    "https://tournaments.nullsignal.games/api/v1/public/tournaments?page[number]=1&page[size]=250&sort=-id"
+)
+COBRA_ONLY = {"cobra_catalog", "cobra_index", "cobra_tournament"}
+
+
+def _index_without_format(env, tid):
+    doc = json.loads(env.routes.body(COBRA_INDEX))
+    for item in doc["data"]:
+        if item["id"] == str(tid):
+            item["attributes"]["format_id"] = None
+    env.routes.override(COBRA_INDEX, httpx.Response(200, json=doc))
+
+
+def test_cobra_event_without_format_is_fetched(tmp_path, clock):
+    # Seen live: Cobra events created before early 2025 have no format; normalization decides.
+    env = make_env(tmp_path, clock)
+    _index_without_format(env, 5015)
+    ing = Ingestor(env.settings, env.clock, env.http(), env.stores, parallel=False)
+    ing.run(accept=lambda it: it.kind in COBRA_ONLY)
+    assert ing.frontier.items["cobra:tournament:5015"].last_status == "ok"
+    assert env.stores.source.get_json("cobra/tournament/5015.json")["results_fetched"]
+
+
+def test_backfill_rechecks_event_skipped_for_missing_format(tmp_path, clock):
+    env = make_env(tmp_path, clock)
+    _index_without_format(env, 5015)
+    f = Frontier()
+    f.mark_known(
+        "cobra:tournament:5015",
+        source="cobra",
+        kind="cobra_tournament",
+        entity_id="5015",
+        now=clock.now(),
+        status="skipped_not_standard",
+    )
+    f.save(env.stores.canonical)
+    daily = Ingestor(env.settings, env.clock, env.http(), env.stores, parallel=False)
+    daily.run(accept=lambda it: it.kind in COBRA_ONLY)
+    assert daily.frontier.items["cobra:tournament:5015"].last_status == "skipped_not_standard"
+    ing = Ingestor(
+        env.settings, env.clock, env.http(), env.stores, since=date(2026, 6, 1), backfill=True, parallel=False
+    )
+    ing.run(accept=lambda it: it.kind in COBRA_ONLY)
+    it = ing.frontier.items["cobra:tournament:5015"]
+    assert it.last_status == "ok" and it.priority > 0
+    assert env.stores.source.get_json("cobra/tournament/5015.json")["results_fetched"]
+    # An event whose format is set to another one stays skipped.
+    assert ing.frontier.items["cobra:tournament:5020"].last_status == "skipped_not_standard"
 
 
 def test_abr_string_null_identity_is_missing():

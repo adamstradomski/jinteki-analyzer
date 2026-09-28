@@ -88,7 +88,10 @@ Findings, including where Cobra differs from the brief:
   those record fields stay null.
 - `format_id` and `tournament_type_id` are rows of Cobra's own tables, not fixed numbers, so Standard
   is detected by the format **name** ("Standard") from `/formats`, and tiers by the type name.
-  Tournaments with no `format_id` are treated as not Standard.
+  Tournaments created before Cobra had a format setting (early 2025) have no `format_id`. They are
+  fetched, and normalization decides: the linked ABR event's `format` if there is one, otherwise not
+  Standard when the name names another format (Startup, Eternal, draft, …) or an identity is not
+  legal in Standard around the event date.
 - `deckbuilding_restriction_id` values are NetrunnerDB v3 restriction IDs (Cobra syncs them from
   `api.netrunnerdb.com/api/v3/public/restrictions`), so they are used directly.
 - Deck visibility values are enums such as `swiss_decks_public`, `cut_decks_open`; they are mapped to

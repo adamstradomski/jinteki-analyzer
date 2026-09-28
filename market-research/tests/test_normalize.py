@@ -325,6 +325,48 @@ def test_non_standard_cobra_dropped_in_normalization(fixture_run):
     assert n.q.skipped["not_standard"] == 1
 
 
+def _without_format(env, tid, **edit):
+    src = {i.key: env.stores.source.get(i.key) for i in env.stores.source.list()}
+    key = f"cobra/tournament/{tid}.json"
+    t = json.loads(src[key])
+    t.update(format_id=None, **edit)
+    src[key] = json.dumps(t).encode()
+    return src
+
+
+def _kept(n: Normalizer, tid: str) -> bool:
+    return tid in {r["tid"] for r in n.run().rows["tournament"]}
+
+
+def test_cobra_event_without_format_follows_linked_abr_event(fixture_run):
+    # Seen live: Cobra events created before early 2025 have no format at all.
+    env, _, _, _ = fixture_run
+    src = _without_format(env, 4990)
+    assert _kept(Normalizer(src, env.settings), "c4990")  # type: ignore[arg-type]
+    a = json.loads(src["abr/tournament/5284.json"])
+    a["format"] = "eternal"
+    src["abr/tournament/5284.json"] = json.dumps(a).encode()
+    n = Normalizer(src, env.settings)  # type: ignore[arg-type]
+    assert not _kept(n, "c4990")
+    assert n.q.skipped["not_standard"] == 1
+
+
+def test_unlinked_cobra_event_without_format_is_judged_by_name_and_identities(fixture_run):
+    env, _, _, _ = fixture_run
+    assert _kept(Normalizer(_without_format(env, 5015), env.settings), "c5015")  # type: ignore[arg-type]
+
+    n = Normalizer(_without_format(env, 5015, name="Startup Saturday"), env.settings)  # type: ignore[arg-type]
+    assert not _kept(n, "c5015")
+    assert n.q.skipped["not_standard_name"] == 1
+
+    n = Normalizer(_without_format(env, 5015), env.settings)  # type: ignore[arg-type]
+    rotated = n.catalog.identity_of_title(n.cobra_t[5015].players[0].corp_identity)
+    legal_in = n.catalog.legal_in
+    n.catalog.legal_in = lambda c, r: c != rotated and legal_in(c, r)  # type: ignore[method-assign]
+    assert not _kept(n, "c5015")
+    assert n.q.skipped["not_standard_identities"] == 1
+
+
 def test_cobra_abr_linking(fixture_run):
     _, _, data, q = fixture_run
     assert {(x["tid"], x["abr_id"], x["method"]) for x in q.links} == {
@@ -431,6 +473,11 @@ def test_rotated_card_not_legal(fixture_run):
     assert "account_siphon" in cat.cards
     assert not cat.legal_in("account_siphon", "standard_balance_update_26_08")
     assert cat.legal_in("hedge_fund", "standard_balance_update_26_08")
+    # Rotation is not a ban; only the ban list's own verdict is.
+    assert not cat.banned_in("account_siphon", "standard_balance_update_26_08")
+    assert not cat.banned_in("hedge_fund", "standard_balance_update_26_08")
+    assert cat.banned_in("red_level_clearance", "standard_balance_update_26_08")
+    assert not cat.banned_in("red_level_clearance", "standard_ban_list_26_05")
 
 
 def test_title_matching():

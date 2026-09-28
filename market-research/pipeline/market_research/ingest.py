@@ -255,9 +255,12 @@ class Ingestor:
         rec = self.read(f"cobra/catalog/{kind}.json") or {}
         return {i["id"]: i["name"] for i in rec.get("items", [])}
 
-    def is_standard_cobra(self, format_id: int | None) -> bool:
+    def may_be_standard_cobra(self, format_id: int | None) -> bool:
+        """Whether a Cobra event may be Standard. Events created before Cobra had a format setting
+        (early 2025) carry none; they are fetched, and normalization decides from the linked ABR
+        event, the name and the identities."""
         if format_id is None:
-            return False
+            return True
         return self.cobra_catalog("formats").get(str(format_id), "").strip().lower() == "standard"
 
     # ------------------------------------------------------------------ loop
@@ -555,7 +558,16 @@ class Ingestor:
                     )
                     continue
                 key = f"cobra:tournament:{meta.id}"
-                if self.frontier.get(key) is not None:
+                known = self.frontier.get(key)
+                # A backfill re-checks events skipped as not Standard under an earlier rule (events
+                # without a format were once skipped).
+                recheck = (
+                    known is not None
+                    and self.backfill
+                    and known.last_status == "skipped_not_standard"
+                    and self.may_be_standard_cobra(meta.format_id)
+                )
+                if known is not None and not recheck:
                     if self.backfill:
                         self.fill_cobra_name(meta)
                         continue  # a backfill reads on to its start date: older events may be new
@@ -581,7 +593,7 @@ class Ingestor:
                             status="skipped_private",
                         )
                     continue
-                if not self.is_standard_cobra(meta.format_id):
+                if not self.may_be_standard_cobra(meta.format_id):
                     with self._lock:
                         self.frontier.mark_known(
                             key,
@@ -601,6 +613,9 @@ class Ingestor:
                 self.enqueue(
                     key, "cobra", "cobra_tournament", str(meta.id), priority=pr, event_date=meta.date
                 )
+                if recheck:
+                    with self._lock:
+                        self.frontier.reopen(key, self.now, priority=pr)
             if len(data) < size:
                 break
             page += 1

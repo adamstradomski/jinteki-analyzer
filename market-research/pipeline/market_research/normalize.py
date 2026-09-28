@@ -121,6 +121,11 @@ SOURCE_ORDER = {"cobra": 0, "nrdb_decklist": 1, "nrdb_deck": 2}
 # Evidence needed to replace an event's ban list with one its decks fit better (see choose_restriction).
 BANLIST_MIN_GAIN = 2
 BANLIST_MIN_SHARE = 0.1
+# Names of other formats, for Cobra events without a format setting (see cobra_not_standard).
+OTHER_FORMAT_NAME = re.compile(
+    r"\b(start ?up|eternal|sealed|draft|cube|throwback|system gateway|1\.1\.1\.1)\b",
+    re.IGNORECASE,
+)
 
 
 def _best(sources: list[_Deck], entry_ident: str | None) -> tuple[str | None, dict[str, int]]:
@@ -253,6 +258,33 @@ class Normalizer:
     def cobra_standard(self, t: CobraTournament) -> bool:
         name = self.cobra_names.get("formats", {}).get(str(t.format_id), "")
         return name.strip().lower() == "standard"
+
+    def cobra_not_standard(self, t: CobraTournament, a: AbrTournament | None) -> str | None:
+        """Why a Cobra event is left out as not Standard, or None when it counts.
+
+        Events created before Cobra had a format setting (early 2025) carry none. For them the
+        linked ABR event's format decides; without one, a name naming another format rules it out,
+        and otherwise every identity must be legal in Standard around the event date (Eternal
+        decks play rotated ones). Startup events without the word in their name pass as Standard;
+        their card pool is a subset of it.
+        """
+        if t.format_id is not None:
+            return None if self.cobra_standard(t) else "not_standard"
+        if a is not None:
+            return None if a.format == "standard" else "not_standard"
+        if OTHER_FORMAT_NAME.search(t.name or ""):
+            return "not_standard_name"
+        titles = {title for p in t.players for title in (p.corp_identity, p.runner_identity) if title}
+        idents = {c for c in map(self.catalog.identity_of_title, titles) if c}
+        order = self.catalog.standard_restrictions()
+        snap = self.catalog.snapshot_at(t.date)
+        if not idents or snap is None or snap.restriction_id not in order:
+            return "format_unknown"
+        i = order.index(snap.restriction_id)
+        near = order[max(0, i - 1) : i + 2]
+        if any(not any(self.catalog.legal_in(c, r) for r in near) for c in idents):
+            return "not_standard_identities"
+        return None
 
     def restriction_for(self, cobra_rid: str | None, d: str) -> str | None:
         if cobra_rid and self.catalog.is_standard_restriction(cobra_rid):
@@ -457,11 +489,12 @@ class Normalizer:
             if not t.results_fetched:
                 self.q.skipped["cobra_no_results"] += 1
                 continue
-            if not self.cobra_standard(t):
-                self.q.skipped["not_standard"] += 1
-                continue
             aid = links.get(cid)
             a = self.abr_t.get(aid) if aid else None
+            reason = self.cobra_not_standard(t, a)
+            if reason:
+                self.q.skipped[reason] += 1
+                continue
             if len(t.players) < self.settings.thresholds.min_players:
                 self.q.skipped["too_small"] += 1
                 continue

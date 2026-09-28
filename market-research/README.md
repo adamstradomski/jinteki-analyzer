@@ -81,6 +81,11 @@ run's full log is kept in R2 (`logs/…`, see [CLI](#cli)).
 **Which tournaments count** (`skipped_tournaments`)
 
 - Standard only: Cobra's format named "Standard", AlwaysBeRunning's `format` `standard`.
+- Cobra events created before Cobra had a format setting (early 2025) have none. They follow their
+  linked AlwaysBeRunning event; unlinked ones are left out when the name names another format
+  (Startup, Eternal, draft, …) or an identity is not legal in Standard around the event date.
+  Startup events without the word in their name count as Standard (their card pool is a subset).
+  A backfill re-checks events an earlier run skipped as not Standard.
 - AlwaysBeRunning events must be approved, concluded and free of claim conflicts.
 - At least 8 players (`MR_MIN_PLAYERS`).
 
