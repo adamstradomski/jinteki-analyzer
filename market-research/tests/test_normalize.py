@@ -537,3 +537,33 @@ def test_tournaments_keep_public_names_and_swiss_format(fixture_run):
     assert all(r["name"] and r["name"].startswith("Fixture Tournament ") for r in t.values())
     assert t["c4990"]["swiss_format"] in ("single_sided", "double_sided")
     assert all(r["swiss_format"] is None for tid, r in t.items() if tid.startswith("a"))
+
+
+def test_online_events_are_recognised(fixture_run):
+    # Seen live: "EMEA Online Continental 2026" is a Megacity+ event (ABR location "online") and was
+    # listed as offline because only the Online tier could be online.
+    from market_research.scrub import IngestQuality
+    from market_research.sources import abr
+
+    ev = {
+        "id": 1,
+        "date": "2026.09.05.",
+        "format": "standard",
+        "approved": 1,
+        "concluded": True,
+        "players_count": 99,
+        "title": "EMEA Online Continental 2026",
+        "location": "online",
+    }
+    assert abr.parse_event(ev, IngestQuality(), "t").online
+    assert not abr.parse_event(dict(ev, location="Warsaw"), IngestQuality(), "t").online
+
+    env, _, _, _ = fixture_run
+    src = {i.key: env.stores.source.get(i.key) for i in env.stores.source.list()}
+    rec = json.loads(src["cobra/tournament/5012.json"])
+    rec["name"] = "Polish Online Store Championship"
+    src["cobra/tournament/5012.json"] = json.dumps(rec).encode()
+    out = Normalizer(src, env.settings).run()  # type: ignore[arg-type]
+    t = {r["tid"]: r for r in out.rows["tournament"]}
+    assert t["c5012"]["online"] and t["c5012"]["tier"] == "store"
+    assert not t["c4990"]["online"]

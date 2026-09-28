@@ -174,6 +174,7 @@ class AbrTournament(Record):
     date: str
     end_date: str | None = None  # last day of a multi-day event; None for one-day events
     title: str | None = None  # the event's public name
+    online: bool = False  # ABR's location is "online"
     type_id: str | None = None
     format: str | None = None
     cardpool: str | None = None
