@@ -20,11 +20,14 @@ dependencies = [
   "jsonschema>=4.26,<5",
 ]
 
-[project.optional-dependencies]
+# Development tools. `uv sync` installs this group by default; the pip workflow uses
+# requirements-dev.in/.lock, which list the same packages.
+[dependency-groups]
 dev = [
   "pytest>=9,<10",
   "pytest-cov>=7,<8",
   "pytest-socket>=0.8,<0.9",
+  "pytest-xdist>=3,<4",
   "respx>=0.23,<0.24",
   "freezegun>=1.5,<2",
   "hypothesis>=6,<7",

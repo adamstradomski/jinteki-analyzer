@@ -138,7 +138,30 @@ run's full log is kept in R2 (`logs/…`, see [CLI](#cli)).
 
 ## Development
 
-Python 3.12.
+Python 3.12. The easiest setup is [uv](https://docs.astral.sh/uv/), which fetches Python 3.12 if
+needed and installs from `uv.lock`:
+
+```sh
+cd market-research
+uv sync                          # creates .venv with the package (editable) and the dev group
+
+uv run ruff check pipeline tests && uv run ruff format --check pipeline tests
+uv run mypy
+uv run pytest --cov              # sockets are disabled for every test
+uv run market-research --help
+```
+
+| Command | What it does |
+|---|---|
+| `uv sync` | Creates or updates `.venv` to match `uv.lock` exactly: the runtime dependencies, the `dev` dependency group from `pyproject.toml`, and this package installed editable. `--no-dev` leaves out the dev tools. |
+| `uv run <cmd>` | Runs `<cmd>` inside `.venv`, syncing it first if `pyproject.toml` or `uv.lock` changed. |
+| `uv lock` | Re-resolves `uv.lock` after a dependency change in `pyproject.toml`; `-P name==version` moves one package. |
+
+CI, the Docker image and Dependabot use the hash-pinned pip locks (`requirements.lock`,
+`requirements-dev.lock`), not `uv.lock`. When you change a dependency, update both, and keep the
+versions in `uv.lock` the same as in the pip locks (`uv lock -P name==version`).
+
+Without uv, use pip and the pip locks:
 
 ```sh
 cd market-research

@@ -10,3 +10,6 @@ __pycache__/
 market-research.env
 # Saved run logs (e.g. docker logs mr-backfill > backfill.log); test/*.log game logs stay tracked
 /*.log
+.venv/
+.pytest_cache/
+.hypothesis/
