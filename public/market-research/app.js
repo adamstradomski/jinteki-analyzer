@@ -115,7 +115,9 @@ async function getJson(url) {
   }
 }
 
-const slice = (kind, s = state) => getJson(D.sliceUrl(base, manifest, kind, { side: s.side, restriction: s.restriction, tier: s.tier }));
+// Card slices come from the top-cut scope when "Top-cut decks only" is on; identities have none.
+const scoped = (kind, s) => (s.cut && (kind === 'summary' || kind === 'trends') ? `${kind}_cut` : kind);
+const slice = (kind, s = state) => getJson(D.sliceUrl(base, manifest, scoped(kind, s), { side: s.side, restriction: s.restriction, tier: s.tier }));
 
 async function boot() {
   JW.mountThemeSwitcher($('theme-switcher'));
@@ -181,6 +183,8 @@ function setupFilters() {
   $('f-from').addEventListener('change', (e) => { setPeriod(e.target.value, state.to); });
   $('f-to').addEventListener('change', (e) => { setPeriod(state.from, e.target.value); });
   $('f-reset').addEventListener('click', () => { state = D.parseHash('', manifest); syncFilters(); commit(); });
+  $('f-cut-field').hidden = !manifest.paths.summary_cut; // snapshots before the top-cut scope
+  $('f-cut').addEventListener('click', () => { state.cut = !state.cut; syncFilters(); commit(); });
 }
 
 function setPeriod(from, to) {
@@ -198,6 +202,7 @@ function syncFilters() {
   if (state.from) $('f-from').value = state.from;
   if (state.to) $('f-to').value = state.to;
   sideToggle?.set(state.side);
+  $('f-cut').setAttribute('aria-pressed', String(!!state.cut));
   document.documentElement.style.setProperty('--mr-side', `var(--${state.side})`);
 }
 
@@ -240,7 +245,6 @@ function renderAll() {
   renderPlayed();
   renderIdentities();
   renderWinrate();
-  renderConversion();
   renderScatter();
   initTrendCards();
   renderTrends();
@@ -250,18 +254,18 @@ function renderAll() {
 function renderStats() {
   const b = view.baseline;
   const side = state.side === 'corp' ? 'Corp' : 'Runner';
+  const who = state.cut ? `top-cut ${side}` : side;
   const stat = (num, label, cls = '') => el('div', { class: `stat ${cls}` }, el('span', { class: 'num', text: num }), el('span', { class: 'label', text: label }));
   $('stats').replaceChildren(
     stat(manifest.data_as_of || '–', 'Data as of'),
-    stat(fmtInt(b.tournaments), 'Tournaments'),
-    stat(fmtInt(b.decks), `${side} decks`, state.side),
-    stat(b.games_all == null ? fmtInt(b.games) : `${fmtInt(b.games)} / ${fmtInt(b.games_all)}`, `${side} games (with decklists / total)`, state.side),
-    stat(fmtPct(b.winrate_all ?? b.winrate), `${side} winrate (all games)`),
-    stat(fmtPct(b.cut_rate), 'Baseline top-cut rate'),
+    stat(fmtInt(b.tournaments), state.cut ? 'Tournaments with a cut' : 'Tournaments'),
+    stat(fmtInt(b.decks), `${who} decks`, state.side),
+    stat(b.games_all == null ? fmtInt(b.games) : `${fmtInt(b.games)} / ${fmtInt(b.games_all)}`, `${who} games (with decklists / total)`, state.side),
+    stat(fmtPct(b.winrate_all ?? b.winrate), `${who} winrate (all games)`),
   );
   const p = view.period;
   $('period-note').textContent = p
-    ? `Showing ${monthName(p.from)} → ${monthName(p.to)}${view.previous_period ? `, compared with ${monthName(view.previous_period.from)} → ${monthName(view.previous_period.to)}` : ''}.`
+    ? `Showing ${monthName(p.from)} → ${monthName(p.to)}${view.previous_period ? `, compared with ${monthName(view.previous_period.from)} → ${monthName(view.previous_period.to)}` : ''}.${state.cut ? ' Card stats count only decks that made the top cut, in events that had one, and the games they played. Identities always count every entry.' : ''}`
     : 'No Standard tournaments match this filter.';
 }
 
@@ -319,6 +323,7 @@ function meterCell(v) {
 
 function renderPlayed() {
   const rows = view.cards.filter((c) => c.decks > 0);
+  const emptyPlayed = state.cut ? 'No top-cut decks with known decklists in this filter.' : 'No cards in this filter.';
   dataTable($('played-body'), [
     { key: 'rank', label: 'Rank', num: true, cell: (r) => el('td', { class: 'num', text: fmtInt(r.rank) }) },
     { key: 'title', label: 'Card', value: (r) => cardName(r.card_id), cell: (r) => cardCell(r.card_id) },
@@ -327,7 +332,7 @@ function renderPlayed() {
     { key: 'avg_copies', label: 'Avg copies', num: true, cell: (r) => el('td', { class: 'num', text: fmtNum(r.avg_copies) }) },
     { key: 'change_pp', label: 'Change', num: true, cell: (r) => changeCell(r.change_pp) },
     { key: 'decks', label: 'Decks', num: true, cell: (r) => el('td', { class: 'num', text: fmtN(r.decks) }) },
-  ], rows, { sortKey: 'rank', sortDir: 'ascending' });
+  ], rows, { sortKey: 'rank', sortDir: 'ascending', empty: emptyPlayed });
 }
 
 function renderIdentities() {
@@ -358,20 +363,6 @@ function renderWinrate() {
     { key: 'winrate', label: 'Winrate', num: true, cell: (r) => el('td', { class: 'num', text: fmtPct(r.winrate) }) },
     { key: 'games', label: 'Games', num: true, cell: (r) => el('td', { class: 'num', text: fmtN(r.games) }) },
   ], rows, { rowClass: (r) => (r.winrate_status !== 'ok' ? 'mr-insufficient' : ''), empty: hideSmall.winrate ? `No card has ${min} games with decklists in this filter.` : 'No games with decklists in this filter.' });
-}
-
-function renderConversion() {
-  const b = view.baseline;
-  $('conversion-note').textContent = `Share of entries with the card that made the top cut, against ${fmtPct(b.cut_rate)} for all ${state.side === 'corp' ? 'Corp' : 'Runner'} entries. Only tournaments with a cut and at least ${Math.round(manifest.thresholds.coverage_hc * 100)}% decklist coverage count (${fmtInt(b.tournaments_hc)} in this filter). Rows under ${manifest.thresholds.min_entries} entries are greyed and listed last.`;
-  const rows = D.conversionRows(view.cards);
-  dataTable($('conversion-body'), [
-    { key: 'title', label: 'Card', value: (r) => cardName(r.card_id), cell: (r) => cardCell(r.card_id) },
-    { key: 'conversion', label: 'Conversion', num: true, cell: (r) => el('td', { class: 'num', text: fmtPct(r.conversion) }) },
-    { key: 'conversion_diff_pp', label: 'vs baseline', num: true, cell: (r) => diffCell(r.conversion_diff_pp, r.conversion_status !== 'ok') },
-    { key: 'conversion_ratio', label: 'Ratio', num: true, cell: (r) => el('td', { class: 'num', text: fmtRatio(r.conversion_ratio) }) },
-    { key: 'entries_hc', label: 'Entries', num: true, cell: (r) => el('td', { class: 'num', text: fmtN(r.entries_hc) }) },
-    { key: 'tournaments_hc', label: 'Tournaments', num: true, cell: (r) => el('td', { class: 'num', text: fmtN(r.tournaments_hc) }) },
-  ], rows, { rowClass: (r) => (r.conversion_status !== 'ok' ? 'mr-insufficient' : ''), empty: 'No high-coverage tournaments with a cut in this filter.' });
 }
 
 // ---------------------------------------------------------------- tooltip
@@ -707,13 +698,11 @@ async function openDetail(id, scroll = true) {
     : [stat(fmtPct(m.popularity), `Inclusion (${fmtN(m.decks)} decks)`), stat(fmtNum(m.avg_copies), 'Average copies'),
       stat(m.copies_mode ? `${m.copies_mode}×` : '–', 'Most common copy count'),
       stat(fmtPp(m.winrate_diff_pp), `Winrate vs baseline (${fmtN(m.games)}${m.winrate_status === 'ok' ? '' : ', small sample'})`),
-      stat(`${fmtPp(m.wilson_low_pp)} → ${fmtPp(m.wilson_high_pp)}`, '95% interval'),
-      stat(fmtPct(m.conversion), `Top-cut conversion (${fmtN(m.entries_hc)}${m.conversion_status === 'ok' ? '' : ', small sample'})`)];
+      stat(`${fmtPp(m.wilson_low_pp)} → ${fmtPp(m.wilson_high_pp)}`, '95% interval')];
   body.replaceChildren(head, el('div', { class: 'summary-grid mr-stats' }, ...stats), el('h3', { text: 'Inclusion by month' }), el('div', { id: 'detail-chart', class: 'mr-chart' }));
   if (scroll) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
   try {
-    trendsData = trendsData && trendsData.side === state.side && trendsData.restriction === state.restriction && trendsData.tier_group === state.tier
-      ? trendsData : await slice('trends');
+    trendsData = await slice('trends'); // cached per URL, so this is the file already loaded
     drawDetailChart();
   } catch {
     $('detail-chart').replaceChildren(el('p', { class: 'mr-note', text: 'Trends could not be loaded.' }));

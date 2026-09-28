@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' https://data.jinteki.win; img-src 'self' data:; base-uri 'none'; form-action 'none'; object-src 'none'">
 <title>Market Research · jinteki.win</title>
-<meta name="description" content="Card meta from NSG Netrunner Standard tournaments: most played cards, trends, winrates and top-cut conversion.">
+<meta name="description" content="Card meta from NSG Netrunner Standard tournaments: most played cards, trends, winrates, and what top-cut decks play.">
 <link rel="stylesheet" href="/shared/jw/tokens.css">
 <link rel="stylesheet" href="/shared/jw/bundle.css">
 <link rel="stylesheet" href="style.css">
@@ -36,6 +36,7 @@
           <label class="field">Tier<select id="f-tier" class="select"></select></label>
           <label class="field">From<select id="f-from" class="select"></select></label>
           <label class="field">To<select id="f-to" class="select"></select></label>
+          <div class="field" id="f-cut-field"><span>Decks</span><button type="button" id="f-cut" class="btn chip" aria-pressed="false">Top-cut decks only</button></div>
           <div class="field"><span>&nbsp;</span><button type="button" id="f-reset" class="btn secondary">Reset filters</button></div>
         </div>
         <p id="period-note" class="mr-note"></p>
@@ -105,11 +106,6 @@
       <div class="panel-body"><p id="winrate-note" class="mr-note"></p>
         <div class="mr-toolbar"><button type="button" id="winrate-small" class="btn chip" aria-pressed="true">Hide small samples</button></div>
         <div id="winrate-body"></div></div>
-    </section>
-
-    <section class="panel" id="conversion" aria-labelledby="conversion-title">
-      <div class="panel-header"><h2 id="conversion-title">Top-cut conversion</h2><div class="header-controls"><button type="button" class="collapse-icon" aria-label="Collapse section">−</button></div></div>
-      <div class="panel-body"><p id="conversion-note" class="mr-note"></p><div id="conversion-body"></div></div>
     </section>
 
     <section class="panel" id="detail" aria-labelledby="detail-title" hidden>

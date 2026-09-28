@@ -85,7 +85,7 @@ export function parseHash(hash, manifest) {
   const restrictions = manifest.restrictions.map((r) => r.id);
   const tiers = manifest.tier_groups.map((t) => t.id);
   const def = defaultPeriod(manifest);
-  const state = { restriction: 'all', tier: 'all', from: def?.from ?? null, to: def?.to ?? null, side: 'corp', custom: false };
+  const state = { restriction: 'all', tier: 'all', from: def?.from ?? null, to: def?.to ?? null, side: 'corp', custom: false, cut: false };
   if (restrictions.includes(parts[0])) state.restriction = parts[0];
   if (tiers.includes(parts[1])) state.tier = parts[1];
   const m = /^(\d{4}-\d{2})\.\.(\d{4}-\d{2})$/.exec(parts[2] || '');
@@ -99,12 +99,13 @@ export function parseHash(hash, manifest) {
     }
   }
   if (SIDES.includes(parts[3])) state.side = parts[3];
+  state.cut = parts[4] === 'cut' && !!manifest.paths?.summary_cut;
   return state;
 }
 
 export function formatHash(state) {
   const period = state.from && state.to ? `${state.from}..${state.to}` : '';
-  return `#${state.restriction}/${state.tier}/${period}/${state.side}`;
+  return `#${state.restriction}/${state.tier}/${period}/${state.side}${state.cut ? '/cut' : ''}`;
 }
 
 // ---------------------------------------------------------------- summing additive counts
@@ -307,13 +308,6 @@ export function winrateRows(cards) {
     .filter((c) => c.games > 0)
     .sort((a, b) => (a.winrate_status === b.winrate_status ? 0 : a.winrate_status === 'ok' ? -1 : 1)
       || (b.winrate_diff_pp ?? -1e9) - (a.winrate_diff_pp ?? -1e9) || b.games - a.games);
-}
-
-export function conversionRows(cards) {
-  return cards
-    .filter((c) => c.entries_hc > 0)
-    .sort((a, b) => (a.conversion_status === b.conversion_status ? 0 : a.conversion_status === 'ok' ? -1 : 1)
-      || (b.conversion_diff_pp ?? -1e9) - (a.conversion_diff_pp ?? -1e9) || b.entries_hc - a.entries_hc);
 }
 
 /** Points for the popularity-vs-winrate scatter. */

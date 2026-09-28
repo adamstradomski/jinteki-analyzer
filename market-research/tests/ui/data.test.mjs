@@ -166,6 +166,11 @@ test('hash state round-trips and invalid values fall back to defaults', () => {
   const clamped = D.parseHash('#all/all/2000-01..2999-12/corp', manifest);
   assert.deepEqual([clamped.from, clamped.to], [lo, hi]);
   assert.equal(D.parseHash('', manifest).side, 'corp');
+  const cut = D.parseHash(`#all/all/${lo}..${hi}/corp/cut`, manifest);
+  assert.equal(cut.cut, true);
+  assert.equal(D.formatHash(cut), `#all/all/${lo}..${hi}/corp/cut`);
+  assert.equal(D.parseHash('#all/all//corp/nope', manifest).cut, false);
+  assert.equal(D.parseHash('#all/all//corp/cut', { ...manifest, paths: { summary: 'x' } }).cut, false); // older snapshot
 });
 
 test('data base accepts only the production host or same-origin paths', () => {
@@ -198,8 +203,6 @@ test('series, markers, scatter and table orders', () => {
   const wr = D.winrateRows(summary.cards);
   const firstInsufficient = wr.findIndex((c) => c.winrate_status === 'insufficient');
   if (firstInsufficient >= 0) assert.ok(wr.slice(firstInsufficient).every((c) => c.winrate_status === 'insufficient'));
-  const conv = D.conversionRows(summary.cards);
-  assert.ok(conv.every((c) => c.entries_hc > 0));
   const sorted = D.sortRows(summary.cards, 'avg_copies', 'ascending');
   const vals = sorted.map((c) => c.avg_copies);
   const known = vals.filter((v) => v !== null);
