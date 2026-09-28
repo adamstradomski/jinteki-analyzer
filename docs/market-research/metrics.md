@@ -7,7 +7,10 @@ The pipeline stores counts per `(side, restriction, tier_group, month, card_id)`
 `decks_total, decks_with_card, copies_sum, games_total, games_won, entries_total_hc, entries_with_card_hc, cut_total_hc, cut_with_card_hc`
 
 - `_hc` counts come only from **high-coverage tournaments**: decklist coverage ≥ 0.7 (configurable) and a cut exists.
-- Baselines per slice and month: `side_decks, side_games, side_wins, side_entries_hc, side_cut_hc`.
+- Baselines per slice and month: `side_decks, side_games, side_wins, side_entries_hc, side_cut_hc,
+  side_games_all, side_wins_all`. `side_games`/`side_wins` count only games where that side's deck is
+  known (the baseline cards are compared with); `side_games_all`/`side_wins_all` count every game, so
+  the headline Corp and Runner winrates (`side_wins_all / side_games_all`) sum to 100%.
 
 In `trends.json` the per-slice totals (`decks_total`, `entries_total_hc`, `cut_total_hc`) live once
 in the baseline rows (`side_decks`, `side_entries_hc`, `side_cut_hc`) instead of being repeated on

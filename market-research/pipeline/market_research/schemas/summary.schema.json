@@ -93,7 +93,10 @@
         "cut_hc",
         "cut_rate",
         "tournaments",
-        "tournaments_hc"
+        "tournaments_hc",
+        "games_all",
+        "wins_all",
+        "winrate_all"
       ],
       "additionalProperties": false,
       "properties": {
@@ -129,6 +132,18 @@
         },
         "tournaments_hc": {
           "type": "integer"
+        },
+        "games_all": {
+          "type": "integer"
+        },
+        "wins_all": {
+          "type": "number"
+        },
+        "winrate_all": {
+          "type": [
+            "number",
+            "null"
+          ]
         }
       }
     },

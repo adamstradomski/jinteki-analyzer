@@ -76,7 +76,9 @@
         "side_entries_hc",
         "side_cut_hc",
         "tournaments",
-        "tournaments_hc"
+        "tournaments_hc",
+        "side_games_all",
+        "side_wins_all"
       ]
     },
     "baseline": {
@@ -87,8 +89,8 @@
           "type": "number",
           "minimum": 0
         },
-        "minItems": 9,
-        "maxItems": 9
+        "minItems": 11,
+        "maxItems": 11
       }
     },
     "cards": {

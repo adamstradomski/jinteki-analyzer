@@ -29,6 +29,7 @@ CARD_COLUMNS = [
 ]  # fmt: skip
 BASELINE_COLUMNS = [
     "side_decks", "side_games", "side_wins", "side_entries_hc", "side_cut_hc", "tournaments", "tournaments_hc",
+    "side_games_all", "side_wins_all",
 ]  # fmt: skip
 IDENTITY_COLUMNS = ["entries", "games_total", "games_won", "cut_entries", "cut_made"]
 IDENTITY_BASELINE_COLUMNS = ["side_entries", "side_games", "side_wins", "side_cut_entries", "side_cut_made"]
@@ -125,6 +126,11 @@ def compute_counts(con: duckdb.DuckDBPyConnection, catalog: Catalog, settings: S
             SELECT side, restriction_id, tier, month, count(*) AS side_games, sum(won) AS side_wins
             FROM dg GROUP BY ALL
         ),
+        -- Every game, deck known or not: the headline side winrate (corp + runner = 100%).
+        ga AS (
+            SELECT side, restriction_id, tier, month, count(*) AS side_games_all, sum(won) AS side_wins_all
+            FROM g GROUP BY ALL
+        ),
         tn AS (
             SELECT restriction_id, tier, month, count(*) AS tournaments, count(*) FILTER (WHERE hc) AS tournaments_hc
             FROM t GROUP BY ALL
@@ -132,10 +138,12 @@ def compute_counts(con: duckdb.DuckDBPyConnection, catalog: Catalog, settings: S
         SELECT s.side, tn.restriction_id, tn.tier, tn.month,
                coalesce(dk.side_decks, 0) AS side_decks, coalesce(gm.side_games, 0) AS side_games,
                coalesce(gm.side_wins, 0.0) AS side_wins, coalesce(dk.side_entries_hc, 0) AS side_entries_hc,
-               coalesce(dk.side_cut_hc, 0) AS side_cut_hc, tn.tournaments, tn.tournaments_hc
+               coalesce(dk.side_cut_hc, 0) AS side_cut_hc, tn.tournaments, tn.tournaments_hc,
+               coalesce(ga.side_games_all, 0) AS side_games_all, coalesce(ga.side_wins_all, 0.0) AS side_wins_all
         FROM tn CROSS JOIN sides s
         LEFT JOIN dk ON dk.side = s.side AND dk.restriction_id = tn.restriction_id AND dk.tier = tn.tier AND dk.month = tn.month
-        LEFT JOIN gm ON gm.side = s.side AND gm.restriction_id = tn.restriction_id AND gm.tier = tn.tier AND gm.month = tn.month;
+        LEFT JOIN gm ON gm.side = s.side AND gm.restriction_id = tn.restriction_id AND gm.tier = tn.tier AND gm.month = tn.month
+        LEFT JOIN ga ON ga.side = s.side AND ga.restriction_id = tn.restriction_id AND ga.tier = tn.tier AND ga.month = tn.month;
 
         CREATE OR REPLACE TABLE ie AS
         SELECT e.tid, e.entry_no, s.side,

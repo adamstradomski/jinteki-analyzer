@@ -12,6 +12,7 @@ export const CARD_COLUMNS = [
 ];
 export const BASELINE_COLUMNS = [
   'side_decks', 'side_games', 'side_wins', 'side_entries_hc', 'side_cut_hc', 'tournaments', 'tournaments_hc',
+  'side_games_all', 'side_wins_all',
 ];
 
 const MONTH = /^\d{4}-\d{2}$/;
@@ -154,7 +155,7 @@ function sumInto(names, rows, keep) {
   const acc = Object.fromEntries(names.map((n) => [n, 0]));
   for (const row of rows) {
     if (!keep(row)) continue;
-    names.forEach((n, i) => { acc[n] += row[i + 2]; });
+    names.forEach((n, i) => { acc[n] += row[i + 2] ?? 0; }); // older snapshots lack newer columns
   }
   return acc;
 }
@@ -232,6 +233,11 @@ export function baselineView(b) {
     cut_rate: ratio(b.side_cut_hc, b.side_entries_hc),
     tournaments: b.tournaments,
     tournaments_hc: b.tournaments_hc,
+    // Every game, deck known or not: the headline side winrate. games/winrate above count only
+    // games where this side's deck is known, which is the baseline cards are compared with.
+    games_all: b.side_games_all,
+    wins_all: b.side_wins_all,
+    winrate_all: ratio(b.side_wins_all, b.side_games_all),
   };
 }
 

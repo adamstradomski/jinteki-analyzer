@@ -243,8 +243,8 @@ function renderStats() {
     stat(manifest.data_as_of || '–', 'Data as of'),
     stat(fmtInt(b.tournaments), 'Tournaments'),
     stat(fmtInt(b.decks), `${side} decks`, state.side),
-    stat(fmtInt(b.games), `${side} games`, state.side),
-    stat(fmtPct(b.winrate), `${side} winrate`),
+    stat(b.games_all == null ? fmtInt(b.games) : `${fmtInt(b.games)} / ${fmtInt(b.games_all)}`, `${side} games (with decklists / total)`, state.side),
+    stat(fmtPct(b.winrate_all ?? b.winrate), `${side} winrate (all games)`),
     stat(fmtPct(b.cut_rate), 'Baseline top-cut rate'),
   );
   const p = view.period;
@@ -324,7 +324,7 @@ function renderIdentities() {
 }
 
 function renderWinrate() {
-  $('winrate-note').textContent = `Game winrate of decks with the card minus the ${state.side === 'corp' ? 'Corp' : 'Runner'} baseline (${fmtPct(view.baseline.winrate)}), with the Wilson 95% interval. Draws count as half a win; intentional draws are excluded. Rows under ${manifest.thresholds.min_games} games are greyed and listed last.`;
+  $('winrate-note').textContent = `Game winrate of decks with the card minus the ${state.side === 'corp' ? 'Corp' : 'Runner'} baseline over games with decklists (${fmtPct(view.baseline.winrate)}), with the Wilson 95% interval. Draws count as half a win; intentional draws are excluded. Rows under ${manifest.thresholds.min_games} games are greyed and listed last.`;
   const rows = D.winrateRows(view.cards);
   dataTable($('winrate-body'), [
     { key: 'title', label: 'Card', value: (r) => cardName(r.card_id), cell: (r) => cardCell(r.card_id) },

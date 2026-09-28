@@ -221,6 +221,7 @@ class SnapshotBuilder:
             if c["change_pp"] < 0
         ][:10]
         base_wr = base_c["side_wins"] / base_c["side_games"] if base_c["side_games"] else None
+        all_wr = base_c["side_wins_all"] / base_c["side_games_all"] if base_c["side_games_all"] else None
         base_cut = base_c["side_cut_hc"] / base_c["side_entries_hc"] if base_c["side_entries_hc"] else None
         head = self._head("summary", side, restriction, group)
         s = {
@@ -237,6 +238,9 @@ class SnapshotBuilder:
                 "cut_rate": round(base_cut, 4) if base_cut is not None else None,
                 "tournaments": int(base_c["tournaments"]),
                 "tournaments_hc": int(base_c["tournaments_hc"]),
+                "games_all": int(base_c["side_games_all"]),
+                "wins_all": _num(base_c["side_wins_all"]),
+                "winrate_all": round(all_wr, 4) if all_wr is not None else None,
             },
             "cards": [c for c in cards if c["decks"] > 0 or c["prev_popularity"]],
             "risers": risers,
