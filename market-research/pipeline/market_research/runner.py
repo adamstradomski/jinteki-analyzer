@@ -211,6 +211,7 @@ def backfill(rt: Runtime, since: date, *, phase: int | None = None) -> RunResult
                 res.exit_code = EXIT_FAILURE
                 break
             res.phases_published.append(p)
+            logs.upload(rt.stores.canonical)  # a long backfill leaves its log so far after every phase
     finally:
         http.close()
         res.absorb_http(http)

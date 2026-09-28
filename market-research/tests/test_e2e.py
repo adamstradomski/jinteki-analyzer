@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import gzip
 import json
 import os
 import random
@@ -144,6 +145,8 @@ def test_secrets_are_never_logged(tmp_path, monkeypatch):
     monkeypatch.setenv("R2_ACCESS_KEY_ID", "key-id-456")
     r = CliRunner().invoke(app, ["run-all", "--fixtures", str(HTTP), "--now", "2026-09-27T04:00:00Z"])
     assert "super-secret-value-123" not in r.output and "key-id-456" not in r.output
+    uploaded = b"".join(gzip.decompress(p.read_bytes()) for p in (tmp_path / "store").rglob("*.jsonl.gz"))
+    assert uploaded and b"super-secret-value-123" not in uploaded and b"key-id-456" not in uploaded
     import io
 
     from market_research import logs
@@ -155,3 +158,18 @@ def test_secrets_are_never_logged(tmp_path, monkeypatch):
     )
     out = buf.getvalue()
     assert "super-secret-value-123" not in out and '"p"' not in out and "[redacted]" in out
+
+
+def test_run_log_is_uploaded_to_canonical_store(tmp_path, monkeypatch):
+    monkeypatch.setenv("CONTACT", "ops@example.invalid")
+    monkeypatch.setenv("MR_LOCAL_STORE", str(tmp_path / "store"))
+    r = CliRunner().invoke(app, ["run-all", "--fixtures", str(HTTP), "--now", "2026-09-27T04:00:00Z"])
+    assert r.exit_code == 0, r.output
+    lines = [json.loads(line) for line in r.output.splitlines() if line.startswith("{")]
+    key = next(x for x in lines if x["event"] == "run_log")["key"]
+    assert key.startswith("logs/") and key.endswith("-run-all.jsonl.gz")
+    stored = tmp_path / "store" / "mr-canonical" / key
+    events = [json.loads(line)["event"] for line in gzip.decompress(stored.read_bytes()).splitlines()]
+    assert events[0] == "run_log" and events[-1] == "run_summary"
+    r = CliRunner().invoke(app, ["report"])
+    assert len(list((tmp_path / "store").rglob("*.jsonl.gz"))) == 1  # read-only commands keep no log

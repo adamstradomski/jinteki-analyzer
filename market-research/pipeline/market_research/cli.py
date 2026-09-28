@@ -30,7 +30,7 @@ from market_research.runner import (
     plan,
     run_all,
 )
-from market_research.storage import Stores, stores_from_settings
+from market_research.storage import ObjectStore, Stores, stores_from_settings
 
 app = typer.Typer(
     add_completion=False, no_args_is_help=True, help="Market Research tournament card-meta pipeline."
@@ -53,7 +53,17 @@ Fixtures = Annotated[
 Now = Annotated[str | None, typer.Option("--now", hidden=True, help="Pin the clock (ISO time with zone).")]
 
 
-def _runtime(dry_run: bool = False, fixtures: Path | None = None, now: str | None = None) -> Runtime:
+class _RunLog:
+    store: ObjectStore | None = None
+
+
+_run_log = _RunLog()
+
+
+def _runtime(
+    dry_run: bool = False, fixtures: Path | None = None, now: str | None = None, *, command: str | None = None
+) -> Runtime:
+    """`command` names a run whose log is kept and uploaded to the canonical store (logs/...)."""
     logs.configure()
     settings: Settings = load_settings()
     logs.register_secret(
@@ -66,6 +76,10 @@ def _runtime(dry_run: bool = False, fixtures: Path | None = None, now: str | Non
         log.info("dry_run_store", path=str(root))
     else:
         stores = stores_from_settings(settings)
+    if command is not None:
+        _run_log.store = stores.canonical
+        key = logs.start_capture(command, SystemClock().now().isoformat())
+        log.info("run_log", key=key)
     transport = None
     if fixtures is not None:
         from market_research.testing import FixtureRoutes, FixtureTransport
@@ -74,8 +88,16 @@ def _runtime(dry_run: bool = False, fixtures: Path | None = None, now: str | Non
     return Runtime(settings=settings, clock=clock, stores=stores, transport=transport)
 
 
+def _upload_log() -> None:
+    if _run_log.store is not None:
+        logs.upload(_run_log.store)
+    _run_log.store = None
+    logs.stop_capture()
+
+
 def _finish(res: RunResult, command: str) -> None:
     log.info("run_summary", command=command, **res.summary())
+    _upload_log()
     raise typer.Exit(res.exit_code)
 
 
@@ -88,7 +110,7 @@ def ingest(
     now: Now = None,
 ) -> None:
     """Fetch what the frontier says is due, within each host's budget."""
-    rt = _runtime(dry_run, fixtures, now)
+    rt = _runtime(dry_run, fixtures, now, command="ingest")
     res = RunResult()
     do_ingest(rt, res, budget=budget, sources={source.value} if source else None)
     _finish(res, "ingest")
@@ -97,7 +119,7 @@ def ingest(
 @app.command("normalize")
 def normalize_cmd(fixtures: Fixtures = None, now: Now = None) -> None:
     """Rebuild the canonical tables from the source records."""
-    rt = _runtime(False, fixtures, now)
+    rt = _runtime(False, fixtures, now, command="normalize")
     do_normalize(rt)
     _finish(RunResult(), "normalize")
 
@@ -110,7 +132,7 @@ def compute(
     """Compute every slice, validate it and publish (manifest last)."""
     from market_research.publish import PublishError
 
-    rt = _runtime(False, None, now)
+    rt = _runtime(False, None, now, command="compute")
     res = RunResult()
     try:
         do_compute(rt, res, publish_it=not no_publish)
@@ -127,7 +149,7 @@ def run_all_cmd(
     now: Now = None,
 ) -> None:
     """ingest -> normalize -> compute/publish."""
-    rt = _runtime(dry_run, fixtures, now)
+    rt = _runtime(dry_run, fixtures, now, command="run-all")
     _finish(run_all(rt, budget=budget), "run-all")
 
 
@@ -146,13 +168,14 @@ def backfill_cmd(
     now: Now = None,
 ) -> None:
     """Initial load: no per-run budget, newest and biggest first, publishes after each phase; resumable."""
-    rt = _runtime(dry_run, fixtures, now)
+    rt = _runtime(dry_run, fixtures, now, command="backfill-plan" if plan_only else "backfill")
     today = rt.clock.now().date()
     start = date.fromisoformat(since) if since else default_since(today, rt.stores)
     if plan_only:
         p = plan(rt, start)
         typer.echo(format_plan(p))
         log.info("backfill_plan", **p)
+        _upload_log()
         raise typer.Exit(EXIT_OK)
     _finish(backfill(rt, start, phase=phase), "backfill")
 
@@ -192,3 +215,5 @@ def main() -> None:
         app()
     except KeyboardInterrupt:  # pragma: no cover
         sys.exit(EXIT_FAILURE)
+    finally:
+        _upload_log()  # a run that crashed still leaves its log in R2

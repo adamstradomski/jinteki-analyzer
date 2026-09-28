@@ -123,6 +123,19 @@ The backfill is the only way to load history (no source offers a bulk export), s
    are skipped and it continues where it stopped. `--phase N` runs a single phase.
 6. Re-enable the daily schedule, then check the quality report.
 
+## Run logs
+
+Every command that fetches or publishes (`ingest`, `normalize`, `compute`, `run-all`, `backfill`,
+`backfill --plan`) prints JSON log lines on stdout and also uploads them, gzipped, to the private
+`mr-canonical` bucket as `logs/<YYYY-MM-DD>/<start time>-<command>.jsonl.gz`. The key is printed as
+the run's first line (`run_log`). The upload happens when the run ends, even if it failed, and after
+every backfill phase, so a crashed backfill still leaves its log up to the last phase. Secrets are
+redacted before a line is written, so the uploaded copy is redacted the same way. A failed upload only
+logs `log_upload_failed` and does not change the exit code. `report` is read-only and keeps no log.
+
+Logs are not deleted automatically (there is no lifecycle rule on `mr-canonical`); a daily run's log
+is small, a full backfill's a few MB.
+
 ## Reading the quality report
 
 `docker run … market-research:<tag> report` prints the latest published `quality/report.json` (the
