@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import os
+import re
 import tempfile
 from collections import Counter
 from collections.abc import Iterable
@@ -507,9 +508,12 @@ class Normalizer:
         name: str | None = None,
         swiss_format: str | None = None,
     ) -> dict[str, Any]:
-        online = tier == "online" and (
-            (abr is not None and str(abr.type_id or "").lower() in self.tiers.online_abr_types)
-            or "online" in label
+        # Online when AlwaysBeRunning says so (location "online"), when the name or type says so
+        # (an "Online Continental" is a Megacity+ event played online), or for online event types.
+        online = (
+            (abr is not None and abr.online)
+            or bool(re.search(r"\bonline\b", f"{name or ''} {label}", re.IGNORECASE))
+            or (abr is not None and str(abr.type_id or "").lower() in self.tiers.online_abr_types)
         )
         return {
             "tid": tid,

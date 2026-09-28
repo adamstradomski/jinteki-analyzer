@@ -94,6 +94,7 @@ def parse_event(ev: dict[str, Any], q: IngestQuality, fetched_at: str) -> AbrTou
         date=start,
         end_date=end if end is not None and end > start else None,
         title=opt_title(ev.get("title")),
+        online=str(ev.get("location") or "").strip().lower() == "online",
         type_id=str(type_value)[:60] if type_value not in (None, "") else None,
         format=str(ev.get("format") or "").strip().lower()[:40] or None,
         cardpool=str(ev.get("cardpool") or "")[:80] or None,
