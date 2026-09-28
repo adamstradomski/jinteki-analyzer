@@ -4,6 +4,7 @@ node_modules/
 __pycache__/
 *.egg-info/
 .coverage
+.coverage.*
 .mypy_cache/
 .ruff_cache/
 market-research.env

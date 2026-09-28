@@ -213,6 +213,23 @@ def test_robots_cached_in_store_for_24h(settings, clock, rng, mock, tmp_path):
     assert robots.call_count == 2
 
 
+def test_robots_is_per_host_within_a_shared_group(settings, clock, rng):
+    # netrunnerdb.com and api.netrunnerdb.com share the "nrdb" group but not their robots.txt.
+    api = "https://api.netrunnerdb.com"
+    with respx.mock(assert_all_called=False) as m:
+        m.get(f"{NRDB}/robots.txt").respond(200, text="User-agent: *\nDisallow: /\n")
+        api_robots = m.get(f"{api}/robots.txt").respond(200, text="")
+        m.get(f"{api}/api/v3/public/cards").respond(200, json={})
+        page = m.get(f"{NRDB}/api/2.0/public/decklists").respond(200, json={})
+        h = make(settings, clock, rng)
+        assert h.get(f"{api}/api/v3/public/cards").status == 200
+        with pytest.raises(RequestRefused):
+            h.get(f"{NRDB}/api/2.0/public/decklists")
+        assert not page.called
+        assert h.get(f"{api}/api/v3/public/cards").status == 200
+        assert api_robots.call_count == 1
+
+
 def test_missing_robots_allows_and_5xx_robots_disallows(settings, clock, rng):
     with respx.mock() as m:
         m.get(f"{ABR}/robots.txt").respond(404)
