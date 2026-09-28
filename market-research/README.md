@@ -82,13 +82,62 @@ market-research ingest   [--budget N] [--source abr|cobra|nrdb] [--dry-run]
 market-research normalize
 market-research compute  [--no-publish]
 market-research run-all  [--budget N] [--dry-run]         # ingest -> normalize -> compute/publish
-market-research backfill [--since YYYY-MM-DD] [--plan] [--phase 1|2|3]
+market-research backfill [--since YYYY-MM-DD] [--plan] [--phase 1|2|3] [--dry-run]
 market-research report                                     # print the latest quality report
-market-research fixtures refresh --cobra ID | --abr ID     # manual only
+market-research fixtures refresh --cobra ID | --abr ID [--out DIR]   # manual only
 ```
 
+Every command reads its configuration from environment variables ([.env.example](.env.example)).
+Without `--dry-run` it uses the R2 buckets, or the directory in `MR_LOCAL_STORE` when that is set.
+
+| Command | What it does | Network | Writes | Publishes | Log in R2 |
+|---|---|---|---|---|---|
+| `ingest` | Fetches what the crawl frontier says is due, newest and biggest first, within each host's request budget. | ABR, Cobra, NetrunnerDB | source records, frontier and ingest quality state | no | yes |
+| `normalize` | Rebuilds the canonical tables (tournament, entry, game, deck, deck_card) from all source records. | none | canonical tables, normalize quality | no | yes |
+| `compute` | Computes every slice from the canonical tables, validates it against the schemas and publishes a new `v=<version>/`, `manifest.json` last. | none | published snapshot | yes | yes |
+| `run-all` | `ingest`, then `normalize`, then `compute`. The daily scheduled command. | all three hosts | all of the above | yes | yes |
+| `backfill` | The initial or extended history load: no per-run budget, in three phases, publishing after each; resumable. | all three hosts | all of the above | after each phase | yes, also after each phase |
+| `backfill --plan` | Makes only the listing requests and prints requests and estimated duration per host and phase. | listings only | nothing but its log | no | yes |
+| `report` | Prints the latest published `quality/report.json`. | none | nothing | no | no |
+| `fixtures refresh` | Fetches one live tournament, anonymises it with canaries and writes fixture files for review. | the chosen host | files in `--out` only | no | no |
+
+Options:
+
+| Option | Commands | Meaning |
+|---|---|---|
+| `--budget N` | `ingest`, `run-all` | Requests per host for this run (default 400, or `MR_BUDGET`). |
+| `--source abr\|cobra\|nrdb` | `ingest` | Fetch from this source only. |
+| `--no-publish` | `compute` | Build and validate the snapshot without uploading it. |
+| `--since YYYY-MM-DD` | `backfill` | Start date. Default: the start of the oldest ban list still relevant to Standard, or 24 months back, whichever is earlier. A later backfill with an earlier date adds the missing history. |
+| `--plan` | `backfill` | Plan only (see above). |
+| `--phase 1\|2\|3` | `backfill` | Run one phase: 1 = events of the last 90 days, 2 = older Megacity+ events, 3 = everything else. Listings, card data and daily decklist files (phase 0) run with every phase. |
+| `--dry-run` | `ingest`, `run-all`, `backfill` | Use a `LocalObjectStore` in a new temporary directory instead of R2; its path is logged as `dry_run_store`. |
+| `--cobra ID` / `--abr ID` | `fixtures refresh` | The tournament to capture; give exactly one. |
+| `--out DIR` | `fixtures refresh` | Output directory (default `tests/fixtures/refresh`). |
+| `--fixtures DIR` (hidden) | `ingest`, `normalize`, `run-all`, `backfill`, `report` | Serve every HTTP request from a recorded fixture directory. Development and tests only. |
+| `--now ISO-TIME` (hidden) | `ingest`, `normalize`, `compute`, `run-all`, `backfill` | Pin the clock, e.g. `2026-09-27T04:00:00Z`. Development and tests only. |
+
 Exit codes: `0` success, `2` partial (a host tripped its circuit breaker, publish still happened),
-`1` failure (nothing published). Logs are JSON lines on stdout ending with a `run_summary` line.
+`1` failure (nothing published; the previous manifest stays live). `report` exits `1` when nothing
+has been published yet.
+
+Logs are JSON lines on stdout. The first line (`run_log`) names the R2 key the log is uploaded to
+(`logs/<date>/<start>-<command>.jsonl.gz` in the canonical bucket) and the last is `run_summary`
+(requests per host, 304s, new records, decks added, slices published, duration). See
+[operations.md](../docs/market-research/operations.md#run-logs).
+
+### Through Docker
+
+In production every command runs in the image, with the same arguments after the image name:
+
+```sh
+docker run --rm --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges \
+  --env-file market-research/market-research.env market-research:0.1.0 <command> [options]
+```
+
+In Git Bash on Windows, prefix it with `MSYS_NO_PATHCONV=1`, or Git Bash rewrites `/tmp` into a
+Windows path and Docker refuses it. For a long backfill, run it detached with a name
+(`docker run -d --name mr-backfill …`) instead of `--rm`, and follow it with `docker logs -f mr-backfill`.
 
 ## Running it
 

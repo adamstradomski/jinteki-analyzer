@@ -35,6 +35,20 @@ The pages' look comes from the jinteki.win design system, copied into `public/sh
 
 Real and synthetic game logs with their expected results are in `test/` (see `test/README.md`). To test a change, paste one of those or one of the two built-in example logs (via the "Log example 1/2" buttons) and confirm the parsed output looks right, or use `/code-review` / `/simplify` if you're using Claude Code against this repo.
 
+### Commands
+
+Run from the repository root. The Market Research pipeline has its own CLI, documented in [market-research/README.md](market-research/README.md#cli).
+
+| Command | What it does |
+|---|---|
+| `npx serve public` (or any static file server with `public/` as its root) | Serves the site locally. The landing page and Market Research need a server: they load files from site-root paths and as ES modules. Trace also works opened as a file. |
+| `npm install` | Installs Wrangler, the only dependency (needs Node.js 22 or newer). |
+| `npm run build` | The Workers Builds step: `scripts/render-config.mjs` renders `wrangler.toml` from `wrangler.template.toml` and the build variables (fails if any is missing), then `scripts/stamp-build.mjs` stamps the build time and commit into Trace's footer. Don't commit the stamped page. |
+| `npx wrangler dev` | Runs the Worker locally (site plus shortener) after `npm run build` has rendered `wrangler.toml`. |
+| `npx wrangler deploy` | The Workers Builds deploy step. |
+| `node public/shared/jw/build-tokens.mjs` | Regenerates `public/shared/jw/tokens.css` from `tokens.json`. |
+| `node --test market-research/tests/ui/*.test.mjs` | Tests the Market Research page's data module against the pipeline's reference snapshot (also run in CI). |
+
 ## Deployment
 
 The site runs on one Cloudflare Worker per environment, built from this repo with Workers Builds:
