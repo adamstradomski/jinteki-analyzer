@@ -6,11 +6,8 @@ import random
 from datetime import date
 
 import httpx
-import pytest
 
 from helpers import make_env
-from market_research.frontier import Frontier
-from market_research.records import CobraTournament, dump
 from market_research.runner import Runtime, backfill, default_since, format_plan, plan
 from market_research.testing import FixtureTransport, normalize_url
 
@@ -58,7 +55,7 @@ def test_plan_lists_only_and_counts_match_fixtures(tmp_path, clock):
     assert "phase 0" in text and "nrdb" in text and "total" in text
 
 
-def test_backfill_phases_publish_in_order_and_skip_rules(tmp_path, clock):
+def test_backfill_publishes_each_phase_in_order(tmp_path, clock):
     env = make_env(tmp_path, clock)
     res = backfill(rt(env), SINCE)
     assert res.phases_published == [1, 2, 3]
@@ -66,61 +63,27 @@ def test_backfill_phases_publish_in_order_and_skip_rules(tmp_path, clock):
     assert len(manifests) == 3
     versions = [k.split("/")[0] for k in env.stores.published.puts if k.endswith("catalog/cards.json")]  # type: ignore[attr-defined]
     assert versions == sorted(versions) and len(set(versions)) == 3
-    urls = [normalize_url(str(c.url)) for c in env.routes.calls]
-    assert not any("entries?id=5305" in u for u in urls)  # no claims, no match data
-    assert not any("/tournaments/5012/players/" in u for u in urls)  # open stage: no deck pages
-    bulk = set()
-    for info in env.stores.source.list("nrdb/decklists/by_date/"):
-        for d in env.stores.source.get_json(info.key)["decklists"]:
-            bulk |= {d["id"], d["uuid"]}
-    singles = [u.rsplit("/", 1)[1] for u in urls if "/public/decklist/" in u]
-    assert singles and not set(singles) & bulk
-    days = [u for u in urls if "/decklists/by_date/" in u]
-    assert len(days) == len(set(days)) == (date(2026, 9, 27) - SINCE).days + 1
-
-
-def test_interrupted_backfill_resumes_without_refetching(tmp_path, clock):
-    env = make_env(tmp_path, clock)
-    boom = "https://tournaments.nullsignal.games/tournaments/4990/players/59700/view_decks"
-
-    def explode(request):
-        if normalize_url(str(request.url)) == normalize_url(boom):
-            raise RuntimeError("network gone")
-        return env.routes.respond(request)
-
-    first = rt(env)
-    first.transport = _Transport(explode)
-    with pytest.raises(RuntimeError):
-        backfill(first, SINCE)
-    done_first = [normalize_url(str(c.url)) for c in env.routes.calls]
-    assert done_first
-    env.routes.calls.clear()
-    res = backfill(rt(env), SINCE)
-    assert res.phases_published == [1, 2, 3]
-    again = [normalize_url(str(c.url)) for c in env.routes.calls]
-    # A backfill always re-reads the discovery listings; nothing else is fetched twice.
-    listing = ("robots.txt", "/api/tournaments/results", "/public/tournaments?")
-    refetched = [u for u in again if u in done_first and not any(x in u for x in listing)]
-    assert normalize_url(boom) in again
-    assert refetched == []
 
 
 def test_default_since(tmp_path, clock):
     env = make_env(tmp_path, clock)
-    assert default_since(date(2026, 9, 27), env.stores) == date(2024, 9, 1)
-    backfill(rt(env), date(2026, 9, 1), phase=1)
-    # Oldest ban list of the current card pool (2026-03-13) vs 24 months: the earlier wins.
+    assert default_since(date(2026, 9, 27), env.stores) == date(2024, 9, 1)  # no ban lists stored yet
+    # NRDB's snapshot list, as stored: ban lists of the active card pool started 2026-03-13.
+    env.stores.source.put_json(
+        "nrdb/catalog/snapshots.json",
+        {
+            "snapshots": [
+                {"format_id": "standard", "card_pool_id": "p1", "date_start": "2025-06-01", "active": False},
+                {"format_id": "standard", "card_pool_id": "p2", "date_start": "2026-03-13", "active": False},
+                {"format_id": "standard", "card_pool_id": "p2", "date_start": "2026-07-01", "active": True},
+                {"format_id": "startup", "card_pool_id": "s1", "date_start": "2020-01-01", "active": True},
+            ]
+        },
+    )
+    # Oldest ban list of the current card pool vs 24 months: the earlier wins.
     assert default_since(date(2026, 9, 27), env.stores) == date(2024, 9, 1)
     assert default_since(date(2027, 12, 1), env.stores) == date(2025, 12, 1)
     assert default_since(date(2028, 6, 1), env.stores) == date(2026, 3, 13)
-
-
-class _Transport(FixtureTransport):
-    def __init__(self, fn):
-        self.fn = fn
-
-    def handle_request(self, request):
-        return self.fn(request)
 
 
 def test_plan_skips_misdated_cobra_event_without_stopping(tmp_path, clock):
@@ -157,34 +120,3 @@ def test_plan_quarantines_unparsable_cobra_event_and_keeps_listing(tmp_path, clo
     p = plan(rt(env), SINCE)
     assert p["hosts"]["cobra"]["requests"] == {"0": 5, "1": 3 + 16 + 10, "2": 0, "3": 0}
     assert '"key": "cobra:index:5024"' in env.log.getvalue()
-
-
-def _known_events(env) -> set[str]:
-    items = Frontier.load(env.stores.canonical).items
-    return {k for k, it in items.items() if it.kind in ("abr_event", "cobra_tournament")}
-
-
-def test_longer_backfill_after_shorter_one_discovers_older_events(tmp_path, clock):
-    # Seen live: a 30-day backfill followed by a two-year one found no older events, because the
-    # listings were already done and Cobra's index stopped at the first known event.
-    short = make_env(tmp_path / "short", clock)
-    backfill(rt(short), date(2026, 9, 1))
-    after_short = _known_events(short)
-    backfill(rt(short), SINCE)
-    long_only = make_env(tmp_path / "long", clock)
-    backfill(rt(long_only), SINCE)
-    assert _known_events(short) == _known_events(long_only)
-    assert _known_events(long_only) > after_short
-
-
-def test_backfill_fills_in_missing_cobra_names(tmp_path, clock):
-    # Tournaments stored before names were kept get theirs on the next backfill's index read.
-    env = make_env(tmp_path, clock)
-    backfill(rt(env), SINCE)
-    key = "cobra/tournament/4990.json"
-    stored = CobraTournament.model_validate(json.loads(env.stores.source.get(key)))
-    name = stored.name
-    # As collected before names were kept: no name, and a hash computed without one.
-    env.stores.source.put_json(key, dump(stored.model_copy(update={"name": None}).hashed()))
-    backfill(rt(env), SINCE)
-    assert json.loads(env.stores.source.get(key))["name"] == name

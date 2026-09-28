@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<!-- Inline styles stay allowed (the page and its generated tables use them); scripts must be files.
+<!-- Scripts and styles must be files, like the other pages (style attributes too; the CSSOM is allowed).
      Log text is untrusted, so this is the backstop if an unescaped value ever reaches innerHTML. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'; object-src 'none'">
 <title>Trace · jinteki.win</title>
 <!-- jinteki.win design system: colours per theme (tokens.css), fonts, shapes and
      components (bundle.css), and the theme helpers on window.JW (bundle.js). -->
@@ -13,212 +13,7 @@
 <link rel="stylesheet" href="../shared/jw/bundle.css">
 <script src="../shared/jw/bundle.js"></script>
 <script src="theme-init.js"></script>
-<style>
-  *{ box-sizing: border-box; }
-  body{
-    margin:0; background:var(--bg); color:var(--text);
-    font-family: var(--serif); line-height:1.5;
-    padding: 40px 20px 80px;
-  }
-  .wrap{ max-width: 1080px; margin: 0 auto; }
-
-  header{ margin-bottom: 28px; }
-  .header-top{ display:flex; justify-content:space-between; align-items:center; gap: 12px; flex-wrap: wrap; }
-  .header-top .jw-controls{ flex-wrap: wrap; }
-  header .kicker{ font-family: var(--mono); font-size: 13px; color: var(--accent); letter-spacing: 0.02em; }
-  header .kicker a{ color: inherit; text-decoration: none; }
-  header .kicker a:hover{ text-decoration: underline; }
-  h1{ font-family: var(--font-display); font-weight: 600; font-size: 32px; margin: 6px 0 8px; color: var(--text); }
-  header p{ color: var(--dim); max-width: 66ch; font-size: 15px; }
-
-  .panel{
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-lg);
-    padding: 20px 22px;
-    margin-bottom: 22px;
-  }
-  .panel h2{
-    font-family: var(--mono); font-size: 13px; font-weight: 600;
-    color: var(--accent); margin: 0;
-  }
-  .panel-header{
-    display:flex; justify-content:space-between; align-items:center;
-    cursor: pointer; user-select: none; margin-bottom: 14px;
-  }
-  .panel-header:hover .collapse-icon{ color: var(--text); border-color: var(--accent-dim); }
-  .collapse-icon{
-    font-family: var(--mono); font-size: 13px; color: var(--dim);
-    border: 1px solid var(--line); border-radius: var(--radius-md);
-    width: 22px; height: 22px; display:flex; align-items:center; justify-content:center;
-    flex-shrink: 0; line-height: 1;
-  }
-  .header-controls{ display:flex; align-items:center; gap: 8px; flex-shrink: 0; }
-  /* The value-labels toggle is a design system chip (.btn.chip, shared/jw/bundle.css). */
-  .value-labels-toggle{ white-space: nowrap; line-height: 1; }
-  .value-labels-toggle:hover{ color: var(--text); border-color: var(--accent-dim); }
-  .panel.collapsed .value-labels-toggle{ display: none; }
-  .panel.collapsed .panel-body{ display: none; }
-  .panel.collapsed .panel-header{ margin-bottom: 0; }
-  .panel h3{
-    font-family: var(--mono); font-size: 12px; font-weight: 600;
-    color: var(--dim); margin: 22px 0 10px; text-transform: uppercase; letter-spacing: 0.04em;
-  }
-  .panel h3:first-of-type{ margin-top: 0; }
-
-  /* Keep the player's name at the left of its panel header, ahead of the
-     Beanstalk girder stripe that the design system inserts there. */
-  .panel .panel-header > .player-head{ order: 0; margin-right: auto; }
-  .player-name{
-    font-family: var(--font-display); font-weight: 600; font-size: 21px;
-    color: var(--text); margin: 0 0 4px;
-  }
-  .player-sub{ font-family: var(--mono); font-size: 11.5px; color: var(--dim); margin-bottom: 14px; }
-
-  textarea{
-    width: 100%; min-height: 220px; resize: vertical;
-    background: var(--panel-2); color: var(--text);
-    border: 1px solid var(--line); border-radius: var(--radius-md);
-    font-family: var(--mono); font-size: 12.5px; padding: 12px;
-  }
-  textarea:focus{ outline: none; border-color: var(--accent-dim); }
-
-  .row{ display:flex; gap:10px; margin-top: 14px; flex-wrap: wrap; align-items:center; }
-
-  /* Buttons are .btn / .btn.secondary from the design system (shared/jw/bundle.css). */
-  .btn:disabled{ cursor: default; opacity: 0.6; }
-
-  a.bookmarklet-link{
-    display: inline-flex; align-items: center; gap: 8px;
-    font-family: var(--mono); font-size: 13px; font-weight: 600;
-    cursor: grab; text-decoration: none;
-    background: var(--accent); color: var(--on-accent);
-    padding: 10px 18px; border-radius: var(--radius-md);
-    box-shadow: var(--glow); transition: filter 0.15s;
-  }
-  a.bookmarklet-link:active{ cursor: grabbing; }
-  a.bookmarklet-link:hover{ filter: brightness(1.15); }
-
-  .status{ font-family: var(--mono); font-size: 12.5px; color: var(--dim); }
-
-  label.toggle{
-    font-family: var(--mono); font-size: 11.5px; color: var(--dim);
-    display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
-  }
-  label.toggle input{ accent-color: var(--accent); }
-  label.toggle:hover{ color: var(--text); }
-
-  .summary-grid{
-    display:grid; grid-template-columns: repeat(auto-fit, minmax(140px,1fr));
-    gap: 14px; margin-bottom: 16px;
-  }
-  .stat{ border-left: 2px solid var(--accent-dim); padding: 4px 0 4px 12px; }
-  .stat .num{ font-family: var(--mono); font-size: 24px; color: var(--accent); display:block; }
-  .stat .label{ font-family: var(--mono); font-size: 11.5px; color: var(--dim); }
-
-  .badges-row{ display:flex; gap: 24px; flex-wrap: wrap; border-top: 1px solid var(--line); padding-top: 14px; }
-  .player-badges{ font-family: var(--mono); font-size: 12.5px; display:flex; align-items:center; gap: 8px; }
-  /* .badge, .badge.corp/.runner and .badge.achievement come from shared/jw/bundle.css. */
-  .player-badges{ flex-wrap: wrap; }
-  .player-badges .badge-player.corp, .stat .num.corp{ color: var(--corp); }
-  .player-badges .badge-player.runner, .stat .num.runner{ color: var(--runner); }
-  .stat.corp{ border-left-color: var(--corp); }
-  .stat.runner{ border-left-color: var(--runner); }
-
-  .badge[data-desc]{ position: relative; cursor: help; }
-  .badge[data-desc]::after{
-    content: attr(data-desc);
-    position: absolute; left: 0; bottom: calc(100% + 6px);
-    width: max-content; max-width: 240px; white-space: normal; text-align: center;
-    background: var(--panel-2); color: var(--text);
-    border: 1px solid var(--line); border-radius: var(--radius-md); padding: 6px 9px;
-    font-weight: 400; letter-spacing: 0; line-height: 1.35;
-    opacity: 0; visibility: hidden; pointer-events: none; z-index: 20;
-    transition: opacity 0.12s ease;
-  }
-  .badge[data-desc]:hover::after, .badge[data-desc]:focus::after{ opacity: 1; visibility: visible; }
-
-  table{ width:100%; border-collapse: collapse; font-size: 13.5px; margin-bottom: 6px; }
-  th, td{ text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); }
-  th{
-    font-family: var(--mono); font-size: 11px; color: var(--dim);
-    font-weight: 500; cursor: pointer; user-select:none; white-space: nowrap;
-  }
-  th:hover{ color: var(--accent); }
-  th.sorted::after{ content: " \2193"; color: var(--accent); }
-  th.sorted-asc::after{ content: " \2191"; color: var(--accent); }
-  td.num, th.num{ text-align:right; font-family: var(--mono); font-variant-numeric: tabular-nums; }
-  td.card{ font-weight: 600; }
-  .instance-tag{ font-weight: 400; font-family: var(--mono); font-size: 10.5px; color: var(--dim); }
-  td.neg{ color: var(--neg); }
-  td.pos{ color: var(--pos); }
-  tr:hover td{ background: var(--panel-2); }
-  .empty-note{ color: var(--dim); font-size: 13px; font-family: var(--mono); padding: 8px 0 14px; }
-
-  .table-actions{ display:flex; justify-content: space-between; align-items:center; gap: 14px; margin-bottom: 8px; flex-wrap: wrap; }
-  .table-actions h3{ margin: 0; }
-  .table-actions .controls{ display:flex; align-items:center; gap: 12px; }
-
-  .mini-table{ margin-bottom: 4px; }
-
-  /* Wide tables scroll sideways inside their own box instead of stretching the page. */
-  .table-scroll{ overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; margin-bottom: 6px; }
-  .table-scroll > table{ margin-bottom: 0; }
-
-  @media (max-width: 640px){
-    body{ padding: 24px 10px 60px; }
-    .panel{ padding: 14px 12px; }
-    /* Console light's title bar runs edge to edge by undoing the panel's
-       desktop padding; match the smaller phone padding instead. */
-    [data-theme="console-light"] .panel-header{ margin: -14px -12px 14px; padding: 6px 12px; }
-    table{ font-size: 12.5px; }
-    th, td{ padding: 6px 7px; }
-    .table-actions .controls{ flex-wrap: wrap; }
-  }
-
-  details{ margin-top: 4px; }
-  summary{
-    font-family: var(--mono); font-size: 12.5px; color: var(--dim);
-    cursor: pointer; padding: 4px 0;
-  }
-  summary:hover{ color: var(--text); }
-  .flag-line{
-    font-family: var(--mono); font-size: 11.5px; color: var(--dim);
-    padding: 6px 0; border-bottom: 1px solid var(--line);
-  }
-  .flag-line .reason{ color: var(--warn); }
-
-  .caveats{ font-size: 13px; color: var(--dim); }
-  .caveats li{ margin-bottom: 6px; }
-
-  .legend{ margin-bottom: 10px; }
-
-  footer{ text-align:center; color: var(--dim); font-family: var(--mono); font-size: 11.5px; margin-top: 40px; }
-  footer a{ color: var(--accent); text-decoration: none; }
-  footer a:hover{ text-decoration: underline; }
-
-  /* Reserves space for #results while a shared log is being decoded/parsed
-     from the URL hash, so revealing it doesn't produce a large, late layout
-     shift (this matters even though the overlay below hides it visually —
-     the CLS measurement doesn't care what's occluding what). */
-  #results.loading{ min-height: 640px; }
-
-  /* Full-page loading screen shown, as early as possible, while a shared
-     log from the URL hash is being decoded and parsed. Covers the normal
-     "paste a log" shell so visitors following a share/bookmarklet link see
-     one loading screen and then the finished result, not a flash of the
-     empty form followed by content popping in underneath it. */
-  #hashLoadOverlay{
-    display:none; position:fixed; inset:0; z-index:1000; background:var(--bg);
-    align-items:center; justify-content:center; flex-direction:column; gap:14px;
-    color:var(--dim); font-family:var(--mono); font-size:14px;
-  }
-  .spinner-ring{
-    width:28px; height:28px; border:2px solid var(--line); border-top-color: var(--accent);
-    border-radius:50%; animation: spin 0.8s linear infinite;
-  }
-  @keyframes spin{ to{ transform: rotate(360deg); } }
-</style>
+<link rel="stylesheet" href="style.css">
 </head>
 <body class="jw-page">
 <div id="hashLoadOverlay"><div class="spinner-ring"></div><div>Parsing your shared game…</div></div>
@@ -228,33 +23,36 @@
   <header>
     <div class="header-top">
       <div class="kicker"><a href="../">jinteki.win</a> / trace: log analysis for jinteki.net</div>
-      <div class="jw-controls"><div id="themeSwitcher"></div><div id="modeToggle"></div></div>
+      <div class="jw-controls"><div id="theme-switcher"></div><div id="mode-toggle"></div></div>
     </div>
+    <h1 class="jw-title">Trace</h1>
     <p>Paste a game log copied from the jinteki.net chat panel.</p>
   </header>
 
-  <div id="bookmarkSection" style="display:none;">
+  <main>
+
+  <div id="bookmarkSection" hidden>
 
     <div class="panel">
-      <div class="panel-header"><h2>Browser bookmark</h2><span class="collapse-icon">−</span></div>
+      <div class="panel-header"><h2>Browser bookmark</h2><button type="button" class="collapse-icon" aria-expanded="true" aria-label="Collapse section">−</button></div>
       <div class="panel-body">
-        <p style="color:var(--dim); font-size:13.5px; margin:0 0 14px;">Drag this into your bookmarks bar once. On any jinteki.net game, click it to open the log here, already parsed — no selecting, no pasting.</p>
-        <div class="row" style="margin-top:0;">
+        <p class="panel-note">Drag this into your bookmarks bar once. On any jinteki.net game, click it to open the log here, already parsed — no selecting, no pasting.</p>
+        <div class="row flush">
           <a class="bookmarklet-link" id="bookmarkletBtn"
-            href="javascript:!function()%7Bvar%20e%3Ddocument.querySelector(%22.log%20.messages%22)%7C%7Cdocument.querySelector(%22div.messages%22)%3Bif(e)%7Bvar%20r%3D%5B%5D%3BArray.prototype.forEach.call(e.children%2Cfunction(e)%7Bif(e.classList.contains(%22system%22))%7Bvar%20t%3De.textContent.replace(%2F%5C%5B%5Cd%7B1%2C2%7D%3A%5Cd%7B2%7D%3A%5Cd%7B2%7D%5C%5D%2Fg%2C%22%22).replace(%2F%5Cs%2B%2Fg%2C%22%20%22).trim()%3Bt%26%26r.push(t)%7Delse%20if(e.classList.contains(%22message%22))%7Bvar%20n%3De.querySelector(%22.content%22)%3Bif(!n)return%3Bvar%20a%3Dn.querySelector(%22.username%22)%2Co%3Da%3Fa.textContent.replace(%2F%5C%5B%5Cd%7B1%2C2%7D%3A%5Cd%7B2%7D%3A%5Cd%7B2%7D%5C%5D%2Fg%2C%22%22).trim()%3A%22%22%2Cl%3Dn.querySelectorAll(%22%3Ascope%20%3E%20div%22)%2Ci%3Dl.length%3Fl%5Bl.length-1%5D.textContent.replace(%2F%5C%5B%5Cd%7B1%2C2%7D%3A%5Cd%7B2%7D%3A%5Cd%7B2%7D%5C%5D%2Fg%2C%22%22).trim()%3A%22%22%3Bo%26%26(r.push(o)%2Cr.push(o))%2Ci%26%26r.push(i)%7D%7D)%3Bvar%20t%3Dr.join(%22%5Cn%22)%3Bif(t)%7Bvar%20n%3Dwindow.open(%22%22%2C%22_blank%22)%3Bn%26%26n.document.write(%22Preparing%20your%20Jnet%20Analyzer%20link...%22)%3Bvar%20a%3D(new%20TextEncoder).encode(t)%3Bif(window.CompressionStream)%7Bvar%20o%3Dnew%20CompressionStream(%22gzip%22)%2Cl%3Do.writable.getWriter()%3Bl.write(a)%2Cl.close()%2Cnew%20Response(o.readable).arrayBuffer().then(function(e)%7Bs(%22gz.%22%2Bi(new%20Uint8Array(e)))%7D).catch(function(e)%7Bn%26%26n.close()%2Calert(%22Jnet%20Analyzer%3A%20could%20not%20compress%20the%20log%20(%22%2Be.message%2B%22).%22)%7D)%7Delse%20s(%22raw.%22%2Bi(a))%7Delse%20alert(%22Jnet%20Analyzer%3A%20the%20log%20panel%20is%20empty.%20Play%20or%20load%20a%20game%20first.%22)%7Delse%20alert(%22Jnet%20Analyzer%3A%20could%20not%20find%20a%20game%20log%20on%20this%20page.%20Open%20a%20finished%20jinteki.net%20game%20first.%22)%3Bfunction%20i(e)%7Bfor(var%20r%3D%22%22%2Ct%3D0%3Bt%3Ce.length%3Bt%2B%3D32768)r%2B%3DString.fromCharCode.apply(null%2Ce.subarray(t%2Ct%2B32768))%3Breturn%20btoa(r).replace(%2F%5C%2B%2Fg%2C%22-%22).replace(%2F%5C%2F%2Fg%2C%22_%22).replace(%2F%3D%2B%24%2F%2C%22%22)%7Dfunction%20s(e)%7Bvar%20r%3D%22https%3A%2F%2Fjinteki.win%2Ftrace%2F%23log%3D%22%2Be%3Bn%3Fn.location.href%3Dr%3Awindow.open(r%2C%22_blank%22)%7D%7D()%3B">
+            href="javascript:!function()%7Bvar%20e%3Ddocument.querySelector(%22.log%20.messages%22)%7C%7Cdocument.querySelector(%22div.messages%22)%3Bif(e)%7Bvar%20r%3D%5B%5D%3BArray.prototype.forEach.call(e.children%2Cfunction(e)%7Bif(e.classList.contains(%22system%22))%7Bvar%20t%3De.textContent.replace(%2F%5C%5B%5Cd%7B1%2C2%7D%3A%5Cd%7B2%7D%3A%5Cd%7B2%7D%5C%5D%2Fg%2C%22%22).replace(%2F%5Cs%2B%2Fg%2C%22%20%22).trim()%3Bt%26%26r.push(t)%7Delse%20if(e.classList.contains(%22message%22))%7Bvar%20n%3De.querySelector(%22.content%22)%3Bif(!n)return%3Bvar%20a%3Dn.querySelector(%22.username%22)%2Co%3Da%3Fa.textContent.replace(%2F%5C%5B%5Cd%7B1%2C2%7D%3A%5Cd%7B2%7D%3A%5Cd%7B2%7D%5C%5D%2Fg%2C%22%22).trim()%3A%22%22%2Cl%3Dn.querySelectorAll(%22%3Ascope%20%3E%20div%22)%2Ci%3Dl.length%3Fl%5Bl.length-1%5D.textContent.replace(%2F%5C%5B%5Cd%7B1%2C2%7D%3A%5Cd%7B2%7D%3A%5Cd%7B2%7D%5C%5D%2Fg%2C%22%22).trim()%3A%22%22%3Bo%26%26(r.push(o)%2Cr.push(o))%2Ci%26%26r.push(i)%7D%7D)%3Bvar%20t%3Dr.join(%22%5Cn%22)%3Bif(t)%7Bvar%20n%3Dwindow.open(%22%22%2C%22_blank%22)%3Bn%26%26n.document.write(%22Preparing%20your%20Trace%20link...%22)%3Bvar%20a%3D(new%20TextEncoder).encode(t)%3Bif(window.CompressionStream)%7Bvar%20o%3Dnew%20CompressionStream(%22gzip%22)%2Cl%3Do.writable.getWriter()%3Bl.write(a)%2Cl.close()%2Cnew%20Response(o.readable).arrayBuffer().then(function(e)%7Bs(%22gz.%22%2Bi(new%20Uint8Array(e)))%7D).catch(function(e)%7Bn%26%26n.close()%2Calert(%22Trace%3A%20could%20not%20compress%20the%20log%20(%22%2Be.message%2B%22).%22)%7D)%7Delse%20s(%22raw.%22%2Bi(a))%7Delse%20alert(%22Trace%3A%20the%20log%20panel%20is%20empty.%20Play%20or%20load%20a%20game%20first.%22)%7Delse%20alert(%22Trace%3A%20could%20not%20find%20a%20game%20log%20on%20this%20page.%20Open%20a%20finished%20jinteki.net%20game%20first.%22)%3Bfunction%20i(e)%7Bfor(var%20r%3D%22%22%2Ct%3D0%3Bt%3Ce.length%3Bt%2B%3D32768)r%2B%3DString.fromCharCode.apply(null%2Ce.subarray(t%2Ct%2B32768))%3Breturn%20btoa(r).replace(%2F%5C%2B%2Fg%2C%22-%22).replace(%2F%5C%2F%2Fg%2C%22_%22).replace(%2F%3D%2B%24%2F%2C%22%22)%7Dfunction%20s(e)%7Bvar%20r%3D%22https%3A%2F%2Fjinteki.win%2Ftrace%2F%23log%3D%22%2Be%3Bn%3Fn.location.href%3Dr%3Awindow.open(r%2C%22_blank%22)%7D%7D()%3B">
             Analyze this game ↗
           </a>
         </div>
-        <div class="status" style="display:block; margin-top:10px;">Drag the button above to your bookmarks bar — clicking it here won't do anything useful.</div>
+        <div class="status status-block">Drag the button above to your bookmarks bar — clicking it here won't do anything useful.</div>
       </div>
     </div>
 
     <div class="panel">
-      <div class="panel-header"><h2>How it works</h2><span class="collapse-icon">−</span></div>
+      <div class="panel-header"><h2>How it works</h2><button type="button" class="collapse-icon" aria-expanded="true" aria-label="Collapse section">−</button></div>
       <div class="panel-body">
-        <ol style="color:var(--dim); font-size:13.5px; padding-left:18px; margin:0;">
-          <li style="margin-bottom:8px;">Drag <strong style="color:var(--text);">Analyze this game</strong> into your bookmarks bar, once.</li>
-          <li style="margin-bottom:8px;">Open any game on jinteki.net — mid-game or finished, spectating or played.</li>
+        <ol class="steps">
+          <li>Drag <strong>Analyze this game</strong> into your bookmarks bar, once.</li>
+          <li>Open any game on jinteki.net — mid-game or finished, spectating or played.</li>
           <li>Click the bookmark. A new tab opens here with the log already parsed.</li>
         </ol>
       </div>
@@ -263,8 +61,9 @@
   </div>
 
   <div class="panel">
-    <div class="panel-header"><h2>1. Paste log</h2><span class="collapse-icon">−</span></div>
+    <div class="panel-header"><h2>1. Paste log</h2><button type="button" class="collapse-icon" aria-expanded="true" aria-label="Collapse section">−</button></div>
     <div class="panel-body">
+      <label for="logInput" class="visually-hidden">Game log</label>
       <textarea id="logInput" placeholder="Paste the full jinteki.net game log here..."></textarea>
       <div class="row">
         <button class="btn" id="parseBtn">Parse log</button>
@@ -273,22 +72,21 @@
         <button class="btn secondary" id="clearBtn">Clear</button>
         <button class="btn secondary" id="permalinkBtn">Share link</button>
         <button class="btn secondary" id="reportBugBtn" type="button">Report a bug</button>
-        <button class="btn secondary" id="skipCopyPasteBtn" type="button">How to skip copy-paste</button>
-        <span class="status" id="statusMsg"></span>
+        <button class="btn secondary" id="skipCopyPasteBtn" type="button" aria-expanded="false" aria-controls="bookmarkSection">How to skip copy-paste</button>
+        <span class="status" id="statusMsg" role="status" aria-live="polite"></span>
       </div>
-      <div class="row" id="permalinkRow" style="display:none;">
-        <input id="permalinkUrlInput" type="text" readonly
-          style="flex:1;min-width:200px;background:var(--panel-2);color:var(--text);border:1px solid var(--line);border-radius:var(--radius-md);font-family:var(--mono);font-size:11.5px;padding:8px;">
+      <div class="row" id="permalinkRow" hidden>
+        <input id="permalinkUrlInput" type="text" readonly>
         <button class="btn secondary" id="copyPermalinkBtn">Copy</button>
         <button class="btn secondary" id="shortenPermalinkBtn" type="button" title="Stores this log on jinteki.win to get a short link. Unlike the plain share link, the log data leaves your browser.">Shorten link</button>
       </div>
     </div>
   </div>
 
-  <div id="results" style="display:none;">
+  <div id="results" hidden>
 
     <div class="panel">
-      <div class="panel-header"><h2>Game summary</h2><span class="collapse-icon">−</span></div>
+      <div class="panel-header"><h2>Game summary</h2><button type="button" class="collapse-icon" aria-expanded="true" aria-label="Collapse section">−</button></div>
       <div class="panel-body">
         <div class="summary-grid" id="summaryGrid"></div>
         <div class="badges-row" id="badgesRow"></div>
@@ -298,15 +96,15 @@
     </div>
 
     <div class="panel">
-      <div class="panel-header"><h2>Charts</h2><div class="header-controls"><button type="button" class="btn chip value-labels-toggle" data-mode="none" aria-pressed="false" title="Show values on charts: none / changes only / all">values: none</button><span class="collapse-icon">−</span></div></div>
+      <div class="panel-header"><h2>Charts</h2><div class="header-controls"><button type="button" class="btn chip value-labels-toggle" data-mode="none" aria-pressed="false" title="Show values on charts: none / changes only / all">values: none</button><button type="button" class="collapse-icon" aria-expanded="true" aria-label="Collapse section">−</button></div></div>
       <div class="panel-body">
 
-        <div class="stat" style="margin-bottom:16px;"><span class="num" id="mainTotalTurnsNum">0</span><span class="label">Total turns played (Corp + Runner combined)</span></div>
+        <div class="stat stat-total"><span class="num" id="mainTotalTurnsNum">0</span><span class="label">Total turns played (Corp + Runner combined)</span></div>
 
         <h3>Agenda points over time</h3>
         <div class="legend" id="agendaLegend"></div>
         <div id="agendaChart"></div>
-        <details style="margin-top:10px;">
+        <details class="chart-table">
           <summary>Turn-by-turn table</summary>
           <div id="agendaTableWrap"></div>
         </details>
@@ -314,7 +112,7 @@
         <h3>Net credits gained per turn</h3>
         <div class="legend" id="creditsGainedLegend"></div>
         <div id="creditsGainedChart"></div>
-        <details style="margin-top:10px;">
+        <details class="chart-table">
           <summary>Turn-by-turn table</summary>
           <div id="creditsGainedTableWrap"></div>
         </details>
@@ -322,7 +120,7 @@
         <h3>Credits in pool over time</h3>
         <div class="legend" id="creditPoolLegend"></div>
         <div id="creditPoolChart"></div>
-        <details style="margin-top:10px;">
+        <details class="chart-table">
           <summary>Turn-by-turn table</summary>
           <div id="creditPoolTableWrap"></div>
         </details>
@@ -330,16 +128,16 @@
         <h3>Cards in hand over time</h3>
         <div class="legend" id="handSizeLegend"></div>
         <div id="handSizeChart"></div>
-        <details style="margin-top:10px;">
+        <details class="chart-table">
           <summary>Turn-by-turn table</summary>
           <div id="handSizeTableWrap"></div>
         </details>
 
         <h3>Cumulative cards drawn over time</h3>
-        <p style="font-size:12.5px;color:var(--dim);margin:-6px 0 12px;">Starting deck size isn't recorded in the log, so this shows cards drawn rather than cards remaining. Dashed reference lines mark 40 / 45 / 49 cards, common deck sizes.</p>
+        <p class="chart-note">Starting deck size isn't recorded in the log, so this shows cards drawn rather than cards remaining. Dashed reference lines mark 40 / 45 / 49 cards, common deck sizes.</p>
         <div class="legend" id="cardsDrawnLegend"></div>
         <div id="cardsDrawnChart"></div>
-        <details style="margin-top:10px;">
+        <details class="chart-table">
           <summary>Turn-by-turn table</summary>
           <div id="cardsDrawnTableWrap"></div>
         </details>
@@ -348,27 +146,27 @@
     </div>
 
     <div class="panel collapsed">
-      <div class="panel-header"><h2>Alternative: shared turn order</h2><div class="header-controls"><button type="button" class="btn chip value-labels-toggle" data-mode="none" aria-pressed="false" title="Show values on charts: none / changes only / all">values: none</button><span class="collapse-icon">+</span></div></div>
+      <div class="panel-header"><h2>Alternative: shared turn order</h2><div class="header-controls"><button type="button" class="btn chip value-labels-toggle" data-mode="none" aria-pressed="false" title="Show values on charts: none / changes only / all">values: none</button><button type="button" class="collapse-icon" aria-expanded="false" aria-label="Expand section">+</button></div></div>
       <div class="panel-body">
-        <p style="font-size:12.5px;color:var(--dim);margin:-6px 0 12px;">
+        <p class="chart-note">
           The charts above plot each player against <em>their own</em> turn counter — but Corp's turn 3 and Runner's turn 3
           aren't the same moment, and either player can gain credits or draw cards during the other's turn. These same
           five stats are re-plotted here against the order turns actually started in the log (labels like C1/R1/C2/R2 —
           Corp turn N or Runner turn N, in play order), so the two players' lines line up in real time instead of by
           turn number. Compare both and keep whichever reads more clearly for a given log.
         </p>
-        <div class="stat" style="margin-bottom:16px;"><span class="num" id="seqTotalTurnsNum">0</span><span class="label">Total turns played (Corp + Runner combined)</span></div>
+        <div class="stat stat-total"><span class="num" id="seqTotalTurnsNum">0</span><span class="label">Total turns played (Corp + Runner combined)</span></div>
 
         <h3>Agenda points over time</h3>
         <div class="legend" id="agendaSeqLegend"></div>
         <div id="agendaSeqChart"></div>
-        <details style="margin-top:10px;">
+        <details class="chart-table">
           <summary>Turn-by-turn table</summary>
           <div id="agendaSeqTableWrap"></div>
         </details>
 
         <h3>Net credits gained per turn</h3>
-        <p style="font-size:12.5px;color:var(--dim);margin:-6px 0 12px;">
+        <p class="chart-note">
           Unlike the "Net credits gained per turn" chart above (which buckets everything a player does by their own
           last-started turn number, even actions taken during the opponent's turn — e.g. Corp rezzing ice mid-run),
           this version buckets every credit gain/spend by whichever turn was actually active in the log at that
@@ -377,7 +175,7 @@
         </p>
         <div class="legend" id="creditsGainedSeqLegend"></div>
         <div id="creditsGainedSeqChart"></div>
-        <details style="margin-top:10px;">
+        <details class="chart-table">
           <summary>Turn-by-turn table</summary>
           <div id="creditsGainedSeqTableWrap"></div>
         </details>
@@ -385,7 +183,7 @@
         <h3>Credits in pool over time</h3>
         <div class="legend" id="creditPoolSeqLegend"></div>
         <div id="creditPoolSeqChart"></div>
-        <details style="margin-top:10px;">
+        <details class="chart-table">
           <summary>Turn-by-turn table</summary>
           <div id="creditPoolSeqTableWrap"></div>
         </details>
@@ -393,7 +191,7 @@
         <h3>Cards in hand over time</h3>
         <div class="legend" id="handSizeSeqLegend"></div>
         <div id="handSizeSeqChart"></div>
-        <details style="margin-top:10px;">
+        <details class="chart-table">
           <summary>Turn-by-turn table</summary>
           <div id="handSizeSeqTableWrap"></div>
         </details>
@@ -401,7 +199,7 @@
         <h3>Cumulative cards drawn over time</h3>
         <div class="legend" id="cardsDrawnSeqLegend"></div>
         <div id="cardsDrawnSeqChart"></div>
-        <details style="margin-top:10px;">
+        <details class="chart-table">
           <summary>Turn-by-turn table</summary>
           <div id="cardsDrawnSeqTableWrap"></div>
         </details>
@@ -412,17 +210,17 @@
     <div id="playerSections"></div>
 
     <div class="panel">
-      <div class="panel-header"><h2>Flagged / unresolved lines</h2><span class="collapse-icon">−</span></div>
+      <div class="panel-header"><h2>Flagged / unresolved lines</h2><button type="button" class="collapse-icon" aria-expanded="true" aria-label="Collapse section">−</button></div>
       <div class="panel-body">
         <div id="flaggedList"></div>
-        <div class="empty-note" id="flaggedEmpty" style="display:none;">Nothing flagged — every recognized credit-gain line had a readable amount.</div>
+        <div class="empty-note" id="flaggedEmpty" hidden>Nothing flagged — every recognized credit-gain line had a readable amount.</div>
       </div>
     </div>
 
     <div class="panel collapsed">
-      <div class="panel-header"><h2>How this works</h2><span class="collapse-icon">+</span></div>
+      <div class="panel-header"><h2>How this works</h2><button type="button" class="collapse-icon" aria-expanded="false" aria-label="Expand section">+</button></div>
       <div class="panel-body">
-        <p style="color:var(--dim); font-size:13.5px; margin:0 0 14px;">This reads it for turn count, when each card entered and left play, each card's net credit contribution, and agenda points scored over time.</p>
+        <p class="panel-note">This reads it for turn count, when each card entered and left play, each card's net credit contribution, and agenda points scored over time.</p>
         <ul class="caveats">
           <li>Corp assets and ice are installed face-down, so the log doesn't reveal a name until they're rezzed. "In play from" for those cards is the turn they were rezzed, not the (unknown) turn they were actually installed.</li>
           <li>Credits are attributed to a card via its own "uses X to gain N" / "reveal ... and gain N" triggers, plus any "pays N from X" spend that draws from a card's hosted credits.</li>
@@ -442,9 +240,12 @@
 
   </div>
 
+  </main>
+
   <footer>Parses locally in your browser — nothing is uploaded, unless you use the optional "Shorten link" button, which stores the encoded log on jinteki.win so the short link can be opened later.<br>If this tool's useful, <a href="https://ko-fi.com/inermis2020" target="_blank" rel="noopener">support it on Ko-fi</a>.<br>Also on jinteki.win: <a href="../market-research/">Market Research</a>, tournament card meta.<br>Build: dev</footer>
 </div>
 
+<script src="parser.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

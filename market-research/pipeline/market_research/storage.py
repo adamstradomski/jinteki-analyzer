@@ -33,11 +33,13 @@ class ObjectInfo:
 
 
 @dataclass(frozen=True)
-class StoredObject:
-    body: bytes
+class ObjectHead:
+    """An object's metadata, without its body."""
+
     content_type: str
     cache_control: str | None
     etag: str
+    size: int
 
 
 class ObjectStore(ABC):
@@ -47,7 +49,8 @@ class ObjectStore(ABC):
     def get(self, key: str) -> bytes | None: ...
 
     @abstractmethod
-    def head(self, key: str) -> StoredObject | None: ...
+    def head(self, key: str) -> ObjectHead | None:
+        """The object's metadata, or None only when there is no such object."""
 
     @abstractmethod
     def put(
@@ -63,6 +66,8 @@ class ObjectStore(ABC):
     def list(self, prefix: str = "") -> Iterator[ObjectInfo]: ...
 
     def exists(self, key: str) -> bool:
+        """False only for a missing object; any other failure propagates, so an unreadable key is
+        never mistaken for a free one (and overwritten)."""
         return self.head(key) is not None
 
     def get_json(self, key: str) -> Any:
@@ -97,7 +102,7 @@ class LocalObjectStore(ObjectStore):
         p = self._path(key)
         return p.read_bytes() if p.is_file() else None
 
-    def head(self, key: str) -> StoredObject | None:
+    def head(self, key: str) -> ObjectHead | None:
         p = self._path(key)
         if not p.is_file():
             return None
@@ -106,12 +111,15 @@ class LocalObjectStore(ObjectStore):
         mp = self._meta(key)
         if mp.is_file():
             meta = json.loads(mp.read_text("utf-8"))
-        return StoredObject(
-            body=body,
+        return ObjectHead(
             content_type=meta.get("content_type", "application/octet-stream"),
             cache_control=meta.get("cache_control"),
             etag=hashlib.md5(body, usedforsecurity=False).hexdigest(),
+            size=len(body),
         )
+
+    def exists(self, key: str) -> bool:
+        return self._path(key).is_file()
 
     def put(
         self,
@@ -144,15 +152,33 @@ class LocalObjectStore(ObjectStore):
         yield from sorted(out, key=lambda o: o.key)
 
 
-class R2ObjectStore(ObjectStore):  # pragma: no cover - exercised only against real R2
-    """Cloudflare R2 through its S3-compatible API."""
+# What S3/R2 answers for a missing key: GET says NoSuchKey; HEAD has no body, so only its 404.
+_MISSING_CODES = frozenset({"NoSuchKey", "404", "NotFound"})
 
-    def __init__(self, bucket: str, account_id: str, access_key_id: str, secret_access_key: str) -> None:
+
+def _is_missing(err: Exception) -> bool:
+    from botocore.exceptions import ClientError
+
+    if not isinstance(err, ClientError):
+        return False
+    return str(err.response.get("Error", {}).get("Code", "")) in _MISSING_CODES
+
+
+class R2ObjectStore(ObjectStore):
+    """Cloudflare R2 through its S3-compatible API. Safe to share between threads (boto3 clients are)."""
+
+    def __init__(self, bucket: str, client: Any) -> None:
+        self.bucket = bucket
+        self._s3 = client
+
+    @classmethod
+    def connect(
+        cls, bucket: str, account_id: str, access_key_id: str, secret_access_key: str
+    ) -> R2ObjectStore:  # pragma: no cover - needs R2
         import boto3
         from botocore.config import Config
 
-        self.bucket = bucket
-        self._s3 = boto3.client(
+        client = boto3.client(
             "s3",
             endpoint_url=f"https://{account_id}.r2.cloudflarestorage.com",
             aws_access_key_id=access_key_id,
@@ -160,27 +186,33 @@ class R2ObjectStore(ObjectStore):  # pragma: no cover - exercised only against r
             region_name="auto",
             config=Config(retries={"max_attempts": 5, "mode": "standard"}, max_pool_connections=32),
         )
+        return cls(bucket, client)
 
     def get(self, key: str) -> bytes | None:
         try:
             r = self._s3.get_object(Bucket=self.bucket, Key=_check_key(key))
-        except self._s3.exceptions.NoSuchKey:
-            return None
+        except Exception as e:
+            if _is_missing(e):
+                return None
+            raise
         body: bytes = r["Body"].read()
         return body
 
-    def head(self, key: str) -> StoredObject | None:
+    def head(self, key: str) -> ObjectHead | None:
+        """HEAD, not GET: the metadata without downloading the body."""
         try:
-            r = self._s3.get_object(Bucket=self.bucket, Key=_check_key(key))
-        except self._s3.exceptions.NoSuchKey:
+            r = self._s3.head_object(Bucket=self.bucket, Key=_check_key(key))
+        except Exception as e:
             # Only a missing object is "not there": auth, permission and network errors
             # propagate, so they can't be mistaken for a free key and overwrite data.
-            return None
-        return StoredObject(
-            body=r["Body"].read(),
+            if _is_missing(e):
+                return None
+            raise
+        return ObjectHead(
             content_type=r.get("ContentType", ""),
             cache_control=r.get("CacheControl"),
             etag=str(r.get("ETag", "")).strip('"'),
+            size=int(r.get("ContentLength", 0)),
         )
 
     def put(
@@ -229,7 +261,7 @@ def stores_from_settings(settings: Settings) -> Stores:  # pragma: no cover - ne
     kid = settings.r2_access_key_id.get_secret_value()
     sec = settings.r2_secret_access_key.get_secret_value()
     return Stores(
-        source=R2ObjectStore(settings.bucket_source, settings.r2_account_id, kid, sec),
-        canonical=R2ObjectStore(settings.bucket_canonical, settings.r2_account_id, kid, sec),
-        published=R2ObjectStore(settings.bucket_published, settings.r2_account_id, kid, sec),
+        source=R2ObjectStore.connect(settings.bucket_source, settings.r2_account_id, kid, sec),
+        canonical=R2ObjectStore.connect(settings.bucket_canonical, settings.r2_account_id, kid, sec),
+        published=R2ObjectStore.connect(settings.bucket_published, settings.r2_account_id, kid, sec),
     )

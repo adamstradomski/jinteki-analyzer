@@ -20,6 +20,7 @@ import duckdb
 
 from market_research.catalog import Catalog
 from market_research.config import Settings
+from market_research.db import insert_rows
 
 Z95 = 1.959963984540054
 
@@ -116,7 +117,16 @@ def _counts_sql(suffix: str, d: str, dg: str, g: str, t: str) -> str:
 def compute_counts(con: duckdb.DuckDBPyConnection, catalog: Catalog, settings: Settings) -> None:
     """Creates card_counts, side_counts, identity_counts and identity_side_counts from canonical tables,
     plus card_counts_cut and side_counts_cut for decks that made the cut in events that had one."""
-    t = settings.thresholds
+    _legal_table(con, catalog)
+    con.execute(_event_tables_sql(settings) + _counts_sql("", "d", "dg", "g", "t"))
+    con.execute(_identity_counts_sql(settings))
+    # Top-cut scope: only decks (and players) that made the cut, in events that had one. The same
+    # counts as above, so the page can switch every card view to what top-cut decks played.
+    con.execute(_CUT_TABLES_SQL + _counts_sql("_cut", "d_cut", "dg_cut", "g_cut", "t_cut"))
+
+
+def _legal_table(con: duckdb.DuckDBPyConnection, catalog: Catalog) -> None:
+    """legal(card_id, restriction_id): the cards each ban list in play allows."""
     con.execute("CREATE OR REPLACE TABLE legal (card_id VARCHAR, restriction_id VARCHAR)")
     restrictions = [
         r[0]
@@ -125,10 +135,13 @@ def compute_counts(con: duckdb.DuckDBPyConnection, catalog: Catalog, settings: S
         ).fetchall()
     ]
     rows = [(cid, r) for r in restrictions for cid in sorted(catalog.cards) if catalog.legal_in(cid, r)]
-    if rows:
-        con.executemany("INSERT INTO legal VALUES (?, ?)", rows)
-    con.execute(
-        f"""
+    insert_rows(con, "legal", rows)
+
+
+def _event_tables_sql(settings: Settings) -> str:
+    """t (the events counted), d (their legal decks), g (games, once per side) and dg (games of known decks)."""
+    t = settings.thresholds
+    return f"""
         CREATE OR REPLACE TABLE t AS
         SELECT tid, restriction_id, tier, strftime(date, '%Y-%m') AS month,
                (decklist_coverage >= {float(t.coverage_hc)} AND cut_size > 0) AS hc
@@ -150,8 +163,13 @@ def compute_counts(con: duckdb.DuckDBPyConnection, catalog: Catalog, settings: S
         CREATE OR REPLACE TABLE dg AS
         SELECT d.deck_id, g.won, d.side, d.restriction_id, d.tier, d.month
         FROM g JOIN d ON d.tid = g.tid AND d.entry_no = g.entry_no AND d.side = g.side;
+    """
 
-        {_counts_sql("", "d", "dg", "g", "t")}
+
+def _identity_counts_sql(settings: Settings) -> str:
+    """identity_counts and identity_side_counts, from the identity of every entry (table ie)."""
+    t = settings.thresholds
+    return f"""
         CREATE OR REPLACE TABLE ie AS
         SELECT e.tid, e.entry_no, s.side,
                CASE WHEN s.side = 'corp' THEN e.corp_identity ELSE e.runner_identity END AS identity,
@@ -186,21 +204,18 @@ def compute_counts(con: duckdb.DuckDBPyConnection, catalog: Catalog, settings: S
         SELECT side, restriction_id, tier, month, sum(entries) AS side_entries, sum(games_total) AS side_games,
                sum(games_won) AS side_wins, sum(cut_entries) AS side_cut_entries, sum(cut_made) AS side_cut_made
         FROM identity_counts GROUP BY ALL;
-        """
-    )
-    # Top-cut scope: only decks (and players) that made the cut, in events that had one. The same
-    # counts as above, so the page can switch every card view to what top-cut decks played.
-    con.execute(
-        f"""
-        CREATE OR REPLACE TABLE t_cut AS SELECT t.* FROM t JOIN tournament tn USING (tid) WHERE tn.cut_size > 0;
-        CREATE OR REPLACE TABLE d_cut AS SELECT d.* FROM d JOIN t_cut USING (tid) WHERE d.made_cut;
-        CREATE OR REPLACE TABLE dg_cut AS SELECT dg.* FROM dg JOIN d_cut USING (deck_id);
-        CREATE OR REPLACE TABLE g_cut AS
-        SELECT g.* FROM g JOIN t_cut USING (tid)
-        JOIN entry e ON e.tid = g.tid AND e.entry_no = g.entry_no WHERE e.made_cut;
-        {_counts_sql("_cut", "d_cut", "dg_cut", "g_cut", "t_cut")}
-        """
-    )
+    """
+
+
+# The top-cut subsets of t, d, dg and g.
+_CUT_TABLES_SQL = """
+    CREATE OR REPLACE TABLE t_cut AS SELECT t.* FROM t JOIN tournament tn USING (tid) WHERE tn.cut_size > 0;
+    CREATE OR REPLACE TABLE d_cut AS SELECT d.* FROM d JOIN t_cut USING (tid) WHERE d.made_cut;
+    CREATE OR REPLACE TABLE dg_cut AS SELECT dg.* FROM dg JOIN d_cut USING (deck_id);
+    CREATE OR REPLACE TABLE g_cut AS
+    SELECT g.* FROM g JOIN t_cut USING (tid)
+    JOIN entry e ON e.tid = g.tid AND e.entry_no = g.entry_no WHERE e.made_cut;
+"""
 
 
 def card_view(

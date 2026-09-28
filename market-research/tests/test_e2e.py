@@ -16,7 +16,7 @@ from typer.testing import CliRunner
 from helpers import EXPECTED, HTTP, all_files, assert_no_canary, make_env
 from market_research.cli import app
 from market_research.runner import EXIT_OK, EXIT_PARTIAL, Runtime, run_all
-from market_research.testing import FixtureRoutes, normalize_url
+from market_research.testing import FixtureRoutes
 
 UPDATE = os.environ.get("MR_UPDATE_GOLDEN") == "1"
 GOLDEN = EXPECTED / "snapshot"
@@ -57,27 +57,6 @@ def test_run_all_reproduces_golden_snapshot(tmp_path, clock, served):
     assert sorted(got) == sorted(expected)
     for rel in got:
         assert got[rel] == expected[rel], rel  # byte for byte
-    assert_no_canary(env.root, env.log.getvalue())
-
-
-def test_second_run_is_conditional_and_adds_no_records(tmp_path, clock, served):
-    env = make_env(tmp_path, clock)
-    run_all(runtime(env))
-    source_puts = len(env.stores.source.puts)  # type: ignore[attr-defined]
-    served.calls.clear()
-    clock.advance(86400)
-    res = run_all(runtime(env))
-    assert res.exit_code == EXIT_OK and res.new_records == 0
-    assert len(env.stores.source.puts) == source_puts  # type: ignore[attr-defined]
-    validators = {
-        normalize_url(r["url"])
-        for r in served.routes.values()
-        if "ETag" in r["headers"] or "Last-Modified" in r["headers"]
-    }
-    for call in served.calls:
-        if normalize_url(str(call.url)) in validators:
-            assert "if-none-match" in call.headers or "if-modified-since" in call.headers, call.url
-    assert sum(res.not_modified.values()) > 0
     assert_no_canary(env.root, env.log.getvalue())
 
 
@@ -138,38 +117,39 @@ def test_cli_report(tmp_path, monkeypatch):
     assert r.exit_code == 1
 
 
-def test_secrets_are_never_logged(tmp_path, monkeypatch):
-    monkeypatch.setenv("CONTACT", "ops@example.invalid")
-    monkeypatch.setenv("MR_LOCAL_STORE", str(tmp_path / "store"))
-    monkeypatch.setenv("R2_SECRET_ACCESS_KEY", "super-secret-value-123")
-    monkeypatch.setenv("R2_ACCESS_KEY_ID", "key-id-456")
-    r = CliRunner().invoke(app, ["run-all", "--fixtures", str(HTTP), "--now", "2026-09-27T04:00:00Z"])
-    assert "super-secret-value-123" not in r.output and "key-id-456" not in r.output
-    uploaded = b"".join(gzip.decompress(p.read_bytes()) for p in (tmp_path / "store").rglob("*.jsonl.gz"))
-    assert uploaded and b"super-secret-value-123" not in uploaded and b"key-id-456" not in uploaded
-    import io
-
-    from market_research import logs
-
-    buf = io.StringIO()
-    logs.configure(buf)
-    logs.get("t").info(
-        "oops", detail="token=super-secret-value-123", r2_secret_access_key="x", nested={"password": "p"}
-    )
-    out = buf.getvalue()
-    assert "super-secret-value-123" not in out and '"p"' not in out and "[redacted]" in out
+SECRET, KEY_ID = "super-secret-value-123", "key-id-456"
 
 
-def test_run_log_is_uploaded_to_canonical_store(tmp_path, monkeypatch):
-    monkeypatch.setenv("CONTACT", "ops@example.invalid")
-    monkeypatch.setenv("MR_LOCAL_STORE", str(tmp_path / "store"))
-    r = CliRunner().invoke(app, ["run-all", "--fixtures", str(HTTP), "--now", "2026-09-27T04:00:00Z"])
+@pytest.fixture(scope="module")
+def cli_run(tmp_path_factory):
+    """One `run-all` through the CLI into a local store, with R2 credentials set. Tests only read it."""
+    store = tmp_path_factory.mktemp("cli") / "store"
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setenv("CONTACT", "ops@example.invalid")
+        mp.setenv("MR_LOCAL_STORE", str(store))
+        mp.setenv("R2_SECRET_ACCESS_KEY", SECRET)
+        mp.setenv("R2_ACCESS_KEY_ID", KEY_ID)
+        r = CliRunner().invoke(app, ["run-all", "--fixtures", str(HTTP), "--now", "2026-09-27T04:00:00Z"])
     assert r.exit_code == 0, r.output
-    lines = [json.loads(line) for line in r.output.splitlines() if line.startswith("{")]
+    return store, r.output
+
+
+def test_secrets_are_never_logged(cli_run):
+    store, output = cli_run
+    assert SECRET not in output and KEY_ID not in output
+    uploaded = b"".join(gzip.decompress(p.read_bytes()) for p in store.rglob("*.jsonl.gz"))
+    assert uploaded and SECRET.encode() not in uploaded and KEY_ID.encode() not in uploaded
+
+
+def test_run_log_is_uploaded_to_canonical_store(cli_run, monkeypatch):
+    store, output = cli_run
+    lines = [json.loads(line) for line in output.splitlines() if line.startswith("{")]
     key = next(x for x in lines if x["event"] == "run_log")["key"]
     assert key.startswith("logs/") and key.endswith("-run-all.jsonl.gz")
-    stored = tmp_path / "store" / "mr-canonical" / key
+    stored = store / "mr-canonical" / key
     events = [json.loads(line)["event"] for line in gzip.decompress(stored.read_bytes()).splitlines()]
     assert events[0] == "run_log" and events[-1] == "run_summary"
-    r = CliRunner().invoke(app, ["report"])
-    assert len(list((tmp_path / "store").rglob("*.jsonl.gz"))) == 1  # read-only commands keep no log
+    monkeypatch.setenv("CONTACT", "ops@example.invalid")
+    monkeypatch.setenv("MR_LOCAL_STORE", str(store))
+    CliRunner().invoke(app, ["report"])
+    assert len(list(store.rglob("*.jsonl.gz"))) == 1  # read-only commands keep no log

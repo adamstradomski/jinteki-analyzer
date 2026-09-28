@@ -1,0 +1,493 @@
+{
+ "achievements": {
+  "Corp": [
+   "Off the Books",
+   "Mandatory Minimum",
+   "Unhedged",
+   "Crisis Management",
+   "Fast Advance",
+   "Board Restructure"
+  ],
+  "Runner": []
+ },
+ "parseLog": {
+  "advanceClicks": {},
+  "agendaEvents": [
+   {
+    "player": "Runner",
+    "points": 2,
+    "seq": 2,
+    "turn": 1
+   },
+   {
+    "player": "Runner",
+    "points": 2,
+    "seq": 2,
+    "turn": 1
+   },
+   {
+    "player": "Runner",
+    "points": 2,
+    "seq": 2,
+    "turn": 1
+   },
+   {
+    "player": "Corp",
+    "points": 2,
+    "seq": 3,
+    "turn": 2
+   },
+   {
+    "player": "Corp",
+    "points": 2,
+    "seq": 3,
+    "turn": 2
+   },
+   {
+    "player": "Corp",
+    "points": 1,
+    "seq": 3,
+    "turn": 2
+   },
+   {
+    "player": "Runner",
+    "points": -2,
+    "seq": 4,
+    "turn": 2
+   },
+   {
+    "player": "Corp",
+    "points": 2,
+    "seq": 5,
+    "turn": 3
+   }
+  ],
+  "agendaSeqSeries": {
+   "Corp": [
+    0,
+    0,
+    0,
+    5,
+    5,
+    7
+   ],
+   "Runner": [
+    0,
+    0,
+    6,
+    6,
+    4,
+    4
+   ]
+  },
+  "agendaSeries": {
+   "Corp": [
+    0,
+    0,
+    5,
+    7
+   ],
+   "Runner": [
+    0,
+    6,
+    4,
+    4
+   ]
+  },
+  "breachCounts": {},
+  "cardsAccessed": {},
+  "cardsDrawnSeqSeries": {
+   "Corp": [
+    0,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "Runner": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ]
+  },
+  "cardsDrawnSeries": {
+   "Corp": [
+    0,
+    1,
+    1,
+    1
+   ],
+   "Runner": [
+    0,
+    0,
+    0,
+    0
+   ]
+  },
+  "cardsRezzed": {},
+  "chatBadges": {},
+  "clickCredits": {
+   "Runner": {
+    "count": 1,
+    "gained": 1
+   }
+  },
+  "clicksGained": {},
+  "concededPlayer": null,
+  "creditPoolSeqSeries": {
+   "Corp": [
+    5,
+    5,
+    5,
+    9,
+    9,
+    0
+   ],
+   "Runner": [
+    5,
+    5,
+    6,
+    6,
+    6,
+    6
+   ]
+  },
+  "creditPoolSeries": {
+   "Corp": [
+    5,
+    5,
+    5,
+    9
+   ],
+   "Runner": [
+    5,
+    5,
+    6,
+    6
+   ]
+  },
+  "creditsGainedSeries": {
+   "Corp": [
+    0,
+    0,
+    9,
+    1
+   ],
+   "Runner": [
+    0,
+    1,
+    0,
+    0
+   ]
+  },
+  "creditsNetSeqSeries": {
+   "Corp": [
+    0,
+    0,
+    0,
+    4,
+    0,
+    -9
+   ],
+   "Runner": [
+    0,
+    0,
+    1,
+    0,
+    0,
+    0
+   ]
+  },
+  "creditsNetSeries": {
+   "Corp": [
+    0,
+    0,
+    4,
+    -9
+   ],
+   "Runner": [
+    0,
+    1,
+    0,
+    0
+   ]
+  },
+  "damageTaken": {},
+  "deckedPlayer": null,
+  "drawClicks": {},
+  "eventsPlayed": {
+   "Corp": 2
+  },
+  "finalCreditPool": {
+   "Corp": 0,
+   "Runner": 6
+  },
+  "finalScore": {
+   "Corp": 7,
+   "Runner": 4
+  },
+  "flagged": [],
+  "flatlinedPlayer": null,
+  "handSizeSeqSeries": {
+   "Corp": [
+    5,
+    5,
+    5,
+    5,
+    5,
+    5
+   ],
+   "Runner": [
+    5,
+    5,
+    5,
+    5,
+    5,
+    5
+   ]
+  },
+  "handSizeSeries": {
+   "Corp": [
+    5,
+    5,
+    5,
+    5
+   ],
+   "Runner": [
+    5,
+    5,
+    5,
+    5
+   ]
+  },
+  "installClicks": {
+   "Corp": 1
+  },
+  "installedRows": [],
+  "maxTurn": {
+   "Corp": 3,
+   "Runner": 2
+  },
+  "mulligans": [
+   "Corp"
+  ],
+  "opposingTrashes": {},
+  "opsRows": [
+   {
+    "name": "Hedge Fund",
+    "perTurnRows": [
+     {
+      "cost": 5,
+      "gain": 9,
+      "net": 4,
+      "nth": null,
+      "turn": 2
+     }
+    ],
+    "player": "Corp",
+    "totalCost": 5,
+    "totalGain": 9,
+    "totalNet": 4,
+    "triggered": 1,
+    "turnsList": "2"
+   },
+   {
+    "name": "Bladderwort",
+    "perTurnRows": [
+     {
+      "cost": 0,
+      "gain": 1,
+      "net": 1,
+      "nth": null,
+      "turn": 3
+     }
+    ],
+    "player": "Corp",
+    "totalCost": 0,
+    "totalGain": 1,
+    "totalNet": 1,
+    "triggered": 1,
+    "turnsList": "3"
+   },
+   {
+    "name": "Myōshu",
+    "perTurnRows": [
+     {
+      "cost": 10,
+      "gain": 0,
+      "net": -10,
+      "nth": null,
+      "turn": 3
+     }
+    ],
+    "player": "Corp",
+    "totalCost": 10,
+    "totalGain": 0,
+    "totalNet": -10,
+    "triggered": 1,
+    "turnsList": "3"
+   }
+  ],
+  "playerCountError": null,
+  "playerSide": {
+   "Corp": "corp",
+   "Runner": "runner"
+  },
+  "players": [
+   "Corp",
+   "Runner"
+  ],
+  "poolSegments": {
+   "Corp": [
+    {
+     "end": 5,
+     "endLine": 4,
+     "expected": 5,
+     "fromKind": "start",
+     "fromTurn": 1,
+     "ok": true,
+     "start": 5,
+     "startLine": 1,
+     "values": [
+      5
+     ]
+    },
+    {
+     "end": 5,
+     "endLine": 11,
+     "expected": 5,
+     "fromKind": "end",
+     "fromTurn": 1,
+     "ok": true,
+     "start": 5,
+     "startLine": 4,
+     "values": []
+    },
+    {
+     "end": 9,
+     "endLine": 17,
+     "expected": 9,
+     "fromKind": "start",
+     "fromTurn": 2,
+     "ok": true,
+     "start": 5,
+     "startLine": 11,
+     "values": [
+      0,
+      9
+     ]
+    },
+    {
+     "end": 9,
+     "endLine": 21,
+     "expected": 9,
+     "fromKind": "end",
+     "fromTurn": 2,
+     "ok": true,
+     "start": 9,
+     "startLine": 17,
+     "values": []
+    },
+    {
+     "end": null,
+     "endLine": null,
+     "expected": null,
+     "fromKind": "start",
+     "fromTurn": 3,
+     "ok": null,
+     "start": 9,
+     "startLine": 21,
+     "values": [
+      10,
+      0
+     ]
+    }
+   ],
+   "Runner": [
+    {
+     "end": 6,
+     "endLine": 10,
+     "expected": 6,
+     "fromKind": "start",
+     "fromTurn": 1,
+     "ok": true,
+     "start": 5,
+     "startLine": 5,
+     "values": [
+      6
+     ]
+    },
+    {
+     "end": 6,
+     "endLine": 18,
+     "expected": 6,
+     "fromKind": "end",
+     "fromTurn": 1,
+     "ok": true,
+     "start": 6,
+     "startLine": 10,
+     "values": []
+    },
+    {
+     "end": 6,
+     "endLine": 20,
+     "expected": 6,
+     "fromKind": "start",
+     "fromTurn": 2,
+     "ok": true,
+     "start": 6,
+     "startLine": 18,
+     "values": []
+    },
+    {
+     "end": null,
+     "endLine": null,
+     "expected": null,
+     "fromKind": "end",
+     "fromTurn": 2,
+     "ok": null,
+     "start": 6,
+     "startLine": 20,
+     "values": []
+    }
+   ]
+  },
+  "purgeClicks": {},
+  "rounds": 3,
+  "runsMade": {},
+  "seqAxisLabels": [
+   "",
+   "C1",
+   "R1",
+   "C2",
+   "R2",
+   "C3"
+  ],
+  "tagRemovals": {},
+  "tagsGained": {
+   "Runner": 0
+  },
+  "tagsGiven": {
+   "Corp": 0
+  },
+  "totalDraws": {
+   "Corp": 1
+  },
+  "totalGained": {
+   "Corp": 10,
+   "Runner": 1
+  },
+  "totalSeq": 5,
+  "totalSpent": {
+   "Corp": 15
+  },
+  "trashResources": {},
+  "undos": [],
+  "winReason": "agenda",
+  "winner": "Corp"
+ }
+}
