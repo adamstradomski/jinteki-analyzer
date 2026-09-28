@@ -1,6 +1,11 @@
 import { randomId, sha256Hex } from './ids.js';
 import { isAllowedOrigin, validatePayload, ValidationError, MAX_PAYLOAD_CHARS } from './validate.js';
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+// Real use is a handful of links a day. env.DAILY_CREATE_LIMIT overrides it (only the tests
+// set it: wrangler deploy drops variables that aren't in wrangler.template.toml).
+const DEFAULT_DAILY_CREATE_LIMIT = 1000;
+
 const json = (body, status = 200) =>
   new Response(JSON.stringify(body), {
     status,
@@ -37,7 +42,14 @@ export async function handleCreate(request, env) {
   const existing = await env.DB.prepare('SELECT id FROM links WHERE hash = ?').bind(hash).first();
   if (existing) return json({ url: `${base}/s/${existing.id}` });
 
+  // Per-IP limits don't stop someone with many IPs from filling the database, so new
+  // links are also capped site-wide per day (uses idx_links_created_at).
   const now = Date.now();
+  const cap = Number(env.DAILY_CREATE_LIMIT) || DEFAULT_DAILY_CREATE_LIMIT;
+  const { n } = await env.DB.prepare('SELECT COUNT(*) AS n FROM links WHERE created_at > ?')
+    .bind(now - DAY_MS).first();
+  if (n >= cap) return json({ error: 'daily short link limit reached, try again tomorrow' }, 503);
+
   for (let attempt = 0; attempt < 3; attempt++) {
     const id = randomId();
     try {

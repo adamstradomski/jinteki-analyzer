@@ -92,8 +92,8 @@ class _HostState:
     lock: threading.Lock = field(default_factory=threading.Lock)
     next_at: float = 0.0
     stats: HostStats = field(default_factory=HostStats)
-    robots: urllib.robotparser.RobotFileParser | None = None
-    robots_until: float = -1.0
+    # Per host, not per group: hosts sharing a politeness group have their own robots.txt.
+    robots: dict[str, tuple[urllib.robotparser.RobotFileParser, float]] = field(default_factory=dict)
 
 
 def host_group(host: str) -> str:
@@ -298,15 +298,15 @@ class PoliteHttp:
 
     def _robots_for(self, host: str, group: str, state: _HostState) -> urllib.robotparser.RobotFileParser:
         now_mono = self.clock.monotonic()
-        if state.robots is not None and now_mono < state.robots_until:
-            return state.robots
+        cached = state.robots.get(host)
+        if cached is not None and now_mono < cached[1]:
+            return cached[0]
         text = self._load_cached_robots(host)
         if text is None:
             text = self._fetch_robots(host, group, state)
         parser = urllib.robotparser.RobotFileParser()
         parser.parse(text.splitlines())
-        state.robots = parser
-        state.robots_until = now_mono + self.settings.robots_ttl_s
+        state.robots[host] = (parser, now_mono + self.settings.robots_ttl_s)
         return parser
 
     def _robots_key(self, host: str) -> str:

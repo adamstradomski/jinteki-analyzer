@@ -6,3 +6,4 @@ CREATE TABLE IF NOT EXISTS links (
   last_hit   INTEGER NOT NULL       -- ms since epoch, refreshed at most daily
 );
 CREATE INDEX IF NOT EXISTS idx_links_last_hit ON links(last_hit);
+CREATE INDEX IF NOT EXISTS idx_links_created_at ON links(created_at);

@@ -21,12 +21,15 @@
   "additionalProperties": false,
   "properties": {
     "schema": {
+      "description": "Schema ID and major version of this file.",
       "const": "mr.quality/1"
     },
     "version": {
+      "description": "Snapshot version this file belongs to: the UTC start time of the pipeline run that published it, as YYYY-MM-DDTHHMMSSZ. Same as the v=<version>/ folder the file is in and the manifest's version.",
       "type": "string"
     },
     "coverage": {
+      "description": "How much data the snapshot is built from, over every normalized tournament.",
       "type": "object",
       "required": [
         "tournaments",
@@ -44,39 +47,50 @@
       "additionalProperties": false,
       "properties": {
         "tournaments": {
+          "description": "Tournaments after normalization (Standard, past the guards).",
           "type": "integer"
         },
         "tournaments_with_games": {
+          "description": "Of those, the tournaments with game results (pairings from Cobra).",
           "type": "integer"
         },
         "tournaments_high_coverage": {
+          "description": "Tournaments with decklist coverage at least thresholds.coverage_hc and a top cut (the ones conversion uses).",
           "type": "integer"
         },
         "mean_decklist_coverage": {
+          "description": "Average decklist coverage over the tournaments (0-1).",
           "type": "number"
         },
         "entries": {
+          "description": "Tournament entries (players).",
           "type": "integer"
         },
         "games": {
+          "description": "Games derived from pairings.",
           "type": "integer"
         },
         "decks": {
+          "description": "Decks found, legal or not.",
           "type": "integer"
         },
         "legal_decks": {
+          "description": "Decks that pass the legality checks; only these reach the metrics.",
           "type": "integer"
         },
         "illegal_decks": {
+          "description": "decks - legal_decks.",
           "type": "integer"
         },
         "decks_by_source": {
+          "description": "Decks per source: cobra (the list registered in Cobra), nrdb_decklist (a published NetrunnerDB decklist claimed on ABR) or nrdb_deck (a NetrunnerDB deck referenced by Cobra).",
           "type": "object",
           "additionalProperties": {
             "type": "integer"
           }
         },
         "deck_comparison": {
+          "description": "How many decks had each comparison result between Cobra and NetrunnerDB: match, mismatch, cobra_only or nrdb_only.",
           "type": "object",
           "additionalProperties": {
             "type": "integer"
@@ -85,18 +99,21 @@
       }
     },
     "unresolved_cards": {
+      "description": "Card references that don't match the catalog, as printing:<id> or card:<id>, with how many times each was seen. Those cards are left out of their decks.",
       "type": "object",
       "additionalProperties": {
         "type": "integer"
       }
     },
     "unresolved_identities": {
+      "description": "Identity names that don't match the catalog, with how many times each was seen.",
       "type": "object",
       "additionalProperties": {
         "type": "integer"
       }
     },
     "parser_failures": {
+      "description": "Source responses that couldn't be parsed and were quarantined, with no payload content.",
       "type": "array",
       "items": {
         "type": "object",
@@ -108,30 +125,36 @@
         "additionalProperties": false,
         "properties": {
           "key": {
+            "description": "Storage key of the source record.",
             "type": "string"
           },
           "error": {
+            "description": "The parse error, cut to 200 characters.",
             "type": "string"
           },
           "payload_sha256": {
+            "description": "SHA-256 of the rejected payload (sha256:<hex>), to recognise repeats.",
             "type": "string"
           }
         }
       }
     },
     "link_mismatches": {
+      "description": "Cobra tournaments or entries that couldn't be linked to AlwaysBeRunning: tid, reason (e.g. abr_code_unresolved, ambiguous_fallback_match, fallback_identities_differ, identity_mismatch) and, for an entry, entry_no.",
       "type": "array",
       "items": {
         "type": "object"
       }
     },
     "links": {
+      "description": "Cobra tournaments linked to an AlwaysBeRunning event: tid, abr_id and method (abr_code, or date_size_identities when matched by date, player count and identities).",
       "type": "array",
       "items": {
         "type": "object"
       }
     },
     "drift_warnings": {
+      "description": "Fields a source returned that the parser doesn't know, per payload kind (e.g. abr.tournament). Names only, never values; a sign the source's API changed.",
       "type": "object",
       "additionalProperties": {
         "type": "array",
@@ -141,15 +164,18 @@
       }
     },
     "rejected_deck_refs": {
+      "description": "Deck links from AlwaysBeRunning that aren't a recognised NetrunnerDB deck or decklist URL, so they were not followed.",
       "type": "integer"
     },
     "skipped_tournaments": {
+      "description": "Tournaments left out, per reason (e.g. not_standard, too_small, abr_guard, cobra_no_results, abr_no_entries).",
       "type": "object",
       "additionalProperties": {
         "type": "integer"
       }
     },
     "restriction_overrides": {
+      "description": "Tournaments whose ban list was replaced by the one most of their decks are legal under: tid, from, to, decks, legal_before and legal_after.",
       "type": "array",
       "items": {
         "type": "object"

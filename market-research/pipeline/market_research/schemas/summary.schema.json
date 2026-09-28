@@ -20,27 +20,33 @@
   "additionalProperties": false,
   "properties": {
     "schema": {
+      "description": "Schema ID and major version of this file.",
       "const": "mr.summary/1"
     },
     "version": {
+      "description": "Snapshot version this file belongs to: the UTC start time of the pipeline run that published it, as YYYY-MM-DDTHHMMSSZ. Same as the v=<version>/ folder the file is in and the manifest's version.",
       "type": "string",
       "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{6}Z$"
     },
     "side": {
+      "description": "Side this slice covers: corp or runner.",
       "enum": [
         "corp",
         "runner"
       ]
     },
     "restriction": {
+      "description": "Ban list of this slice: a NetrunnerDB Standard restriction ID (e.g. standard_ban_list_26_05), or all for every ban list combined.",
       "type": "string",
       "pattern": "^(all|[a-z0-9_]{1,80})$"
     },
     "tier_group": {
+      "description": "Tier group of this slice (an id from the manifest's tier_groups, e.g. gnk, store, megacity, online), or all for every tier combined.",
       "type": "string",
       "pattern": "^(all|[a-z0-9_]{1,40})$"
     },
     "period": {
+      "description": "Current period: the last period_months months (manifest) up to the slice's latest month with decks. Null when the slice has no decks. The top-cut file uses the same period as the all-decks file.",
       "type": [
         "object",
         "null"
@@ -52,16 +58,19 @@
       "additionalProperties": false,
       "properties": {
         "from": {
+          "description": "First month of the period (YYYY-MM, inclusive).",
           "type": "string",
           "pattern": "^\\d{4}-\\d{2}$"
         },
         "to": {
+          "description": "Last month of the period (YYYY-MM, inclusive).",
           "type": "string",
           "pattern": "^\\d{4}-\\d{2}$"
         }
       }
     },
     "previous_period": {
+      "description": "The period of the same length just before period, which change_pp compares with. Null when the slice has no decks in it.",
       "type": [
         "object",
         "null"
@@ -73,16 +82,19 @@
       "additionalProperties": false,
       "properties": {
         "from": {
+          "description": "First month of the period (YYYY-MM, inclusive).",
           "type": "string",
           "pattern": "^\\d{4}-\\d{2}$"
         },
         "to": {
+          "description": "Last month of the period (YYYY-MM, inclusive).",
           "type": "string",
           "pattern": "^\\d{4}-\\d{2}$"
         }
       }
     },
     "baseline": {
+      "description": "Totals for the whole side in the slice's current period, which the card metrics are divided by or compared with. In the top-cut file (cut/summary.json), over the decks that made the cut.",
       "type": "object",
       "required": [
         "decks",
@@ -101,45 +113,57 @@
       "additionalProperties": false,
       "properties": {
         "decks": {
+          "description": "Legal decks of this side. The denominator of popularity.",
           "type": "integer"
         },
         "games": {
+          "description": "Games where this side's deck is known and legal, excluding intentional draws. The population card winrates are compared with.",
           "type": "integer"
         },
         "wins": {
+          "description": "Wins in those games; a draw counts as half a win.",
           "type": "number"
         },
         "winrate": {
+          "description": "wins / games (0-1). Null without games.",
           "type": [
             "number",
             "null"
           ]
         },
         "entries_hc": {
+          "description": "Entries with a legal deck for this side in high-coverage tournaments (decklist coverage at least thresholds.coverage_hc and a top cut), so decks that missed the cut are known as well as those that made it.",
           "type": "integer"
         },
         "cut_hc": {
+          "description": "Of those entries, the ones that made the top cut.",
           "type": "integer"
         },
         "cut_rate": {
+          "description": "cut_hc / entries_hc (0-1): the side's average top-cut rate. Null without entries.",
           "type": [
             "number",
             "null"
           ]
         },
         "tournaments": {
+          "description": "Tournaments in the slice's current period.",
           "type": "integer"
         },
         "tournaments_hc": {
+          "description": "Of those, the high-coverage tournaments (the ones conversion uses).",
           "type": "integer"
         },
         "games_all": {
+          "description": "Every game this side played in the slice, whether or not its deck is known, excluding intentional draws. In the top-cut file, every game of the players who made the cut.",
           "type": "integer"
         },
         "wins_all": {
+          "description": "Wins in games_all; a draw counts as half a win.",
           "type": "number"
         },
         "winrate_all": {
+          "description": "wins_all / games_all (0-1): the headline side winrate, so Corp and Runner add up to 100%. Null without games.",
           "type": [
             "number",
             "null"
@@ -148,6 +172,7 @@
       }
     },
     "cards": {
+      "description": "Every card played in the current or previous period, most played first. A card played only in the previous period is listed with 0 decks so it can show up as a faller.",
       "type": "array",
       "items": {
         "type": "object",
@@ -178,32 +203,38 @@
         "additionalProperties": false,
         "properties": {
           "card_id": {
+            "description": "Card ID from the catalog (the NetrunnerDB card ID, the same across printings).",
             "type": "string",
             "pattern": "^[a-z0-9_]{1,80}$"
           },
           "rank": {
+            "description": "Position by decks in the current period (1 = most played; ties by card_id). Null for a card not played in the current period.",
             "type": [
               "integer",
               "null"
             ]
           },
           "decks": {
+            "description": "Decks playing the card in the current period.",
             "type": "integer",
             "minimum": 0
           },
           "popularity": {
+            "description": "decks / baseline.decks (0-1): the share of the side's decks that play the card.",
             "type": [
               "number",
               "null"
             ]
           },
           "avg_copies": {
+            "description": "Average copies of the card in the decks that play it. Null when no deck plays it.",
             "type": [
               "number",
               "null"
             ]
           },
           "copies_mode": {
+            "description": "Most common copy count among the decks that play it: 1, 2 or 3 (3 = three or more; a tie picks the smaller). Null when no deck plays it.",
             "enum": [
               1,
               2,
@@ -212,86 +243,102 @@
             ]
           },
           "prev_popularity": {
+            "description": "Popularity in previous_period (0 if the card wasn't played then). Null when there is no previous period.",
             "type": [
               "number",
               "null"
             ]
           },
           "change_pp": {
+            "description": "popularity - prev_popularity, in percentage points. Null without a previous period. Risers and fallers are ranked by it.",
             "type": [
               "number",
               "null"
             ]
           },
           "games": {
+            "description": "Games played by decks with the card, on the card's side, where the deck is known and legal, excluding intentional draws.",
             "type": "integer",
             "minimum": 0
           },
           "wins": {
+            "description": "Wins in those games; a draw counts as half a win.",
             "type": "number",
             "minimum": 0
           },
           "winrate": {
+            "description": "wins / games (0-1). Null without games.",
             "type": [
               "number",
               "null"
             ]
           },
           "winrate_diff_pp": {
+            "description": "winrate - baseline.winrate, in percentage points. Null when either is null.",
             "type": [
               "number",
               "null"
             ]
           },
           "wilson_low_pp": {
+            "description": "Lower bound of the Wilson 95% interval of winrate, minus baseline.winrate, in percentage points. Null without games or without a baseline winrate.",
             "type": [
               "number",
               "null"
             ]
           },
           "wilson_high_pp": {
+            "description": "Upper bound of the Wilson 95% interval of winrate, minus baseline.winrate, in percentage points. Null without games or without a baseline winrate.",
             "type": [
               "number",
               "null"
             ]
           },
           "winrate_status": {
+            "description": "ok when games is at least thresholds.min_games (manifest), otherwise insufficient: too small a sample for the winrate to be meaningful.",
             "enum": [
               "ok",
               "insufficient"
             ]
           },
           "entries_hc": {
+            "description": "Entries whose deck plays the card, in high-coverage tournaments (decklist coverage at least thresholds.coverage_hc and a top cut), so decks that missed the cut are known as well as those that made it.",
             "type": "integer",
             "minimum": 0
           },
           "cut_hc": {
+            "description": "Of those entries, the ones that made the top cut.",
             "type": "integer",
             "minimum": 0
           },
           "tournaments_hc": {
+            "description": "High-coverage tournaments in which at least one deck played the card.",
             "type": "integer",
             "minimum": 0
           },
           "conversion": {
+            "description": "cut_hc / entries_hc (0-1): how often decks with the card made the cut. Null without entries.",
             "type": [
               "number",
               "null"
             ]
           },
           "conversion_ratio": {
+            "description": "conversion / baseline.cut_rate: 1 = the side's average, 2 = twice as likely to make the cut. Null when either is null or zero.",
             "type": [
               "number",
               "null"
             ]
           },
           "conversion_diff_pp": {
+            "description": "conversion - baseline.cut_rate, in percentage points. Null when either is null.",
             "type": [
               "number",
               "null"
             ]
           },
           "conversion_status": {
+            "description": "ok when entries_hc is at least thresholds.min_entries (manifest), otherwise insufficient: too small a sample for the conversion to be meaningful.",
             "enum": [
               "ok",
               "insufficient"
@@ -301,6 +348,7 @@
       }
     },
     "risers": {
+      "description": "Up to ten card IDs with the largest positive change_pp, largest first.",
       "type": "array",
       "items": {
         "type": "string",
@@ -309,6 +357,7 @@
       "maxItems": 10
     },
     "fallers": {
+      "description": "Up to ten card IDs with the largest negative change_pp, largest drop first.",
       "type": "array",
       "items": {
         "type": "string",

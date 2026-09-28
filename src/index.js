@@ -1,24 +1,41 @@
 import { handleCreate } from './create.js';
 import { handleResolve } from './resolve.js';
 
+// public/_headers only covers static assets, so the shortener's responses get the same
+// security headers here.
+const SECURITY_HEADERS = {
+  'X-Content-Type-Options': 'nosniff',
+  'Content-Security-Policy': "default-src 'none'; frame-ancestors 'none'",
+  'X-Frame-Options': 'DENY',
+  'Strict-Transport-Security': 'max-age=31536000',
+};
+
+function withSecurityHeaders(res) {
+  const out = new Response(res.body, res);
+  for (const [k, v] of Object.entries(SECURITY_HEADERS)) out.headers.set(k, v);
+  return out;
+}
+
+async function route(request, env, ctx) {
+  const { pathname } = new URL(request.url);
+  try {
+    if (pathname === '/api/shorten') return withSecurityHeaders(await handleCreate(request, env));
+    const m = pathname.match(/^\/s\/([^/]+)\/?$/);
+    if (m) return withSecurityHeaders(await handleResolve(request, env, ctx, m[1]));
+    // Anything else routed here falls back to the static site (headers from public/_headers).
+    return env.ASSETS.fetch(request);
+  } catch (e) {
+    // Typically a free-tier limit being hit; the site falls back to the long link.
+    console.error(e);
+    return withSecurityHeaders(new Response(JSON.stringify({ error: 'service unavailable' }), {
+      status: 503,
+      headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
+    }));
+  }
+}
+
 export default {
-  async fetch(request, env, ctx) {
-    const { pathname } = new URL(request.url);
-    try {
-      if (pathname === '/api/shorten') return await handleCreate(request, env);
-      const m = pathname.match(/^\/s\/([^/]+)\/?$/);
-      if (m) return await handleResolve(request, env, ctx, m[1]);
-      // Anything else routed here falls back to the static site.
-      return env.ASSETS.fetch(request);
-    } catch (e) {
-      // Typically a free-tier limit being hit; the site falls back to the long link.
-      console.error(e);
-      return new Response(JSON.stringify({ error: 'service unavailable' }), {
-        status: 503,
-        headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
-      });
-    }
-  },
+  fetch: route,
 
   // Daily: drop links nobody has opened within RETENTION_DAYS.
   async scheduled(event, env, ctx) {

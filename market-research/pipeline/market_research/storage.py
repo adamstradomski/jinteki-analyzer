@@ -170,11 +170,11 @@ class R2ObjectStore(ObjectStore):  # pragma: no cover - exercised only against r
         return body
 
     def head(self, key: str) -> StoredObject | None:
-        from botocore.exceptions import ClientError
-
         try:
             r = self._s3.get_object(Bucket=self.bucket, Key=_check_key(key))
-        except ClientError:
+        except self._s3.exceptions.NoSuchKey:
+            # Only a missing object is "not there": auth, permission and network errors
+            # propagate, so they can't be mistaken for a free key and overwrite data.
             return None
         return StoredObject(
             body=r["Body"].read(),
