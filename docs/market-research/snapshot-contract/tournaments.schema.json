@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://data.jinteki.win/schemas/tournaments.schema.json",
+  "title": "Market Research tournaments (mr.tournaments/1)",
+  "description": "Every tournament the slice counts (Standard, with a ban list, at least the minimum players), newest first. The same for both sides.",
+  "type": "object",
+  "required": [
+    "schema",
+    "version",
+    "restriction",
+    "tier_group",
+    "tournaments"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "const": "mr.tournaments/1"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{6}Z$"
+    },
+    "restriction": {
+      "type": "string",
+      "pattern": "^(all|[a-z0-9_]{1,80})$"
+    },
+    "tier_group": {
+      "type": "string",
+      "pattern": "^(all|[a-z0-9_]{1,40})$"
+    },
+    "tournaments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "tid",
+          "name",
+          "date",
+          "restriction",
+          "tier",
+          "type",
+          "online",
+          "country",
+          "players",
+          "swiss_format",
+          "cut_size",
+          "cobra_id",
+          "abr_id",
+          "has_games",
+          "decklist_coverage",
+          "decklists"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "tid": {
+            "type": "string",
+            "pattern": "^[ca][0-9]{1,9}$"
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 120
+          },
+          "date": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "restriction": {
+            "type": "string",
+            "pattern": "^[a-z0-9_]{1,80}$"
+          },
+          "tier": {
+            "type": "string",
+            "pattern": "^[a-z0-9_]{1,40}$"
+          },
+          "type": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "online": {
+            "type": "boolean"
+          },
+          "country": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "players": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "swiss_format": {
+            "enum": [
+              "single_sided",
+              "double_sided",
+              null
+            ]
+          },
+          "cut_size": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "cobra_id": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "abr_id": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "has_games": {
+            "type": "boolean"
+          },
+          "decklist_coverage": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "decklists": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Legal decks with a known decklist (the decks the statistics use); out of 2 per player."
+          }
+        }
+      }
+    }
+  }
+}

@@ -32,7 +32,7 @@ test('every slice path built from the manifest exists', () => {
   for (const side of manifest.sides) {
     for (const r of manifest.restrictions) {
       for (const t of manifest.tier_groups) {
-        for (const kind of ['summary', 'trends', 'identities', 'summary_cut', 'trends_cut']) {
+        for (const kind of ['summary', 'trends', 'identities', 'summary_cut', 'trends_cut', 'tournaments']) {
           const url = D.sliceUrl('/snap/', manifest, kind, { side, restriction: r.id, tier: t.id });
           assert.ok(existsSync(path.join(root, url.slice(6))), url);
         }

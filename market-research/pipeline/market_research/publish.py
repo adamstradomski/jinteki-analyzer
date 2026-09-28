@@ -41,6 +41,7 @@ SCHEMAS = {
     "identities": "mr.identities/1",
     "catalog": "mr.catalog/1",
     "quality": "mr.quality/1",
+    "tournaments": "mr.tournaments/1",
 }
 PATHS = {
     "catalog": "catalog/cards.json",
@@ -49,6 +50,8 @@ PATHS = {
     # The same card stats over top-cut decks only (decks that made the cut in events with a cut).
     "summary_cut": "meta/{side}/{restriction}/{tier_group}/cut/summary.json",
     "trends_cut": "meta/{side}/{restriction}/{tier_group}/cut/trends.json",
+    # The tournaments a slice counts; the same for both sides.
+    "tournaments": "meta/{restriction}/{tier_group}/tournaments.json",
     "identities": "meta/{side}/{restriction}/{tier_group}/identities.json",
     "quality": "quality/report.json",
 }
@@ -174,6 +177,16 @@ class SnapshotBuilder:
             month_range(min(r[3] for r in self.base), max(r[3] for r in self.base)) if self.base else []
         )
         self.data_as_of = con.execute("SELECT max(date) FROM tournament").fetchone()
+        # The events the counts cover (table t from compute_counts), with what the page lists.
+        cur = con.execute(
+            """SELECT tn.tid, tn.name, tn.date, t.restriction_id AS restriction, t.tier, tn.type, tn.online,
+                      tn.country, tn.players, tn.swiss_format, tn.cut_size, tn.cobra_id, tn.abr_id, tn.has_games,
+                      tn.decklist_coverage,
+                      (SELECT count(*) FROM deck d WHERE d.tid = tn.tid AND d.legal) AS decklists
+               FROM t JOIN tournament tn USING (tid) ORDER BY tn.date DESC, tn.tid"""
+        )
+        cols = [c[0] for c in cur.description]
+        self.events = [dict(zip(cols, r, strict=True)) for r in cur.fetchall()]
         self.groups = [g["id"] for g in self.tiers.groups]
 
     # ----- slicing -----
@@ -333,6 +346,29 @@ class SnapshotBuilder:
             },
         }
 
+    def tournaments(self, restriction: str, group: str) -> dict[str, Any]:
+        rows = [
+            {
+                **e,
+                "date": e["date"].isoformat(),
+                "online": bool(e["online"]),
+                "has_games": bool(e["has_games"]),
+                "decklist_coverage": round(float(e["decklist_coverage"] or 0.0), 4),
+                "players": int(e["players"] or 0),
+                "cut_size": int(e["cut_size"] or 0),
+                "decklists": int(e["decklists"] or 0),
+            }
+            for e in self.events
+            if restriction in ("all", e["restriction"]) and group in ("all", e["tier"])
+        ]
+        return {
+            "schema": SCHEMAS["tournaments"],
+            "version": self.version,
+            "restriction": restriction,
+            "tier_group": group,
+            "tournaments": rows,
+        }
+
     def _head(self, kind: str, side: str, restriction: str, group: str) -> dict[str, Any]:
         return {
             "schema": SCHEMAS[kind],
@@ -392,6 +428,10 @@ class SnapshotBuilder:
                         0
                     ]
                     files[PATHS["trends_cut"].format(**fmt)] = self.trends(side, restriction, group, "cut")
+        for restriction in ["all", *self.restrictions]:
+            for group in ["all", *self.groups]:
+                fmt = {"restriction": restriction, "tier_group": group}
+                files[PATHS["tournaments"].format(**fmt)] = self.tournaments(restriction, group)
         files[PATHS["quality"]] = {"schema": SCHEMAS["quality"], "version": self.version, **quality}
         as_of = self.data_as_of[0] if self.data_as_of else None
         manifest = {
@@ -472,6 +512,7 @@ def validate(snap: Snapshot, con: duckdb.DuckDBPyConnection) -> list[str]:
         "trends": "trends",
         "identities": "identities",
         "report": "quality",
+        "tournaments": "tournaments",
     }
     known = {c["id"] for c in snap.files[PATHS["catalog"]]["cards"]}
     for path, obj in sorted(snap.files.items()):
@@ -491,6 +532,8 @@ def validate(snap: Snapshot, con: duckdb.DuckDBPyConnection) -> list[str]:
             ids = {c["card_id"] for c in obj["identities"]}
         elif kind == "trends":
             ids = set(obj["cards"])
+        elif kind == "tournaments":
+            ids = set()
         missing = ids - known
         if missing:
             errors.append(f"{path}: card ids not in the catalog: {sorted(missing)[:5]}")
@@ -499,6 +542,10 @@ def validate(snap: Snapshot, con: duckdb.DuckDBPyConnection) -> list[str]:
     except jsonschema.ValidationError as e:
         errors.append(f"manifest.json: {e.message[:200]}")
     # Totals in the published slices must match the canonical tables.
+    listed = len(snap.files[PATHS["tournaments"].format(restriction="all", tier_group="all")]["tournaments"])
+    row = con.execute("SELECT count(*) FROM t").fetchone()
+    if listed != (row[0] if row else 0):
+        errors.append(f"tournaments listed {listed} != counted {row[0] if row else 0}")
     for side in SIDES:
         tr = snap.files[PATHS["trends"].format(side=side, restriction="all", tier_group="all")]
         pub = sum(row[2] for row in tr["baseline"])

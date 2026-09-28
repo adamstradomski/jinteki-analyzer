@@ -33,6 +33,15 @@ decks. `side_games_all` / `side_wins_all` count every game of the players who ma
 is always the one of the all-decks scope, so both scopes cover the same months. The page's "Top-cut
 decks only" switch reads these files; identities have no top-cut scope.
 
+## Included tournaments
+
+`meta/{restriction}/{tier_group}/tournaments.json` (manifest path `tournaments`, the same for both sides)
+lists every tournament the slice counts, newest first: the events of the counts' `t` table (Standard, with a
+ban list, at least the minimum players). Per event: public name, date, ban list, tier and type, online or
+not, country, players, swiss format, cut size, Cobra and ABR IDs, whether it has game results,
+`decklist_coverage` (entry-sides with any decklist ÷ 2 × players) and `decklists` (legal decks, the ones the
+statistics use). Validation checks that the all/all list has exactly as many events as the counts.
+
 ## Definitions
 
 - popularity = decks_with_card / decks_total

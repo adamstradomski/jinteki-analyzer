@@ -1,0 +1,44 @@
+{
+  "schema": "mr.tournaments/1",
+  "version": "2026-09-28T114117Z",
+  "restriction": "standard_balance_update_26_08",
+  "tier_group": "megacity",
+  "tournaments": [
+    {
+      "tid": "c4792",
+      "name": "Asia-Pacific Continental Championship 2026",
+      "date": "2026-09-12",
+      "restriction": "standard_balance_update_26_08",
+      "tier": "megacity",
+      "type": "continental championship",
+      "online": false,
+      "country": null,
+      "players": 63,
+      "swiss_format": "single_sided",
+      "cut_size": 8,
+      "cobra_id": 4792,
+      "abr_id": 5459,
+      "has_games": true,
+      "decklist_coverage": 0.3492,
+      "decklists": 42
+    },
+    {
+      "tid": "a5801",
+      "name": "Online Megacity Championship",
+      "date": "2026-09-06",
+      "restriction": "standard_balance_update_26_08",
+      "tier": "megacity",
+      "type": "megacity championship",
+      "online": true,
+      "country": null,
+      "players": 48,
+      "swiss_format": null,
+      "cut_size": 8,
+      "cobra_id": null,
+      "abr_id": 5801,
+      "has_games": false,
+      "decklist_coverage": 0.2604,
+      "decklists": 25
+    }
+  ]
+}
