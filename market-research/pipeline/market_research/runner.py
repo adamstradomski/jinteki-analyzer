@@ -116,8 +116,12 @@ def do_normalize(rt: Runtime) -> None:
     normalize(rt.stores, rt.settings)
 
 
-def do_compute(rt: Runtime, res: RunResult, *, publish_it: bool = True) -> None:
-    snap, errors = build(rt.stores, rt.settings, rt.clock.now())
+def do_compute(
+    rt: Runtime, res: RunResult, *, publish_it: bool = True, started_at: datetime | None = None
+) -> None:
+    """Builds and publishes a snapshot. Its version and generated_at are the run's start time
+    (`started_at`), so they don't depend on how long ingest took or how many requests it made."""
+    snap, errors = build(rt.stores, rt.settings, started_at or rt.clock.now())
     if not publish_it:
         if errors:
             raise PublishError(f"{len(errors)} validation errors")
@@ -128,10 +132,11 @@ def do_compute(rt: Runtime, res: RunResult, *, publish_it: bool = True) -> None:
 
 def run_all(rt: Runtime, *, budget: int | None = None, sources: set[str] | None = None) -> RunResult:
     res = RunResult()
+    started_at = rt.clock.now()
     try:
         do_ingest(rt, res, budget=budget, sources=sources)
         do_normalize(rt)
-        do_compute(rt, res)
+        do_compute(rt, res, started_at=started_at)
     except PublishError:
         res.exit_code = EXIT_FAILURE
     return res
@@ -190,9 +195,10 @@ def phase_of(it: Item, today: date) -> int:
 def backfill(rt: Runtime, since: date, *, phase: int | None = None) -> RunResult:
     """Loads history phase by phase with no per-run budget. Resumable: finished items are skipped."""
     res = RunResult()
+    started_at = rt.clock.now()
     http = rt.http(unlimited=True)
     ing = Ingestor(rt.settings, rt.clock, http, rt.stores, since=since, backfill=True, parallel=rt.parallel)
-    today = rt.clock.now().date()
+    today = started_at.date()
 
     def accept_for(p: int) -> Callable[[Item], bool]:
         return lambda it: phase_of(it, today) in (0, p)
@@ -206,7 +212,9 @@ def backfill(rt: Runtime, since: date, *, phase: int | None = None) -> RunResult
             res.decks_added += stats.decks_added
             do_normalize(rt)
             try:
-                do_compute(rt, res)
+                # Every phase starts from the backfill's start time; free_version() moves each
+                # later phase a second on, so their versions stay unique and in order.
+                do_compute(rt, res, started_at=started_at)
             except PublishError:
                 res.exit_code = EXIT_FAILURE
                 break
