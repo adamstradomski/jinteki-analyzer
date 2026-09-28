@@ -312,6 +312,20 @@ function help() {
 
 // ---------------------------------------------------------------- tables
 
+// Tables whose column guide the viewer opened, so it stays open when the table redraws.
+const openGuides = new Set();
+
+/** "What do the columns mean?": the header tooltips as a list, for touch screens and screen readers. */
+function columnGuide(host, columns) {
+  const described = columns.filter((c) => c.help);
+  if (!described.length) return null;
+  const d = el('details', { class: 'mr-alt mr-guide' }, el('summary', { text: 'What do the columns mean?' }),
+    el('dl', {}, ...described.flatMap((c) => [el('dt', { text: c.label }), el('dd', { text: c.help })])));
+  d.open = openGuides.has(host.id);
+  d.addEventListener('toggle', () => { if (d.open) openGuides.add(host.id); else openGuides.delete(host.id); });
+  return d;
+}
+
 /** A sortable table with real header buttons and an optional "show all" button. */
 function dataTable(host, columns, rows, { initial, sortKey = null, sortDir = 'descending', rowClass = () => '', limit = TABLE_ROWS, empty = 'No cards in this filter.' }) {
   let key = sortKey;
@@ -338,6 +352,8 @@ function dataTable(host, columns, rows, { initial, sortKey = null, sortDir = 'de
       parts.push(el('button', { type: 'button', class: 'btn secondary mr-more', onclick: () => { all = !all; draw(); } },
         all ? `Show top ${limit}` : `Show all ${fmtInt(sorted.length)} cards`));
     }
+    const guide = rows.length ? columnGuide(host, columns) : null;
+    if (guide) parts.push(guide);
     host.replaceChildren(...parts);
   };
   draw();
