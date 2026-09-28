@@ -388,10 +388,6 @@ function initTrendCards() {
   const valid = new Set(played.map((c) => c.card_id));
   trendCards = trendCards.filter((t) => valid.has(t.id));
   if (!trendCards.length) trendCards = played.slice(0, 5).map((c, i) => ({ id: c.card_id, slot: i }));
-  $('trend-add').replaceChildren(option('', 'Choose a card', true), ...played
-    .filter((c) => !trendCards.some((t) => t.id === c.card_id))
-    .map((c) => option(c.card_id, cardName(c.card_id), false)));
-  $('trend-add').onchange = (e) => { if (e.target.value) addTrendCard(e.target.value); };
 }
 
 function addTrendCard(id) {
@@ -582,25 +578,24 @@ function drawScatter() {
 
 // ---------------------------------------------------------------- search and card detail
 
-function setupSearch() {
-  const input = $('card-search');
-  const list = $('card-options');
+/** A card-name combobox: `find(query)` returns catalog cards, `onPick(card)` handles a choice. */
+function cardCombo(input, list, { find, onPick, clearOnPick = false }) {
   let active = -1;
   let hits = [];
   const close = () => { list.hidden = true; input.setAttribute('aria-expanded', 'false'); input.removeAttribute('aria-activedescendant'); active = -1; };
-  const pick = (c) => { input.value = c.title; close(); openDetail(c.id); };
+  const pick = (c) => { input.value = clearOnPick ? '' : c.title; close(); onPick(c); };
   const draw = () => {
-    hits = D.searchCards(catalog, input.value, { limit: 8 });
+    hits = find(input.value);
     list.replaceChildren(...hits.map((c, i) => {
       const f = D.faction(c.faction);
-      const li = el('li', { id: `opt-${i}`, role: 'option', class: 'mr-option', 'aria-selected': i === active ? 'true' : 'false' },
+      const li = el('li', { id: `${list.id}-${i}`, role: 'option', class: 'mr-option', 'aria-selected': i === active ? 'true' : 'false' },
         el('span', { text: c.title }), ' ', el('span', { class: `faction ${f.className}`, text: `${f.name} · ${c.side === 'corp' ? 'Corp' : 'Runner'}` }));
       li.addEventListener('mousedown', (e) => { e.preventDefault(); pick(c); });
       return li;
     }));
     list.hidden = !hits.length;
     input.setAttribute('aria-expanded', String(!!hits.length));
-    if (active >= 0) input.setAttribute('aria-activedescendant', `opt-${active}`);
+    if (active >= 0) input.setAttribute('aria-activedescendant', `${list.id}-${active}`);
   };
   input.addEventListener('input', () => { active = -1; draw(); });
   input.addEventListener('keydown', (e) => {
@@ -610,6 +605,23 @@ function setupSearch() {
     else if (e.key === 'Escape') close();
   });
   input.addEventListener('blur', () => setTimeout(close, 100));
+}
+
+function setupSearch() {
+  cardCombo($('card-search'), $('card-options'), {
+    find: (q) => D.searchCards(catalog, q, { limit: 8 }),
+    onPick: (c) => openDetail(c.id),
+  });
+  // Trends: only cards played in the current view and not already charted.
+  cardCombo($('trend-add'), $('trend-options'), {
+    find: (q) => {
+      const charted = new Set(trendCards.map((t) => t.id));
+      const played = (view?.cards || []).filter((c) => c.decks > 0 && !charted.has(c.card_id)).map((c) => cards.get(c.card_id)).filter(Boolean);
+      return D.searchCards({ cards: played }, q, { limit: 10 });
+    },
+    onPick: (c) => addTrendCard(c.id),
+    clearOnPick: true,
+  });
 }
 
 async function openDetail(id, scroll = true) {

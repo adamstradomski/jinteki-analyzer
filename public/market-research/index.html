@@ -71,7 +71,13 @@
       <div class="panel-body">
         <h3>Monthly inclusion</h3>
         <div class="mr-chipbar"><div id="trend-chips" class="mr-chips"></div>
-          <label class="field mr-inline">Add card<select id="trend-add" class="select"></select></label></div>
+          <div class="mr-combo mr-inline">
+            <label class="field" for="trend-add">Add card
+              <input id="trend-add" class="input" type="search" autocomplete="off" spellcheck="false"
+                placeholder="Type a card name" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="trend-options">
+            </label>
+            <ul id="trend-options" class="mr-options" role="listbox" hidden></ul>
+          </div></div>
         <div id="trend-legend" class="legend"></div>
         <div id="trend-chart" class="mr-chart"></div>
         <details class="mr-alt"><summary>Show as a table</summary><div id="trend-table"></div></details>
