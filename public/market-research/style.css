@@ -79,6 +79,12 @@ body { margin: 0; background: var(--bg); }
 /* Placeholder rows shown before the first data arrives. */
 .mr-skel { display: inline-block; height: 0.8em; width: 70%; vertical-align: middle; background: var(--panel-2); border-radius: var(--radius-sm); }
 .mr-skel-chart { min-height: 260px; background: var(--panel-2); opacity: 0.5; }
+.mr-events { margin-top: var(--space-3); }
+.mr-events > summary { font-size: 13px; }
+.mr-events .mr-note { margin-top: var(--space-2); }
+/* One line per value; only the tournament name wraps. The table scrolls sideways when narrow. */
+.mr-events td, .mr-events th { white-space: nowrap; }
+.mr-events td:first-child { white-space: normal; min-width: 14em; }
 .mr-toolbar { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: flex-end; margin-bottom: var(--space-3); }
 .mr-chip { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--text); }
 .mr-x { all: unset; cursor: pointer; padding: 0 2px; color: var(--dim); }

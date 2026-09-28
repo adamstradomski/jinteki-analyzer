@@ -222,6 +222,23 @@ test('ban list options: all first, then newest first', () => {
   assert.equal(m.restrictions[1].id, 'old'); // the manifest itself is not reordered
 });
 
+test('included tournaments: period, top-cut filter, totals and format', () => {
+  const list = [
+    { date: '2026-09-12', cut_size: 8, players: 63, decklists: 44, swiss_format: 'single_sided' },
+    { date: '2026-08-02', cut_size: 0, players: 10, decklists: 4, swiss_format: 'double_sided' },
+    { date: '2026-06-30', cut_size: 16, players: 90, decklists: 60, swiss_format: null },
+  ];
+  assert.equal(D.eventsInView(list, { from: '2026-08', to: '2026-09' }).length, 2);
+  assert.deepEqual(D.eventsInView(list, { from: '2026-08', to: '2026-09' }, true).map((t) => t.players), [63]);
+  const tot = D.eventTotals(D.eventsInView(list, null));
+  assert.deepEqual([tot.events, tot.players, tot.decks, tot.decklists], [3, 163, 326, 108]);
+  close(tot.share, 108 / 326, 1e-12, 'share');
+  assert.equal(D.eventTotals([]).share, null);
+  assert.deepEqual(list.map(D.eventFormat), ['Single-sided swiss, top 8', 'Double-sided swiss, no cut', 'Top 16']);
+  const pub = slice('tournaments', { side: 'corp', restriction: 'all', tier: 'all' });
+  assert.ok(pub.tournaments.length > 0 && pub.tournaments.every((t) => t.decklists <= 2 * t.players));
+});
+
 test('scatter name filter and top points per axis', () => {
   const pts = [
     { card_id: 'a', x: 50, y: -1, games: 90 }, { card_id: 'b', x: 40, y: 8, games: 60 },
