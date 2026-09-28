@@ -26,6 +26,7 @@ from market_research.config import Settings, tier_config
 from market_research.db import insert_rows
 from market_research.records import (
     AbrEntries,
+    AbrEntry,
     AbrTournament,
     CobraDeck,
     CobraTournament,
@@ -565,13 +566,7 @@ class Normalizer:
             pid_entry[p.pid] = no
             corp_i = self.ident_from_title(p.corp_identity)
             runner_i = self.ident_from_title(p.runner_identity)
-            ae = abr_by_rank.get(no)
-            if ae is not None:
-                ac = self.catalog.card_of_printing(ae.corp.identity)
-                ar = self.catalog.card_of_printing(ae.runner.identity)
-                if (ac and corp_i and ac != corp_i) or (ar and runner_i and ar != runner_i):
-                    self.q.link_mismatches.append({"tid": tid, "entry_no": no, "reason": "identity_mismatch"})
-                    ae = None
+            ae = self._matching_abr_entry(tid, no, abr_by_rank.get(no), corp_i, runner_i)
             out.rows["entry"].append(
                 {
                     "tid": tid,
@@ -586,20 +581,7 @@ class Normalizer:
                 }
             )
             for side, ident in (("corp", corp_i), ("runner", runner_i)):
-                sources: list[_Deck] = []
-                cd = self.cobra_decks.get((t.id, p.pid, side))
-                if cd is not None and cd.cards:
-                    sources.append(self.cobra_deck(cd))
-                if ae is not None:
-                    ref = (ae.corp if side == "corp" else ae.runner).deck_ref
-                    if ref is not None:
-                        nd = self.nrdb_deck(ref.kind, ref.id)
-                        if nd is not None:
-                            sources.append(nd)
-                if cd is not None and cd.nrdb_uuid and not any(s.source == "nrdb_deck" for s in sources):
-                    nd = self.nrdb_deck("deck", cd.nrdb_uuid)
-                    if nd is not None and not cd.cards:
-                        sources.append(nd)
+                sources = self._cobra_deck_sources(t.id, p.pid, side, ae)
                 if sources:
                     decks_found += 1
                     pending.append((no, side, ident, sources))
@@ -612,6 +594,38 @@ class Normalizer:
         out.rows["game"].extend(games)
         trow["has_games"] = bool(games)
         out.rows["tournament"].append(trow)
+
+    def _matching_abr_entry(
+        self, tid: str, no: int, ae: AbrEntry | None, corp_i: str | None, runner_i: str | None
+    ) -> AbrEntry | None:
+        """The linked ABR entry at the same Swiss rank, unless its identities contradict Cobra's."""
+        if ae is None:
+            return None
+        ac = self.catalog.card_of_printing(ae.corp.identity)
+        ar = self.catalog.card_of_printing(ae.runner.identity)
+        if (ac and corp_i and ac != corp_i) or (ar and runner_i and ar != runner_i):
+            self.q.link_mismatches.append({"tid": tid, "entry_no": no, "reason": "identity_mismatch"})
+            return None
+        return ae
+
+    def _cobra_deck_sources(self, cobra_id: int, pid: int, side: str, ae: AbrEntry | None) -> list[_Deck]:
+        """Every decklist found for one player's side: Cobra's own, the NRDB deck the linked ABR entry
+        claims, and otherwise the NRDB deck Cobra links (used only when Cobra has no cards)."""
+        sources: list[_Deck] = []
+        cd = self.cobra_decks.get((cobra_id, pid, side))
+        if cd is not None and cd.cards:
+            sources.append(self.cobra_deck(cd))
+        if ae is not None:
+            ref = (ae.corp if side == "corp" else ae.runner).deck_ref
+            if ref is not None:
+                nd = self.nrdb_deck(ref.kind, ref.id)
+                if nd is not None:
+                    sources.append(nd)
+        if cd is not None and cd.nrdb_uuid and not any(s.source == "nrdb_deck" for s in sources):
+            nd = self.nrdb_deck("deck", cd.nrdb_uuid)
+            if nd is not None and not cd.cards:
+                sources.append(nd)
+        return sources
 
     def build_abr(self, out: Canonical, a: AbrTournament, label: str, tier: str) -> None:
         tid = f"a{a.id}"
