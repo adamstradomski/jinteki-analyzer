@@ -2,6 +2,8 @@
    system tokens (tokens.css) and components (bundle.css); no raw colour values here. */
 
 body { margin: 0; background: var(--bg); }
+/* The hidden attribute always wins over layout rules like .mr-panels { display: flex }. */
+[hidden] { display: none !important; }
 .mr-wrap { padding: var(--space-5) 16px var(--space-5); box-sizing: border-box; }
 .mr-header { margin-bottom: var(--space-4); }
 .mr-beta-badge { vertical-align: middle; font-size: 0.35em; letter-spacing: 0.08em; color: inherit; border-color: currentColor; }
@@ -63,6 +65,20 @@ body { margin: 0; background: var(--bg); }
 .mr-guide dd { margin: 0; color: var(--dim); }
 @media (max-width: 560px) { .mr-guide dl { grid-template-columns: 1fr; } .mr-guide dd { margin-bottom: var(--space-2); } }
 .mr-band { fill: var(--accent); fill-opacity: 0.12; }
+/* Loading: the panel's content is blurred under a spinning wheel until its data arrives. The
+   header stays sharp; the filters themselves are never blocked. */
+.mr-busy { position: relative; }
+.mr-busy > :not(.mr-spinner):not(.panel-header) { filter: blur(3px); opacity: 0.55; pointer-events: none; user-select: none; }
+.mr-spinner { display: none; }
+.mr-busy > .mr-spinner {
+  display: block; position: absolute; z-index: 3; left: 50%; top: min(50%, 160px); width: 34px; height: 34px; margin: -17px 0 0 -17px;
+  border: 3px solid var(--line); border-top-color: var(--accent); border-radius: 50%; animation: mr-spin 0.8s linear infinite;
+}
+@keyframes mr-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .mr-busy > .mr-spinner { animation-duration: 3s; } }
+/* Placeholder rows shown before the first data arrives. */
+.mr-skel { display: inline-block; height: 0.8em; width: 70%; vertical-align: middle; background: var(--panel-2); border-radius: var(--radius-sm); }
+.mr-skel-chart { min-height: 260px; background: var(--panel-2); opacity: 0.5; }
 .mr-toolbar { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: flex-end; margin-bottom: var(--space-3); }
 .mr-chip { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--text); }
 .mr-x { all: unset; cursor: pointer; padding: 0 2px; color: var(--dim); }
