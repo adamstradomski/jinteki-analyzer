@@ -146,20 +146,29 @@
   }
   function sideColor(side, el) { return tokenValue(side === 'runner' ? 'runner' : 'corp', el); }
 
-  /* Makes every .panel-header with a .collapse-icon toggle its panel. */
+  /* Makes every .panel with a .collapse-icon button in its .panel-header collapsible: the button
+     (and a click anywhere else on the header that isn't another control) toggles .panel-body.
+     A panel starts collapsed when its button has aria-expanded="false". Safe to call again on a
+     root with new panels; panels already set up are skipped. */
   function enablePanelCollapse(root) {
     (root || document).querySelectorAll('.panel').forEach(function (p) {
-      var btn = p.querySelector('.panel-header .collapse-icon');
+      var header = p.querySelector('.panel-header');
+      var btn = header && header.querySelector('.collapse-icon');
       var body = p.querySelector('.panel-body');
-      if (!btn || !body) return;
-      btn.setAttribute('aria-expanded', 'true');
-      btn.setAttribute('aria-label', 'Collapse section');
-      btn.addEventListener('click', function () {
-        var open = btn.getAttribute('aria-expanded') !== 'true';
+      if (!btn || !body || p.hasAttribute('data-collapsible')) return;
+      p.setAttribute('data-collapsible', '');
+      function set(open) {
         btn.setAttribute('aria-expanded', String(open));
         btn.setAttribute('aria-label', (open ? 'Collapse' : 'Expand') + ' section');
-        body.hidden = !open;
         btn.textContent = open ? '−' : '+';
+        body.hidden = !open;
+        p.classList.toggle('collapsed', !open);
+      }
+      set(btn.getAttribute('aria-expanded') !== 'false');
+      header.addEventListener('click', function (e) {
+        var control = e.target.closest('button, a, input, select, textarea, label');
+        if (control && control !== btn) return;
+        set(btn.getAttribute('aria-expanded') !== 'true');
       });
     });
   }
