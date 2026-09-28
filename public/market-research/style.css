@@ -43,6 +43,9 @@ body { margin: 0; background: var(--bg); }
   position: absolute; z-index: 5; left: 0; right: 0; margin: 4px 0 0; padding: 4px; list-style: none;
   background: var(--panel-2); border: 1px solid var(--line); border-radius: var(--radius-md);
 }
+/* Beanstalk cuts its panel corners with clip-path, which also clips a floating list: there the
+   list takes its place in the flow and the panel grows instead. */
+[data-theme^="jnet"] .mr-options { position: static; }
 .mr-option { display: flex; justify-content: space-between; gap: var(--space-2); padding: 6px 8px; cursor: pointer; font-size: 13.5px; }
 .mr-option:hover, .mr-option[aria-selected="true"] { background: var(--panel); }
 
