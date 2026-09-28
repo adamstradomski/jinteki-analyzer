@@ -20,6 +20,9 @@ body { margin: 0; background: var(--bg); }
   all: unset; cursor: pointer; font: inherit; color: inherit; border-radius: var(--radius-sm);
 }
 .data-table th .mr-sort:hover { color: var(--accent); }
+/* Headers with a description (title tooltip) get a dotted underline as a hint. */
+.data-table th[title] .mr-sort, .data-table th[title]:not(:has(.mr-sort)) { text-decoration: underline dotted; text-underline-offset: 3px; }
+.data-table th[title]:not(:has(.mr-sort)) { cursor: help; }
 .data-table .meter { min-width: 120px; }
 .data-table .meter .num { min-width: 4.5em; text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 .data-table tr.mr-insufficient td { color: var(--dim); }
