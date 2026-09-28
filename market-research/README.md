@@ -45,6 +45,87 @@ Docs: [architecture](../docs/market-research/architecture.md), [sources](../docs
 [data model](../docs/market-research/data-model.md), [metrics](../docs/market-research/metrics.md),
 [snapshot contract](../docs/market-research/snapshot-contract/), [operations](../docs/market-research/operations.md).
 
+## Data quality checks and fixes
+
+The sources are community-run and hand-entered, so the pipeline checks everything it reads and fixes
+what it safely can. Everything it drops, repairs or cannot match is counted in the published quality
+report (`market-research report`, or `quality/report.json`; the page footer shows a summary), and each
+run's full log is kept in R2 (`logs/…`, see [CLI](#cli)).
+
+**Collecting**
+
+- **Only allowlisted fields are kept.** Names, user IDs, deck titles and free text are dropped before
+  anything is stored; tests plant `PII_CANARY` values in the fixtures and fail if one reaches a record,
+  a table, a snapshot or a log.
+- **Unknown fields** in a source's response are logged once as `drift_warnings`, so format changes
+  show up before they break anything.
+- **Unreadable data is quarantined item by item** (`parser_failures`), not the whole response:
+  one tournament with a date like `20260-05-21` no longer hides the rest of Cobra's list. A
+  quarantined item is retried after a day.
+- **Responses over 5 MB are refused**; NetrunnerDB's card and printing lists are fetched 500 per page
+  to stay under that.
+- **Polite fetching:** one request at a time per site at a fixed rate, conditional requests, retries
+  with backoff, and a circuit breaker that stops a site after repeated failures (the run then exits
+  `2` and still publishes what it has).
+- **Known source quirks handled:**
+  - AlwaysBeRunning sometimes sends the text `"null"` for a missing identity; it counts as missing.
+  - AlwaysBeRunning events can span several days (`end_date`).
+  - Cobra lists tournaments by creation, not by date, and some are created long after the date they
+    carry; listing stops on creation date and skips older-dated events one by one.
+  - Cobra records a bye with the player in either seat.
+  - A Cobra event with a result still missing 14 days after its date counts as finished, so its decks
+    are still fetched.
+
+**Which tournaments count** (`skipped_tournaments`)
+
+- Standard only: Cobra's format named "Standard", AlwaysBeRunning's `format` `standard`.
+- AlwaysBeRunning events must be approved, concluded and free of claim conflicts.
+- At least 8 players (`MR_MIN_PLAYERS`).
+
+**Joining the two sources** (`links`, `link_mismatches`)
+
+- A Cobra event links to its AlwaysBeRunning copy through Cobra's `abr_code`, or else by date (within
+  the AlwaysBeRunning event's days, ±1 day for time zones), the same player count, and at least 90%
+  of AlwaysBeRunning's (Corp, Runner) identity pairs also in Cobra (unclaimed spots are missing from
+  AlwaysBeRunning). A linked event is counted once.
+- A candidate that fails only on identities is reported as `fallback_identities_differ`, so near
+  misses can be reviewed.
+- After linking, entries are matched by swiss rank; if a player's identities differ between the
+  sites, that entry's AlwaysBeRunning claim is not used (`identity_mismatch`).
+
+**Decks** (`decks_by_source`, `deck_comparison`, `illegal_decks`, `rejected_deck_refs`)
+
+- One deck per player and side, in this order: the list registered in Cobra (locked when the event
+  starts), then the NetrunnerDB decklist claimed on AlwaysBeRunning, then a private NetrunnerDB deck
+  linked from Cobra. When two sources exist, whether their cards match is recorded.
+- Deck links are read with a strict pattern and never followed elsewhere; others are rejected.
+- Every deck is checked against its event's ban list and card pool: unknown or other-side cards,
+  extra identities, copies over the limit, cards or identities not legal, deck size, influence,
+  restricted cards, points and agenda points. Illegal decks stay in the canonical tables with their
+  issues, and are left out of every statistic.
+- **Each event's ban list is checked against its decks.** Organisers play a new list early, keep an
+  old one, or cannot pick the right one in Cobra, and AlwaysBeRunning has no setting at all. Of the
+  given list, the one in force on the event date and its neighbours, the one that makes clearly more
+  decks legal replaces it: at least 2 more decks and at least 10% of the event's decks, so one
+  player's illegal deck cannot move a whole event. Each change is listed in `restriction_overrides`.
+
+**Statistics**
+
+- Winrates exclude intentional draws and count draws as half a win; they come with a Wilson 95%
+  interval. Cards and identities under 30 games are marked as small samples (`MR_MIN_GAMES`), and
+  identity conversion under 20 entries in cut events (`MR_MIN_ENTRIES`).
+- Card winrates are compared with the winrate of all decks of that side with a known decklist in the
+  same filter; the headline Corp and Runner winrates use every game, so they add up to 100%.
+- Identity conversion counts only events with a cut where at least 70% of identities are known
+  (`MR_COVERAGE_HC`).
+- The top-cut view counts only decks that made the cut in events that had one.
+
+**Publishing**
+
+- Every slice is validated against its JSON schema and a 2 MB size limit, and the published totals
+  are checked against the canonical tables. If anything fails, nothing is published and the previous
+  version stays live; the manifest is uploaded last, so readers never see a half-published version.
+
 ## Development
 
 Python 3.12.
