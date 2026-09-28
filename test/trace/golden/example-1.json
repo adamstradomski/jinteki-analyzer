@@ -1,0 +1,2212 @@
+{
+ "achievements": {
+  "Corp Player": [
+   "Public Enemy Made"
+  ],
+  "Runner Player": []
+ },
+ "parseLog": {
+  "advanceClicks": {
+   "Corp Player": {
+    "cost": 7,
+    "count": 7
+   }
+  },
+  "agendaEvents": [
+   {
+    "player": "Runner Player",
+    "points": 2,
+    "seq": 2,
+    "turn": 1
+   },
+   {
+    "player": "Runner Player",
+    "points": 2,
+    "seq": 4,
+    "turn": 2
+   },
+   {
+    "player": "Corp Player",
+    "points": 2,
+    "seq": 19,
+    "turn": 10
+   },
+   {
+    "player": "Runner Player",
+    "points": 2,
+    "seq": 22,
+    "turn": 11
+   },
+   {
+    "player": "Corp Player",
+    "points": 2,
+    "seq": 23,
+    "turn": 12
+   },
+   {
+    "player": "Corp Player",
+    "points": 2,
+    "seq": 25,
+    "turn": 13
+   },
+   {
+    "player": "Corp Player",
+    "points": 2,
+    "seq": 25,
+    "turn": 13
+   }
+  ],
+  "agendaSeqSeries": {
+   "Corp Player": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    2,
+    2,
+    2,
+    2,
+    4,
+    4,
+    8
+   ],
+   "Runner Player": [
+    0,
+    0,
+    2,
+    2,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    6,
+    6,
+    6,
+    6
+   ]
+  },
+  "agendaSeries": {
+   "Corp Player": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    2,
+    2,
+    4,
+    8
+   ],
+   "Runner Player": [
+    0,
+    2,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    6,
+    6,
+    6
+   ]
+  },
+  "breachCounts": {
+   "Runner Player": {
+    "Archives": 2,
+    "HQ": 3,
+    "RD": 1,
+    "remote": 0
+   }
+  },
+  "cardsAccessed": {
+   "Runner Player": {
+    "Archives": 2,
+    "HQ": 5,
+    "RD": 2,
+    "remote": 4
+   }
+  },
+  "cardsDrawnSeqSeries": {
+   "Corp Player": [
+    0,
+    4,
+    4,
+    6,
+    6,
+    8,
+    8,
+    9,
+    9,
+    11,
+    11,
+    13,
+    13,
+    15,
+    15,
+    17,
+    19,
+    21,
+    21,
+    23,
+    25,
+    27,
+    29,
+    32,
+    32,
+    35
+   ],
+   "Runner Player": [
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    4,
+    4,
+    7,
+    7,
+    10,
+    10,
+    10,
+    10,
+    12,
+    12,
+    18,
+    18,
+    18,
+    18,
+    18,
+    18,
+    18,
+    18,
+    19,
+    19
+   ]
+  },
+  "cardsDrawnSeries": {
+   "Corp Player": [
+    0,
+    4,
+    6,
+    8,
+    9,
+    11,
+    13,
+    15,
+    19,
+    21,
+    25,
+    29,
+    32,
+    35
+   ],
+   "Runner Player": [
+    0,
+    0,
+    1,
+    4,
+    7,
+    10,
+    10,
+    12,
+    18,
+    18,
+    18,
+    18,
+    19,
+    19
+   ]
+  },
+  "cardsRezzed": {
+   "Corp Player": 13
+  },
+  "chatBadges": {},
+  "clickCredits": {
+   "Corp Player": {
+    "count": 5,
+    "gained": 5
+   },
+   "Runner Player": {
+    "count": 2,
+    "gained": 2
+   }
+  },
+  "clicksGained": {},
+  "concededPlayer": null,
+  "creditPoolSeqSeries": {
+   "Corp Player": [
+    5,
+    5,
+    2,
+    3,
+    2,
+    2,
+    1,
+    2,
+    2,
+    4,
+    4,
+    1,
+    1,
+    0,
+    0,
+    3,
+    3,
+    5,
+    6,
+    5,
+    4,
+    7,
+    7,
+    5,
+    7,
+    13
+   ],
+   "Runner Player": [
+    5,
+    5,
+    4,
+    4,
+    6,
+    6,
+    6,
+    6,
+    7,
+    7,
+    7,
+    7,
+    5,
+    5,
+    3,
+    3,
+    1,
+    1,
+    6,
+    0,
+    6,
+    6,
+    7,
+    7,
+    7,
+    7
+   ]
+  },
+  "creditPoolSeries": {
+   "Corp Player": [
+    5,
+    5,
+    2,
+    2,
+    1,
+    2,
+    4,
+    1,
+    0,
+    3,
+    6,
+    4,
+    7,
+    7
+   ],
+   "Runner Player": [
+    5,
+    5,
+    4,
+    6,
+    6,
+    7,
+    7,
+    5,
+    3,
+    1,
+    0,
+    6,
+    7,
+    7
+   ]
+  },
+  "creditsGainedSeries": {
+   "Corp Player": [
+    0,
+    2,
+    3,
+    0,
+    1,
+    2,
+    4,
+    0,
+    5,
+    4,
+    5,
+    5,
+    12,
+    6
+   ],
+   "Runner Player": [
+    0,
+    7,
+    6,
+    0,
+    9,
+    6,
+    9,
+    0,
+    0,
+    8,
+    8,
+    9,
+    0,
+    0
+   ]
+  },
+  "creditsNetSeqSeries": {
+   "Corp Player": [
+    0,
+    0,
+    -3,
+    1,
+    -1,
+    0,
+    -1,
+    1,
+    0,
+    2,
+    0,
+    -3,
+    0,
+    -1,
+    0,
+    3,
+    0,
+    2,
+    1,
+    -1,
+    -1,
+    3,
+    0,
+    -2,
+    2,
+    6
+   ],
+   "Runner Player": [
+    0,
+    0,
+    -1,
+    0,
+    2,
+    0,
+    0,
+    0,
+    1,
+    0,
+    0,
+    0,
+    -2,
+    0,
+    -2,
+    0,
+    -2,
+    0,
+    5,
+    -6,
+    6,
+    0,
+    1,
+    0,
+    0,
+    0
+   ]
+  },
+  "creditsNetSeries": {
+   "Corp Player": [
+    0,
+    -3,
+    0,
+    -1,
+    1,
+    2,
+    -3,
+    -1,
+    3,
+    3,
+    -2,
+    3,
+    0,
+    6
+   ],
+   "Runner Player": [
+    0,
+    -1,
+    2,
+    0,
+    1,
+    0,
+    -2,
+    -2,
+    -2,
+    -1,
+    6,
+    1,
+    0,
+    0
+   ]
+  },
+  "damageTaken": {},
+  "deckedPlayer": null,
+  "drawClicks": {
+   "Corp Player": 6,
+   "Runner Player": 9
+  },
+  "eventsPlayed": {
+   "Corp Player": 3,
+   "Runner Player": 8
+  },
+  "finalCreditPool": {
+   "Corp Player": 13,
+   "Runner Player": 7
+  },
+  "finalScore": {
+   "Corp Player": 8,
+   "Runner Player": 6
+  },
+  "flagged": [
+   {
+    "line": "(see the undo lines below)",
+    "reason": "This game has 1 undo command (1 undo-click, 0 undo-paid-ability). The log keeps what was undone, so each one is resolved as listed below; stats around them can be off."
+   },
+   {
+    "line": "[!] Runner uses the undo-click command",
+    "reason": "Undo-click (Runner, during Runner Player's turn 12) — ignored 7 lines it took back, starting with “Runner Player spends  to use Debbie \"Downtown\" Moreira to make a run on HQ”. Confirmed by the credit totals at the next turn boundary."
+   }
+  ],
+  "flatlinedPlayer": null,
+  "handSizeSeqSeries": {
+   "Corp Player": [
+    5,
+    5,
+    5,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    6,
+    6,
+    4,
+    4,
+    7,
+    7,
+    7,
+    7,
+    5
+   ],
+   "Runner Player": [
+    5,
+    5,
+    5,
+    5,
+    3,
+    3,
+    2,
+    2,
+    4,
+    4,
+    4,
+    4,
+    5,
+    5,
+    4,
+    4,
+    5,
+    5,
+    9,
+    9,
+    7,
+    7,
+    5,
+    5,
+    4,
+    4
+   ]
+  },
+  "handSizeSeries": {
+   "Corp Player": [
+    5,
+    5,
+    4,
+    4,
+    4,
+    3,
+    3,
+    3,
+    3,
+    6,
+    4,
+    7,
+    7,
+    5
+   ],
+   "Runner Player": [
+    5,
+    5,
+    3,
+    2,
+    4,
+    4,
+    5,
+    4,
+    5,
+    9,
+    7,
+    5,
+    4,
+    4
+   ]
+  },
+  "installClicks": {
+   "Corp Player": 22,
+   "Runner Player": 12
+  },
+  "installedRows": [
+   {
+    "cost": 0,
+    "events": 1,
+    "gained": 0,
+    "instanceIndex": 1,
+    "name": "Spin Doctor",
+    "net": 0,
+    "player": "Corp Player",
+    "triggerLog": [
+     {
+      "amount": 2,
+      "kind": "draw",
+      "turn": 1
+     }
+    ],
+    "turnInstalled": 1,
+    "turnLeftDisplay": 1,
+    "turnsInPlay": 1
+   },
+   {
+    "cost": 1,
+    "events": 5,
+    "gained": 7,
+    "instanceIndex": null,
+    "name": "Touchstone",
+    "net": 6,
+    "player": "Runner Player",
+    "triggerLog": [
+     {
+      "amount": 2,
+      "kind": "credit",
+      "turn": 2
+     },
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 5
+     },
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 5
+     },
+     {
+      "amount": 2,
+      "kind": "credit",
+      "turn": 10
+     },
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 10
+     }
+    ],
+    "turnInstalled": 1,
+    "turnLeftDisplay": "-",
+    "turnsInPlay": 12
+   },
+   {
+    "cost": 5,
+    "events": 0,
+    "gained": 0,
+    "instanceIndex": null,
+    "name": "Starlit Knight",
+    "net": -5,
+    "player": "Corp Player",
+    "triggerLog": [],
+    "turnInstalled": 1,
+    "turnLeftDisplay": "-",
+    "turnsInPlay": 13
+   },
+   {
+    "cost": 0,
+    "events": 7,
+    "gained": 10,
+    "instanceIndex": null,
+    "name": "NBN: Reality Plus",
+    "net": 10,
+    "player": "Corp Player",
+    "triggerLog": [
+     {
+      "amount": 2,
+      "kind": "credit",
+      "turn": 1
+     },
+     {
+      "amount": 2,
+      "kind": "credit",
+      "turn": 2
+     },
+     {
+      "amount": 2,
+      "kind": "credit",
+      "turn": 6
+     },
+     {
+      "amount": 2,
+      "kind": "draw",
+      "turn": 10
+     },
+     {
+      "amount": 2,
+      "kind": "draw",
+      "turn": 11
+     },
+     {
+      "amount": 2,
+      "kind": "credit",
+      "turn": 12
+     },
+     {
+      "amount": 2,
+      "kind": "credit",
+      "turn": 12
+     }
+    ],
+    "turnInstalled": 1,
+    "turnLeftDisplay": "-",
+    "turnsInPlay": 13
+   },
+   {
+    "cost": 2,
+    "events": 0,
+    "gained": 0,
+    "instanceIndex": null,
+    "name": "Revolver",
+    "net": -2,
+    "player": "Runner Player",
+    "triggerLog": [],
+    "turnInstalled": 2,
+    "turnLeftDisplay": "-",
+    "turnsInPlay": 11
+   },
+   {
+    "cost": 0,
+    "events": 2,
+    "gained": 0,
+    "instanceIndex": null,
+    "name": "Dr. Nuka Vrolyck",
+    "net": 0,
+    "player": "Runner Player",
+    "triggerLog": [
+     {
+      "amount": 3,
+      "kind": "draw",
+      "turn": 4
+     },
+     {
+      "amount": 3,
+      "kind": "draw",
+      "turn": 5
+     }
+    ],
+    "turnInstalled": 3,
+    "turnLeftDisplay": 5,
+    "turnsInPlay": 3
+   },
+   {
+    "cost": 1,
+    "events": 6,
+    "gained": 12,
+    "instanceIndex": 1,
+    "name": "Balanced Coverage",
+    "net": 11,
+    "player": "Corp Player",
+    "triggerLog": [
+     {
+      "amount": 2,
+      "kind": "credit",
+      "turn": 5
+     },
+     {
+      "amount": 2,
+      "kind": "credit",
+      "turn": 6
+     },
+     {
+      "amount": 2,
+      "kind": "credit",
+      "turn": 8
+     },
+     {
+      "amount": 2,
+      "kind": "credit",
+      "turn": 9
+     },
+     {
+      "amount": 2,
+      "kind": "credit",
+      "turn": 10
+     },
+     {
+      "amount": 2,
+      "kind": "credit",
+      "turn": 11
+     }
+    ],
+    "turnInstalled": 3,
+    "turnLeftDisplay": "-",
+    "turnsInPlay": 11
+   },
+   {
+    "cost": 2,
+    "events": 0,
+    "gained": 0,
+    "instanceIndex": 1,
+    "name": "Pennyshaver",
+    "net": -2,
+    "player": "Runner Player",
+    "triggerLog": [],
+    "turnInstalled": 4,
+    "turnLeftDisplay": 6,
+    "turnsInPlay": 3
+   },
+   {
+    "cost": 1,
+    "events": 0,
+    "gained": 0,
+    "instanceIndex": null,
+    "name": "Cupellation",
+    "net": -1,
+    "player": "Runner Player",
+    "triggerLog": [],
+    "turnInstalled": 4,
+    "turnLeftDisplay": 10,
+    "turnsInPlay": 7
+   },
+   {
+    "cost": 2,
+    "events": 0,
+    "gained": 0,
+    "instanceIndex": null,
+    "name": "Hackerspace",
+    "net": -2,
+    "player": "Runner Player",
+    "triggerLog": [],
+    "turnInstalled": 5,
+    "turnLeftDisplay": "-",
+    "turnsInPlay": 8
+   },
+   {
+    "cost": 0,
+    "events": 4,
+    "gained": 4,
+    "instanceIndex": 1,
+    "name": "Tiered Subscription",
+    "net": 4,
+    "player": "Corp Player",
+    "triggerLog": [
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 9
+     },
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 10
+     },
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 11
+     },
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 12
+     }
+    ],
+    "turnInstalled": 6,
+    "turnLeftDisplay": "-",
+    "turnsInPlay": 8
+   },
+   {
+    "cost": 0,
+    "events": 2,
+    "gained": 5,
+    "instanceIndex": null,
+    "name": "Paladin Poemu",
+    "net": 5,
+    "player": "Runner Player",
+    "triggerLog": [
+     {
+      "amount": 2,
+      "kind": "credit",
+      "turn": 9
+     },
+     {
+      "amount": 3,
+      "kind": "credit",
+      "turn": 12
+     }
+    ],
+    "turnInstalled": 7,
+    "turnLeftDisplay": "-",
+    "turnsInPlay": 6
+   },
+   {
+    "cost": 0,
+    "events": 4,
+    "gained": 0,
+    "instanceIndex": 1,
+    "name": "Federal Fundraising",
+    "net": 0,
+    "player": "Corp Player",
+    "triggerLog": [
+     {
+      "amount": 1,
+      "kind": "draw",
+      "turn": 8
+     },
+     {
+      "amount": 1,
+      "kind": "draw",
+      "turn": 9
+     },
+     {
+      "amount": 1,
+      "kind": "draw",
+      "turn": 10
+     },
+     {
+      "amount": 1,
+      "kind": "draw",
+      "turn": 11
+     }
+    ],
+    "turnInstalled": 7,
+    "turnLeftDisplay": "-",
+    "turnsInPlay": 7
+   },
+   {
+    "cost": 2,
+    "events": 5,
+    "gained": 0,
+    "instanceIndex": null,
+    "name": "Wage Workers",
+    "net": -2,
+    "player": "Corp Player",
+    "triggerLog": [
+     {
+      "amount": 1,
+      "kind": "click",
+      "turn": 8
+     },
+     {
+      "amount": 1,
+      "kind": "click",
+      "turn": 9
+     },
+     {
+      "amount": 1,
+      "kind": "click",
+      "turn": 10
+     },
+     {
+      "amount": 1,
+      "kind": "click",
+      "turn": 11
+     },
+     {
+      "amount": 1,
+      "kind": "click",
+      "turn": 12
+     }
+    ],
+    "turnInstalled": 8,
+    "turnLeftDisplay": "-",
+    "turnsInPlay": 6
+   },
+   {
+    "cost": 2,
+    "events": 1,
+    "gained": 0,
+    "instanceIndex": null,
+    "name": "The Class Act",
+    "net": -2,
+    "player": "Runner Player",
+    "triggerLog": [
+     {
+      "amount": 4,
+      "kind": "draw",
+      "turn": 8
+     }
+    ],
+    "turnInstalled": 8,
+    "turnLeftDisplay": 11,
+    "turnsInPlay": 4
+   },
+   {
+    "cost": 0,
+    "events": 1,
+    "gained": 3,
+    "instanceIndex": null,
+    "name": "Fencer Fueno",
+    "net": 3,
+    "player": "Runner Player",
+    "triggerLog": [
+     {
+      "amount": 3,
+      "kind": "credit",
+      "turn": 12
+     }
+    ],
+    "turnInstalled": 8,
+    "turnLeftDisplay": "-",
+    "turnsInPlay": 5
+   },
+   {
+    "cost": 0,
+    "events": 1,
+    "gained": 0,
+    "instanceIndex": 2,
+    "name": "Spin Doctor",
+    "net": 0,
+    "player": "Corp Player",
+    "triggerLog": [
+     {
+      "amount": 2,
+      "kind": "draw",
+      "turn": 8
+     }
+    ],
+    "turnInstalled": 8,
+    "turnLeftDisplay": "-",
+    "turnsInPlay": 6
+   },
+   {
+    "cost": 0,
+    "events": 4,
+    "gained": 4,
+    "instanceIndex": 2,
+    "name": "Tiered Subscription",
+    "net": 4,
+    "player": "Corp Player",
+    "triggerLog": [
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 9
+     },
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 10
+     },
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 11
+     },
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 12
+     }
+    ],
+    "turnInstalled": 9,
+    "turnLeftDisplay": "-",
+    "turnsInPlay": 5
+   },
+   {
+    "cost": 2,
+    "events": 1,
+    "gained": 2,
+    "instanceIndex": 2,
+    "name": "Pennyshaver",
+    "net": 0,
+    "player": "Runner Player",
+    "triggerLog": [
+     {
+      "amount": 2,
+      "kind": "credit",
+      "turn": 10
+     }
+    ],
+    "turnInstalled": 9,
+    "turnLeftDisplay": "-",
+    "turnsInPlay": 4
+   },
+   {
+    "cost": 1,
+    "events": 3,
+    "gained": 3,
+    "instanceIndex": 1,
+    "name": "Public Access Plaza",
+    "net": 2,
+    "player": "Corp Player",
+    "triggerLog": [
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 10
+     },
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 11
+     },
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 13
+     }
+    ],
+    "turnInstalled": 9,
+    "turnLeftDisplay": "-",
+    "turnsInPlay": 5
+   },
+   {
+    "cost": 0,
+    "events": 1,
+    "gained": 1,
+    "instanceIndex": null,
+    "name": "Debbie \"Downtown\" Moreira",
+    "net": 1,
+    "player": "Runner Player",
+    "triggerLog": [
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 12
+     }
+    ],
+    "turnInstalled": 10,
+    "turnLeftDisplay": "-",
+    "turnsInPlay": 3
+   },
+   {
+    "cost": 1,
+    "events": 3,
+    "gained": 3,
+    "instanceIndex": 2,
+    "name": "Public Access Plaza",
+    "net": 2,
+    "player": "Corp Player",
+    "triggerLog": [
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 12
+     },
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 12
+     },
+     {
+      "amount": 1,
+      "kind": "credit",
+      "turn": 13
+     }
+    ],
+    "turnInstalled": 11,
+    "turnLeftDisplay": "-",
+    "turnsInPlay": 3
+   },
+   {
+    "cost": 0,
+    "events": 4,
+    "gained": 0,
+    "instanceIndex": 2,
+    "name": "Federal Fundraising",
+    "net": 0,
+    "player": "Corp Player",
+    "triggerLog": [
+     {
+      "amount": 1,
+      "kind": "draw",
+      "turn": 12
+     },
+     {
+      "amount": 1,
+      "kind": "draw",
+      "turn": 12
+     },
+     {
+      "amount": 1,
+      "kind": "draw",
+      "turn": 13
+     },
+     {
+      "amount": 1,
+      "kind": "draw",
+      "turn": 13
+     }
+    ],
+    "turnInstalled": 11,
+    "turnLeftDisplay": "-",
+    "turnsInPlay": 3
+   },
+   {
+    "cost": 1,
+    "events": 4,
+    "gained": 8,
+    "instanceIndex": 2,
+    "name": "Balanced Coverage",
+    "net": 7,
+    "player": "Corp Player",
+    "triggerLog": [
+     {
+      "amount": 2,
+      "kind": "credit",
+      "turn": 12
+     },
+     {
+      "amount": 2,
+      "kind": "credit",
+      "turn": 12
+     },
+     {
+      "amount": 2,
+      "kind": "credit",
+      "turn": 13
+     },
+     {
+      "amount": 2,
+      "kind": "credit",
+      "turn": 13
+     }
+    ],
+    "turnInstalled": 11,
+    "turnLeftDisplay": "-",
+    "turnsInPlay": 3
+   },
+   {
+    "cost": 3,
+    "events": 0,
+    "gained": 0,
+    "instanceIndex": null,
+    "name": "Curupira",
+    "net": -3,
+    "player": "Runner Player",
+    "triggerLog": [],
+    "turnInstalled": 12,
+    "turnLeftDisplay": "-",
+    "turnsInPlay": 1
+   },
+   {
+    "cost": 2,
+    "events": 0,
+    "gained": 0,
+    "instanceIndex": null,
+    "name": "Ping",
+    "net": -2,
+    "player": "Corp Player",
+    "triggerLog": [],
+    "turnInstalled": 12,
+    "turnLeftDisplay": "-",
+    "turnsInPlay": 2
+   }
+  ],
+  "maxTurn": {
+   "Corp Player": 13,
+   "Runner Player": 12
+  },
+  "mulligans": [],
+  "opposingTrashes": {
+   "Corp Player": 1,
+   "Runner Player": 2
+  },
+  "opsRows": [
+   {
+    "name": "Bravado",
+    "perTurnRows": [
+     {
+      "cost": 3,
+      "gain": 7,
+      "net": 4,
+      "nth": null,
+      "turn": 1
+     }
+    ],
+    "player": "Runner Player",
+    "totalCost": 3,
+    "totalGain": 7,
+    "totalNet": 4,
+    "triggered": 1,
+    "turnsList": "1"
+   },
+   {
+    "name": "Transfer of Wealth",
+    "perTurnRows": [
+     {
+      "cost": 0,
+      "gain": 6,
+      "net": 6,
+      "nth": null,
+      "turn": 2
+     },
+     {
+      "cost": 0,
+      "gain": 6,
+      "net": 6,
+      "nth": null,
+      "turn": 10
+     }
+    ],
+    "player": "Runner Player",
+    "totalCost": 0,
+    "totalGain": 12,
+    "totalNet": 12,
+    "triggered": 2,
+    "turnsList": "2, 10"
+   },
+   {
+    "name": "Sure Gamble",
+    "perTurnRows": [
+     {
+      "cost": 5,
+      "gain": 9,
+      "net": 4,
+      "nth": null,
+      "turn": 4
+     },
+     {
+      "cost": 5,
+      "gain": 9,
+      "net": 4,
+      "nth": null,
+      "turn": 6
+     },
+     {
+      "cost": 5,
+      "gain": 9,
+      "net": 4,
+      "nth": null,
+      "turn": 11
+     }
+    ],
+    "player": "Runner Player",
+    "totalCost": 15,
+    "totalGain": 27,
+    "totalNet": 12,
+    "triggered": 3,
+    "turnsList": "4, 6, 11"
+   },
+   {
+    "name": "Clean Getaway",
+    "perTurnRows": [
+     {
+      "cost": 3,
+      "gain": 6,
+      "net": 3,
+      "nth": null,
+      "turn": 5
+     },
+     {
+      "cost": 3,
+      "gain": 6,
+      "net": 3,
+      "nth": null,
+      "turn": 9
+     }
+    ],
+    "player": "Runner Player",
+    "totalCost": 6,
+    "totalGain": 12,
+    "totalNet": 6,
+    "triggered": 2,
+    "turnsList": "5, 9"
+   },
+   {
+    "name": "Oppo Research",
+    "perTurnRows": [
+     {
+      "cost": 7,
+      "gain": 0,
+      "net": -7,
+      "nth": null,
+      "turn": 6
+     },
+     {
+      "cost": 7,
+      "gain": 0,
+      "net": -7,
+      "nth": null,
+      "turn": 12
+     }
+    ],
+    "player": "Corp Player",
+    "totalCost": 14,
+    "totalGain": 0,
+    "totalNet": -14,
+    "triggered": 2,
+    "turnsList": "6, 12"
+   },
+   {
+    "name": "Retribution",
+    "perTurnRows": [
+     {
+      "cost": 1,
+      "gain": 0,
+      "net": -1,
+      "nth": null,
+      "turn": 7
+     }
+    ],
+    "player": "Corp Player",
+    "totalCost": 1,
+    "totalGain": 0,
+    "totalNet": -1,
+    "triggered": 1,
+    "turnsList": "7"
+   }
+  ],
+  "playerCountError": null,
+  "playerSide": {
+   "Corp Player": "corp",
+   "Runner Player": "runner"
+  },
+  "players": [
+   "Corp Player",
+   "Runner Player"
+  ],
+  "poolSegments": {
+   "Corp Player": [
+    {
+     "end": 5,
+     "endLine": 8,
+     "expected": 5,
+     "fromKind": "start",
+     "fromTurn": 1,
+     "ok": true,
+     "start": 5,
+     "startLine": 0,
+     "values": [
+      5,
+      5
+     ]
+    },
+    {
+     "end": 2,
+     "endLine": 30,
+     "expected": 2,
+     "fromKind": "end",
+     "fromTurn": 1,
+     "ok": true,
+     "start": 5,
+     "startLine": 8,
+     "values": [
+      0,
+      2
+     ]
+    },
+    {
+     "end": 3,
+     "endLine": 35,
+     "expected": 3,
+     "fromKind": "start",
+     "fromTurn": 2,
+     "ok": true,
+     "start": 2,
+     "startLine": 30,
+     "values": [
+      2,
+      3
+     ]
+    },
+    {
+     "end": 2,
+     "endLine": 55,
+     "expected": 2,
+     "fromKind": "end",
+     "fromTurn": 2,
+     "ok": true,
+     "start": 3,
+     "startLine": 35,
+     "values": [
+      0,
+      2
+     ]
+    },
+    {
+     "end": 2,
+     "endLine": 60,
+     "expected": 2,
+     "fromKind": "start",
+     "fromTurn": 3,
+     "ok": true,
+     "start": 2,
+     "startLine": 55,
+     "values": []
+    },
+    {
+     "end": 1,
+     "endLine": 68,
+     "expected": 1,
+     "fromKind": "end",
+     "fromTurn": 3,
+     "ok": true,
+     "start": 2,
+     "startLine": 60,
+     "values": [
+      1
+     ]
+    },
+    {
+     "end": 2,
+     "endLine": 75,
+     "expected": 2,
+     "fromKind": "start",
+     "fromTurn": 4,
+     "ok": true,
+     "start": 1,
+     "startLine": 68,
+     "values": [
+      2
+     ]
+    },
+    {
+     "end": 2,
+     "endLine": 83,
+     "expected": 2,
+     "fromKind": "end",
+     "fromTurn": 4,
+     "ok": true,
+     "start": 2,
+     "startLine": 75,
+     "values": []
+    },
+    {
+     "end": 4,
+     "endLine": 90,
+     "expected": 4,
+     "fromKind": "start",
+     "fromTurn": 5,
+     "ok": true,
+     "start": 2,
+     "startLine": 83,
+     "values": [
+      4
+     ]
+    },
+    {
+     "end": 4,
+     "endLine": 110,
+     "expected": 4,
+     "fromKind": "end",
+     "fromTurn": 5,
+     "ok": true,
+     "start": 4,
+     "startLine": 90,
+     "values": []
+    },
+    {
+     "end": 1,
+     "endLine": 120,
+     "expected": 1,
+     "fromKind": "start",
+     "fromTurn": 6,
+     "ok": true,
+     "start": 4,
+     "startLine": 110,
+     "values": [
+      6,
+      4,
+      6,
+      1
+     ]
+    },
+    {
+     "end": 1,
+     "endLine": 129,
+     "expected": 1,
+     "fromKind": "end",
+     "fromTurn": 6,
+     "ok": true,
+     "start": 1,
+     "startLine": 120,
+     "values": [
+      1
+     ]
+    },
+    {
+     "end": 0,
+     "endLine": 137,
+     "expected": 0,
+     "fromKind": "start",
+     "fromTurn": 7,
+     "ok": true,
+     "start": 1,
+     "startLine": 129,
+     "values": [
+      0
+     ]
+    },
+    {
+     "end": 0,
+     "endLine": 145,
+     "expected": 0,
+     "fromKind": "end",
+     "fromTurn": 7,
+     "ok": true,
+     "start": 0,
+     "startLine": 137,
+     "values": [
+      0
+     ]
+    },
+    {
+     "end": 3,
+     "endLine": 157,
+     "expected": 3,
+     "fromKind": "start",
+     "fromTurn": 8,
+     "ok": true,
+     "start": 0,
+     "startLine": 145,
+     "values": [
+      2,
+      0,
+      1,
+      2,
+      3
+     ]
+    },
+    {
+     "end": 3,
+     "endLine": 168,
+     "expected": 3,
+     "fromKind": "end",
+     "fromTurn": 8,
+     "ok": true,
+     "start": 3,
+     "startLine": 157,
+     "values": [
+      3
+     ]
+    },
+    {
+     "end": 5,
+     "endLine": 179,
+     "expected": 5,
+     "fromKind": "start",
+     "fromTurn": 9,
+     "ok": true,
+     "start": 3,
+     "startLine": 168,
+     "values": [
+      5
+     ]
+    },
+    {
+     "end": 6,
+     "endLine": 198,
+     "expected": 6,
+     "fromKind": "end",
+     "fromTurn": 9,
+     "ok": true,
+     "start": 5,
+     "startLine": 179,
+     "values": [
+      5,
+      6,
+      7,
+      6
+     ]
+    },
+    {
+     "end": 5,
+     "endLine": 212,
+     "expected": 5,
+     "fromKind": "start",
+     "fromTurn": 10,
+     "ok": true,
+     "start": 6,
+     "startLine": 198,
+     "values": [
+      7,
+      9,
+      8,
+      7,
+      6,
+      5
+     ]
+    },
+    {
+     "end": 4,
+     "endLine": 242,
+     "expected": 4,
+     "fromKind": "end",
+     "fromTurn": 10,
+     "ok": true,
+     "start": 5,
+     "startLine": 212,
+     "values": [
+      6,
+      7,
+      4
+     ]
+    },
+    {
+     "end": 7,
+     "endLine": 254,
+     "expected": 7,
+     "fromKind": "start",
+     "fromTurn": 11,
+     "ok": true,
+     "start": 4,
+     "startLine": 242,
+     "values": [
+      5,
+      7
+     ]
+    },
+    {
+     "end": 7,
+     "endLine": 284,
+     "expected": 7,
+     "fromKind": "end",
+     "fromTurn": 11,
+     "ok": true,
+     "start": 7,
+     "startLine": 254,
+     "values": [
+      8,
+      9,
+      8,
+      8,
+      7
+     ]
+    },
+    {
+     "end": 5,
+     "endLine": 305,
+     "expected": 5,
+     "fromKind": "start",
+     "fromTurn": 12,
+     "ok": true,
+     "start": 7,
+     "startLine": 284,
+     "values": [
+      8,
+      9,
+      11,
+      13,
+      12,
+      11,
+      10,
+      8,
+      10,
+      5
+     ]
+    },
+    {
+     "end": 7,
+     "endLine": 336,
+     "expected": 7,
+     "fromKind": "end",
+     "fromTurn": 12,
+     "ok": true,
+     "start": 5,
+     "startLine": 305,
+     "values": [
+      6,
+      7,
+      5,
+      7
+     ]
+    },
+    {
+     "end": null,
+     "endLine": null,
+     "expected": null,
+     "fromKind": "start",
+     "fromTurn": 13,
+     "ok": null,
+     "start": 7,
+     "startLine": 336,
+     "values": [
+      8,
+      9,
+      11,
+      13
+     ]
+    }
+   ],
+   "Runner Player": [
+    {
+     "end": 4,
+     "endLine": 28,
+     "expected": 4,
+     "fromKind": "start",
+     "fromTurn": 1,
+     "ok": true,
+     "start": 5,
+     "startLine": 9,
+     "values": [
+      4,
+      1,
+      8,
+      6,
+      4
+     ]
+    },
+    {
+     "end": 4,
+     "endLine": 36,
+     "expected": 4,
+     "fromKind": "end",
+     "fromTurn": 1,
+     "ok": true,
+     "start": 4,
+     "startLine": 28,
+     "values": []
+    },
+    {
+     "end": 6,
+     "endLine": 54,
+     "expected": 6,
+     "fromKind": "start",
+     "fromTurn": 2,
+     "ok": true,
+     "start": 4,
+     "startLine": 36,
+     "values": [
+      2,
+      2,
+      2,
+      8,
+      6
+     ]
+    },
+    {
+     "end": 6,
+     "endLine": 61,
+     "expected": 6,
+     "fromKind": "end",
+     "fromTurn": 2,
+     "ok": true,
+     "start": 6,
+     "startLine": 54,
+     "values": []
+    },
+    {
+     "end": 6,
+     "endLine": 66,
+     "expected": 6,
+     "fromKind": "start",
+     "fromTurn": 3,
+     "ok": true,
+     "start": 6,
+     "startLine": 61,
+     "values": [
+      6
+     ]
+    },
+    {
+     "end": 6,
+     "endLine": 76,
+     "expected": 6,
+     "fromKind": "end",
+     "fromTurn": 3,
+     "ok": true,
+     "start": 6,
+     "startLine": 66,
+     "values": []
+    },
+    {
+     "end": 7,
+     "endLine": 82,
+     "expected": 7,
+     "fromKind": "start",
+     "fromTurn": 4,
+     "ok": true,
+     "start": 6,
+     "startLine": 76,
+     "values": [
+      1,
+      10,
+      8,
+      7
+     ]
+    },
+    {
+     "end": 7,
+     "endLine": 91,
+     "expected": 7,
+     "fromKind": "end",
+     "fromTurn": 4,
+     "ok": true,
+     "start": 7,
+     "startLine": 82,
+     "values": []
+    },
+    {
+     "end": 7,
+     "endLine": 109,
+     "expected": 7,
+     "fromKind": "start",
+     "fromTurn": 5,
+     "ok": true,
+     "start": 7,
+     "startLine": 91,
+     "values": [
+      4,
+      10,
+      10,
+      9,
+      7
+     ]
+    },
+    {
+     "end": 7,
+     "endLine": 122,
+     "expected": 7,
+     "fromKind": "end",
+     "fromTurn": 5,
+     "ok": true,
+     "start": 7,
+     "startLine": 109,
+     "values": []
+    },
+    {
+     "end": 5,
+     "endLine": 128,
+     "expected": 5,
+     "fromKind": "start",
+     "fromTurn": 6,
+     "ok": true,
+     "start": 7,
+     "startLine": 122,
+     "values": [
+      2,
+      11,
+      9,
+      7,
+      5
+     ]
+    },
+    {
+     "end": 5,
+     "endLine": 138,
+     "expected": 5,
+     "fromKind": "end",
+     "fromTurn": 6,
+     "ok": true,
+     "start": 5,
+     "startLine": 128,
+     "values": []
+    },
+    {
+     "end": 3,
+     "endLine": 143,
+     "expected": 3,
+     "fromKind": "start",
+     "fromTurn": 7,
+     "ok": true,
+     "start": 5,
+     "startLine": 138,
+     "values": [
+      3,
+      3
+     ]
+    },
+    {
+     "end": 3,
+     "endLine": 158,
+     "expected": 3,
+     "fromKind": "end",
+     "fromTurn": 7,
+     "ok": true,
+     "start": 3,
+     "startLine": 143,
+     "values": []
+    },
+    {
+     "end": 1,
+     "endLine": 164,
+     "expected": 1,
+     "fromKind": "start",
+     "fromTurn": 8,
+     "ok": true,
+     "start": 3,
+     "startLine": 158,
+     "values": [
+      1,
+      1
+     ]
+    },
+    {
+     "end": 1,
+     "endLine": 180,
+     "expected": 1,
+     "fromKind": "end",
+     "fromTurn": 8,
+     "ok": true,
+     "start": 1,
+     "startLine": 164,
+     "values": []
+    },
+    {
+     "end": 6,
+     "endLine": 196,
+     "expected": 6,
+     "fromKind": "start",
+     "fromTurn": 9,
+     "ok": true,
+     "start": 1,
+     "startLine": 180,
+     "values": [
+      1,
+      2,
+      3,
+      0,
+      6
+     ]
+    },
+    {
+     "end": 0,
+     "endLine": 213,
+     "expected": 0,
+     "fromKind": "end",
+     "fromTurn": 9,
+     "ok": true,
+     "start": 6,
+     "startLine": 196,
+     "values": [
+      0
+     ]
+    },
+    {
+     "end": 6,
+     "endLine": 241,
+     "expected": 6,
+     "fromKind": "start",
+     "fromTurn": 10,
+     "ok": true,
+     "start": 0,
+     "startLine": 213,
+     "values": [
+      0,
+      2,
+      2,
+      2,
+      8,
+      8,
+      6
+     ]
+    },
+    {
+     "end": 6,
+     "endLine": 255,
+     "expected": 6,
+     "fromKind": "end",
+     "fromTurn": 10,
+     "ok": true,
+     "start": 6,
+     "startLine": 241,
+     "values": []
+    },
+    {
+     "end": 8,
+     "endLine": 279,
+     "expected": 8,
+     "fromKind": "start",
+     "fromTurn": 11,
+     "ok": true,
+     "start": 6,
+     "startLine": 255,
+     "values": [
+      1,
+      10,
+      8
+     ]
+    },
+    {
+     "end": 7,
+     "endLine": 306,
+     "expected": 7,
+     "fromKind": "end",
+     "fromTurn": 11,
+     "ok": true,
+     "start": 8,
+     "startLine": 279,
+     "values": [
+      7
+     ]
+    },
+    {
+     "end": 7,
+     "endLine": 335,
+     "expected": 7,
+     "fromKind": "start",
+     "fromTurn": 12,
+     "ok": true,
+     "start": 7,
+     "startLine": 306,
+     "values": [
+      7,
+      7,
+      7
+     ]
+    },
+    {
+     "end": null,
+     "endLine": null,
+     "expected": null,
+     "fromKind": "end",
+     "fromTurn": 12,
+     "ok": null,
+     "start": 7,
+     "startLine": 335,
+     "values": []
+    }
+   ]
+  },
+  "purgeClicks": {},
+  "rounds": 13,
+  "runsMade": {
+   "Runner Player": 9
+  },
+  "seqAxisLabels": [
+   "",
+   "C1",
+   "R1",
+   "C2",
+   "R2",
+   "C3",
+   "R3",
+   "C4",
+   "R4",
+   "C5",
+   "R5",
+   "C6",
+   "R6",
+   "C7",
+   "R7",
+   "C8",
+   "R8",
+   "C9",
+   "R9",
+   "C10",
+   "R10",
+   "C11",
+   "R11",
+   "C12",
+   "R12",
+   "C13"
+  ],
+  "tagRemovals": {
+   "Runner Player": {
+    "cost": 18,
+    "count": 9
+   }
+  },
+  "tagsGained": {
+   "Runner Player": 14
+  },
+  "tagsGiven": {
+   "Corp Player": 12
+  },
+  "totalDraws": {
+   "Corp Player": 35,
+   "Runner Player": 19
+  },
+  "totalGained": {
+   "Corp Player": 49,
+   "Runner Player": 62
+  },
+  "totalSeq": 25,
+  "totalSpent": {
+   "Corp Player": 41,
+   "Runner Player": 60
+  },
+  "trashResources": {},
+  "undos": [
+   {
+    "active": "Runner Player",
+    "at": 309,
+    "candidates": 1,
+    "decision": 0,
+    "kind": "click",
+    "line": "[!] Runner uses the undo-click command",
+    "removed": [
+     "Runner Player spends  to use Debbie \"Downtown\" Moreira to make a run on HQ.",
+     "Corp Player uses Tiered Subscription to gain 1 .",
+     "Corp Player uses Tiered Subscription to gain 1 .",
+     "Runner Player approaches Starlit Knight protecting HQ at position 0.",
+     "Corp Player has no further action.",
+     "Runner Player encounters Starlit Knight protecting HQ at position 0.",
+     "Runner Player pays 2  from Debbie \"Downtown\" Moreira to increase the strength of Revolver to 4."
+    ],
+    "side": "Runner",
+    "turn": 12,
+    "verdict": "confirmed"
+   }
+  ],
+  "winReason": "agenda",
+  "winner": "Corp Player"
+ }
+}
