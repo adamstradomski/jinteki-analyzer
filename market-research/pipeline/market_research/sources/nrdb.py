@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from datetime import date
 from typing import Any
 
@@ -115,99 +116,110 @@ def _strs(v: object) -> list[str]:
     return sorted(str(x) for x in v) if isinstance(v, list) else []
 
 
+def _opt_date(v: object) -> str | None:
+    return parse_date(v) if v else None
+
+
+def _card(a: dict[str, Any]) -> CatCard:
+    return CatCard(
+        id=str(a["id"]),
+        title=str(a.get("title") or a.get("stripped_title") or a["id"])[:120],
+        side_id=str(a.get("side_id")),
+        card_type_id=str(a.get("card_type_id")),
+        faction_id=str(a.get("faction_id")),
+        influence_cost=opt_int(a.get("influence_cost")),
+        influence_limit=opt_int(a.get("influence_limit")),
+        minimum_deck_size=opt_int(a.get("minimum_deck_size")),
+        deck_limit=opt_int(a.get("deck_limit")),
+        agenda_points=opt_int(a.get("agenda_points")),
+        is_unique=as_bool(a.get("is_unique")),
+        card_pool_ids=_strs(a.get("card_pool_ids")),
+        printing_ids=_strs(a.get("printing_ids")),
+    )
+
+
+def _printing(a: dict[str, Any]) -> CatPrinting:
+    return CatPrinting(
+        id=str(a["id"]),
+        card_id=str(a["card_id"]),
+        card_set_id=str(a.get("card_set_id")),
+        date_release=_opt_date(a.get("date_release")),
+    )
+
+
+def _card_set(a: dict[str, Any]) -> CatSet:
+    return CatSet(
+        id=str(a["id"]),
+        name=str(a.get("name") or "")[:80],
+        date_release=_opt_date(a.get("date_release")),
+        card_cycle_id=a.get("card_cycle_id"),
+    )
+
+
+def _format(a: dict[str, Any]) -> CatFormat:
+    return CatFormat(
+        id=str(a["id"]),
+        name=str(a.get("name") or "")[:80],
+        active_snapshot_id=a.get("active_snapshot_id"),
+        snapshot_ids=_strs(a.get("snapshot_ids")),
+        restriction_ids=_strs(a.get("restriction_ids")),
+    )
+
+
+def _verdicts(v: dict[str, Any]) -> Verdicts:
+    return Verdicts(
+        banned=_strs(v.get("banned")),
+        restricted=_strs(v.get("restricted")),
+        universal_faction_cost={str(k): int(x) for k, x in (v.get("universal_faction_cost") or {}).items()},
+        global_penalty=_strs(v.get("global_penalty")),
+        points={str(k): int(x) for k, x in (v.get("points") or {}).items()},
+    )
+
+
+def _restriction(a: dict[str, Any]) -> CatRestriction:
+    return CatRestriction(
+        id=str(a["id"]),
+        name=str(a.get("name") or "")[:80],
+        date_start=_opt_date(a.get("date_start")),
+        format_id=a.get("format_id"),
+        point_limit=opt_int(a.get("point_limit")),
+        verdicts=_verdicts(a.get("verdicts") or {}),
+    )
+
+
+def _snapshot(a: dict[str, Any]) -> CatSnapshot:
+    return CatSnapshot(
+        id=str(a["id"]),
+        format_id=str(a.get("format_id")),
+        card_pool_id=a.get("card_pool_id"),
+        restriction_id=a.get("restriction_id"),
+        date_start=_opt_date(a.get("date_start")),
+        active=as_bool(a.get("active")),
+    )
+
+
+# Per catalog kind: the drift-check name, the attributes we know, and the record builder.
+_CATALOG_PARSERS: dict[str, tuple[str, frozenset[str], Callable[[dict[str, Any]], Any]]] = {
+    "cards": ("nrdb.card", CARD_ATTRS, _card),
+    "printings": ("nrdb.printing", PRINTING_ATTRS, _printing),
+    "card_sets": ("nrdb.card_set", SET_ATTRS, _card_set),
+    "formats": ("nrdb.format", FORMAT_ATTRS, _format),
+    "restrictions": ("nrdb.restriction", RESTRICTION_ATTRS, _restriction),
+    "snapshots": ("nrdb.snapshot", SNAPSHOT_ATTRS, _snapshot),
+}
+
+
 def parse_catalog(kind: CatalogKind, items: list[dict[str, Any]], q: IngestQuality) -> NrdbCatalog:
-    out: dict[str, Any] = {"kind": kind}
+    drift_name, known, build = _CATALOG_PARSERS[kind]
     rows: list[Any] = []
     for it in items:
         a = attributes(it)
         try:
-            if kind == "cards":
-                q.check_drift("nrdb.card", a.keys(), CARD_ATTRS)
-                rows.append(
-                    CatCard(
-                        id=str(a["id"]),
-                        title=str(a.get("title") or a.get("stripped_title") or a["id"])[:120],
-                        side_id=str(a.get("side_id")),
-                        card_type_id=str(a.get("card_type_id")),
-                        faction_id=str(a.get("faction_id")),
-                        influence_cost=opt_int(a.get("influence_cost")),
-                        influence_limit=opt_int(a.get("influence_limit")),
-                        minimum_deck_size=opt_int(a.get("minimum_deck_size")),
-                        deck_limit=opt_int(a.get("deck_limit")),
-                        agenda_points=opt_int(a.get("agenda_points")),
-                        is_unique=as_bool(a.get("is_unique")),
-                        card_pool_ids=_strs(a.get("card_pool_ids")),
-                        printing_ids=_strs(a.get("printing_ids")),
-                    )
-                )
-            elif kind == "printings":
-                q.check_drift("nrdb.printing", a.keys(), PRINTING_ATTRS)
-                rows.append(
-                    CatPrinting(
-                        id=str(a["id"]),
-                        card_id=str(a["card_id"]),
-                        card_set_id=str(a.get("card_set_id")),
-                        date_release=parse_date(a["date_release"]) if a.get("date_release") else None,
-                    )
-                )
-            elif kind == "card_sets":
-                q.check_drift("nrdb.card_set", a.keys(), SET_ATTRS)
-                rows.append(
-                    CatSet(
-                        id=str(a["id"]),
-                        name=str(a.get("name") or "")[:80],
-                        date_release=parse_date(a["date_release"]) if a.get("date_release") else None,
-                        card_cycle_id=a.get("card_cycle_id"),
-                    )
-                )
-            elif kind == "formats":
-                q.check_drift("nrdb.format", a.keys(), FORMAT_ATTRS)
-                rows.append(
-                    CatFormat(
-                        id=str(a["id"]),
-                        name=str(a.get("name") or "")[:80],
-                        active_snapshot_id=a.get("active_snapshot_id"),
-                        snapshot_ids=_strs(a.get("snapshot_ids")),
-                        restriction_ids=_strs(a.get("restriction_ids")),
-                    )
-                )
-            elif kind == "restrictions":
-                q.check_drift("nrdb.restriction", a.keys(), RESTRICTION_ATTRS)
-                v = a.get("verdicts") or {}
-                rows.append(
-                    CatRestriction(
-                        id=str(a["id"]),
-                        name=str(a.get("name") or "")[:80],
-                        date_start=parse_date(a["date_start"]) if a.get("date_start") else None,
-                        format_id=a.get("format_id"),
-                        point_limit=opt_int(a.get("point_limit")),
-                        verdicts=Verdicts(
-                            banned=_strs(v.get("banned")),
-                            restricted=_strs(v.get("restricted")),
-                            universal_faction_cost={
-                                str(k): int(x) for k, x in (v.get("universal_faction_cost") or {}).items()
-                            },
-                            global_penalty=_strs(v.get("global_penalty")),
-                            points={str(k): int(x) for k, x in (v.get("points") or {}).items()},
-                        ),
-                    )
-                )
-            else:
-                q.check_drift("nrdb.snapshot", a.keys(), SNAPSHOT_ATTRS)
-                rows.append(
-                    CatSnapshot(
-                        id=str(a["id"]),
-                        format_id=str(a.get("format_id")),
-                        card_pool_id=a.get("card_pool_id"),
-                        restriction_id=a.get("restriction_id"),
-                        date_start=parse_date(a["date_start"]) if a.get("date_start") else None,
-                        active=as_bool(a.get("active")),
-                    )
-                )
+            q.check_drift(drift_name, a.keys(), known)
+            rows.append(build(a))
         except (KeyError, ValidationError) as e:
             raise ParseError(f"bad {kind} item") from e
-    out[kind] = sorted(rows, key=lambda r: r.id)
-    return NrdbCatalog.model_validate(out).hashed()
+    return NrdbCatalog.model_validate({"kind": kind, kind: sorted(rows, key=lambda r: r.id)}).hashed()
 
 
 def fetch_catalog(

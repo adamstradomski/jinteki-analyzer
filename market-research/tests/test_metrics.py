@@ -14,7 +14,7 @@ from market_research.catalog import Catalog
 from market_research.config import load_settings
 from market_research.metrics import CARD_COLUMNS, compute_counts, wilson
 from market_research.normalize import Canonical
-from market_research.publish import SnapshotBuilder
+from market_research.publish import SliceIndex, SnapshotBuilder
 from market_research.records import CatCard, CatRestriction, CatSnapshot, NrdbCatalog
 
 R = "std_r"
@@ -258,7 +258,7 @@ def test_wilson_bounds():
 
 def test_summary_view_by_hand(con):
     b = SnapshotBuilder(con, catalog(), load_settings({}), datetime(2026, 9, 27, 4, tzinfo=UTC))
-    s, idents = b.summary("corp", "all", "all")
+    s = b.summary("corp", "all", "all")
     assert s["period"] == {"from": "2026-07", "to": "2026-09"} and s["previous_period"] is None
     assert s["baseline"]["decks"] == 4 and s["baseline"]["games"] == 6 and s["baseline"]["wins"] == 3.5
     c1 = next(c for c in s["cards"] if c["card_id"] == "c1")
@@ -279,6 +279,8 @@ def test_summary_view_by_hand(con):
     c2 = next(c for c in s["cards"] if c["card_id"] == "c2")
     assert c2["popularity"] == 0.5 and c2["winrate"] == round(2.5 / 3, 4)
     # Identities: every entry carries its identity (6 entries), conversion only where there is a cut.
+    idents = b.identities("corp", "all", "all")
+    assert idents["period"] == s["period"]
     corp = idents["identities"][0]
     assert corp["card_id"] == "corp_id" and corp["entries"] == 6 and corp["share"] == 1.0
     assert corp["cut_entries"] == 4 and corp["cut_made"] == 2
@@ -291,23 +293,52 @@ def test_tier_slice_and_thresholds(con):
         load_settings({"MR_MIN_GAMES": "3", "MR_MIN_ENTRIES": "2"}),
         datetime(2026, 9, 27, tzinfo=UTC),
     )
-    s, _ = b.summary("corp", "all", "megacity")
+    s = b.summary("corp", "all", "megacity")
     c1 = next(c for c in s["cards"] if c["card_id"] == "c1")
     assert c1["decks"] == 2 and c1["popularity"] == round(2 / 3, 4)
     assert c1["winrate_status"] == "ok" and c1["conversion_status"] == "ok"
-    s, _ = b.summary("corp", "all", "store")
+    s = b.summary("corp", "all", "store")
     assert s["cards"] == [] and s["period"] is None
 
 
 def test_trends_rows_sum_to_summary(con):
     b = SnapshotBuilder(con, catalog(), load_settings({}), datetime(2026, 9, 27, tzinfo=UTC))
     tr = b.trends("corp", "all", "all")
-    s, _ = b.summary("corp", "all", "all")
+    s = b.summary("corp", "all", "all")
     for c in s["cards"]:
         rows = tr["cards"][c["card_id"]]
         assert sum(r[2] for r in rows) == c["decks"]
         assert sum(r[2 + CARD_COLUMNS.index("games_total")] for r in rows) == c["games"]
     assert sum(r[2] for r in tr["baseline"]) == s["baseline"]["decks"]
+
+
+def test_slice_index_yields_what_a_filtered_scan_would_in_order():
+    rows = [
+        (side, r, tier, month, cid, 1.0)
+        for side in ("corp", "runner")
+        for r in ("b1", "b2")
+        for tier in ("community", "store", None)
+        for month in ("2026-08", "2026-09")
+        for cid in ("c1", "c2")
+        if tier is not None or r == "b2"
+    ]
+    rows.sort(key=lambda x: tuple("" if v is None else v for v in x[:5]))
+    idx = SliceIndex(rows)
+    for side in ("corp", "runner", "id"):
+        for restriction in ("all", "b1", "b2", "b3"):
+            for group in ("all", "community", "store"):
+                scan = [
+                    x
+                    for x in rows
+                    if x[0] == side and restriction in ("all", x[1]) and group in ("all", x[2])
+                ]
+                assert list(idx.rows(side, restriction, group)) == scan
+
+
+def test_slice_index_rejects_unordered_rows():
+    a, b = ("corp", "b1", "store", "2026-09"), ("corp", "b2", "store", "2026-09")
+    with pytest.raises(ValueError, match="seen twice"):
+        SliceIndex([a, b, a])
 
 
 # ---------------------------------------------------------------- additivity

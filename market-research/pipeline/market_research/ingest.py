@@ -26,6 +26,7 @@ from market_research.http import (
     BudgetExhausted,
     FetchFailed,
     HostTripped,
+    HttpResult,
     PoliteHttp,
     RequestRefused,
     ResponseTooLarge,
@@ -82,6 +83,17 @@ class Plan:
     def add(self, group: str, phase: int, n: int = 1) -> None:
         self.requests.setdefault(group, {}).setdefault(phase, 0)
         self.requests[group][phase] += n
+
+
+def _cobra_index_data(r: HttpResult) -> list[Any]:
+    """The events on one page of the Cobra index (a JSON:API document)."""
+    if r.status != 200:
+        raise NotFound(f"status {r.status}")
+    doc = r.json()
+    if not isinstance(doc, dict) or not isinstance(doc.get("data"), list):
+        raise ParseError("not a JSON:API document")
+    data: list[Any] = doc["data"]
+    return data
 
 
 class Ingestor:
@@ -522,12 +534,11 @@ class Ingestor:
             if fmt is not None and fmt.last_status is None:
                 raise Deferred
         types = self.cobra_catalog("tournament_types")
-        page = 1
         size = self.settings.cobra_page_size
         fetched = self.fetched_at()
-        stop = False
         first_etag = it.etag
-        while not stop:
+        page = 1
+        while True:
             r = self.http.get(
                 cobra.index_url(page, size),
                 etag=it.etag if page == 1 and not self.backfill else None,
@@ -537,75 +548,65 @@ class Ingestor:
                 break  # the newest page is unchanged: nothing new
             if page == 1:
                 first_etag = r.etag
-            if r.status != 200:
-                raise NotFound(f"status {r.status}")
-            doc = r.json()
-            if not isinstance(doc, dict) or not isinstance(doc.get("data"), list):
-                raise ParseError("not a JSON:API document")
-            data = doc["data"]
-            for item in data:
-                try:
-                    meta, private = cobra.parse_index_item(item, self.quality, fetched)
-                except ParseError as e:
-                    # One bad event (seen live: date "20260-05-21") must not hide the rest of the index.
-                    raw_id = str(item.get("id")) if isinstance(item, dict) else ""
-                    item_id = raw_id if raw_id.isdigit() and len(raw_id) <= 9 else "unknown"
-                    self.quality.add_quarantine(
-                        f"cobra:index:{item_id}", f"ParseError: {e}", str(item).encode()
-                    )
-                    continue
-                key = f"cobra:tournament:{meta.id}"
-                if self.frontier.get(key) is not None:
-                    if self.backfill:
-                        self.fill_cobra_name(meta)
-                        continue  # a backfill reads on to its start date: older events may be new
-                    stop = True  # newest first: everything after this is known
-                    break
-                d = date.fromisoformat(meta.date)
-                if self.since and d < self.since:
-                    created = cobra.created_date(item)
-                    if created is not None and created < self.since - COBRA_CREATED_SLACK:
-                        stop = True
-                        break
-                    continue
-                if d > self.today:
-                    continue  # not played yet; seen again next run
-                if private:
-                    with self._lock:
-                        self.frontier.mark_known(
-                            key,
-                            source="cobra",
-                            kind="cobra_tournament",
-                            entity_id=str(meta.id),
-                            now=self.now,
-                            status="skipped_private",
-                        )
-                    continue
-                if not self.is_standard_cobra(meta.format_id):
-                    with self._lock:
-                        self.frontier.mark_known(
-                            key,
-                            source="cobra",
-                            kind="cobra_tournament",
-                            entity_id=str(meta.id),
-                            now=self.now,
-                            status="skipped_not_standard",
-                        )
-                    continue
-                self.write(f"cobra/tournament/{meta.id}.json", meta)
-                if meta.abr_code:
-                    with self._lock:
-                        self.cobra_abr_codes[str(meta.id)] = meta.abr_code
-                _, group = self.tiers.cobra_tier(types.get(str(meta.type_id)))
-                pr = event_priority(group, meta.players_active, recency_days=(self.today - d).days)
-                self.enqueue(
-                    key, "cobra", "cobra_tournament", str(meta.id), priority=pr, event_date=meta.date
-                )
-            if len(data) < size:
+            data = _cobra_index_data(r)
+            if any(self._index_cobra_item(item, types, fetched) for item in data) or len(data) < size:
                 break
             page += 1
         with self._lock:
             self.frontier.complete(it, self.now, changed=True, status="ok", etag=first_etag)
+
+    def _index_cobra_item(self, item: Any, types: dict[str, str], fetched: str) -> bool:
+        """Handles one event of the Cobra index; True when the rest of the index needn't be read."""
+        try:
+            meta, private = cobra.parse_index_item(item, self.quality, fetched)
+        except ParseError as e:
+            # One bad event (seen live: date "20260-05-21") must not hide the rest of the index.
+            raw_id = str(item.get("id")) if isinstance(item, dict) else ""
+            item_id = raw_id if raw_id.isdigit() and len(raw_id) <= 9 else "unknown"
+            self.quality.add_quarantine(f"cobra:index:{item_id}", f"ParseError: {e}", str(item).encode())
+            return False
+        key = f"cobra:tournament:{meta.id}"
+        if self.frontier.get(key) is not None:
+            if self.backfill:
+                self.fill_cobra_name(meta)
+                return False  # a backfill reads on to its start date: older events may be new
+            return True  # newest first: everything after this is known
+        d = date.fromisoformat(meta.date)
+        if self.since and d < self.since:
+            created = cobra.created_date(item)
+            return created is not None and created < self.since - COBRA_CREATED_SLACK
+        if d > self.today:
+            return False  # not played yet; seen again next run
+        if private:
+            self._mark_cobra_skipped(key, meta, "skipped_private")
+        elif not self.is_standard_cobra(meta.format_id):
+            self._mark_cobra_skipped(key, meta, "skipped_not_standard")
+        else:
+            self._collect_cobra_tournament(key, meta, d, types)
+        return False
+
+    def _mark_cobra_skipped(self, key: str, meta: CobraTournament, status: str) -> None:
+        with self._lock:
+            self.frontier.mark_known(
+                key,
+                source="cobra",
+                kind="cobra_tournament",
+                entity_id=str(meta.id),
+                now=self.now,
+                status=status,
+            )
+
+    def _collect_cobra_tournament(
+        self, key: str, meta: CobraTournament, d: date, types: dict[str, str]
+    ) -> None:
+        """Stores an event's index metadata and queues the event itself."""
+        self.write(f"cobra/tournament/{meta.id}.json", meta)
+        if meta.abr_code:
+            with self._lock:
+                self.cobra_abr_codes[str(meta.id)] = meta.abr_code
+        _, group = self.tiers.cobra_tier(types.get(str(meta.type_id)))
+        pr = event_priority(group, meta.players_active, recency_days=(self.today - d).days)
+        self.enqueue(key, "cobra", "cobra_tournament", str(meta.id), priority=pr, event_date=meta.date)
 
     def fill_cobra_name(self, meta: CobraTournament) -> None:
         """Adds the public name to a stored tournament collected before names were kept."""

@@ -3,8 +3,11 @@
 from __future__ import annotations
 
 import json
+import operator
 import tempfile
 from collections import defaultdict
+from collections.abc import Callable, Iterable, Iterator
+from concurrent.futures import FIRST_EXCEPTION, ThreadPoolExecutor, wait
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from functools import cache
@@ -34,6 +37,8 @@ log = logs.get("market_research.publish")
 MAX_SLICE_BYTES = 2 * 1024 * 1024
 IMMUTABLE = "public, max-age=31536000, immutable"
 MANIFEST_CACHE = "public, max-age=60"
+# Concurrent slice uploads; below the R2 client's connection pool (max_pool_connections=32).
+UPLOAD_WORKERS = 16
 SCHEMAS = {
     "manifest": "mr.manifest/1",
     "summary": "mr.summary/1",
@@ -134,9 +139,10 @@ class Snapshot:
     manifest: dict[str, Any]
 
 
-def _rows(
-    con: duckdb.DuckDBPyConnection, table: str, keys: list[str], cols: list[str]
-) -> list[tuple[Any, ...]]:
+Row = tuple[Any, ...]
+
+
+def _rows(con: duckdb.DuckDBPyConnection, table: str, keys: list[str], cols: list[str]) -> list[Row]:
     sel = ", ".join(keys + [f"CAST({c} AS DOUBLE)" for c in cols])
     return con.execute(f"SELECT {sel} FROM {table} ORDER BY {', '.join(keys)}").fetchall()
 
@@ -145,6 +151,123 @@ def _num(v: Any) -> float | int:
     if isinstance(v, float):
         return int(v) if v.is_integer() else round(v, 4)
     return int(v)
+
+
+def _trend_row(m: int, ri: int, sums: list[float]) -> list[float | int]:
+    """[month index, restriction index, *counts]; `_num` inlined for the float sums (a trends file has
+    one per count, millions over a snapshot)."""
+    return [m, ri, *[int(x) if x.is_integer() else round(x, 4) for x in sums]]
+
+
+def _add_into(acc: list[float], row: Row, start: int) -> None:
+    """Adds row[start:] to `acc` element-wise (`row` holds exactly len(acc) values from `start`)."""
+    acc[:] = map(operator.add, acc, row[start:])
+
+
+_SLICE_KEYS = ["side", "restriction_id", "tier", "month"]
+
+
+def _sum_baselines(
+    rows: Iterable[Row], cur: set[str], prev: set[str]
+) -> tuple[dict[str, float], dict[str, float]]:
+    """Side baseline counts summed over the current and the previous period."""
+    base_c = dict.fromkeys(BASELINE_COLUMNS, 0.0)
+    base_p = dict.fromkeys(BASELINE_COLUMNS, 0.0)
+    for r in rows:
+        tgt = base_c if r[3] in cur else base_p if r[3] in prev else None
+        if tgt is not None:
+            for i, col in enumerate(BASELINE_COLUMNS):
+                tgt[col] += r[4 + i]
+    return base_c, base_p
+
+
+def _sum_cards(
+    rows: Iterable[Row], cur: set[str], prev: set[str]
+) -> tuple[dict[str, dict[str, float]], dict[str, dict[str, float]]]:
+    """Per-card counts summed over the current and the previous period (cards seen in each only)."""
+    per_c: dict[str, dict[str, float]] = defaultdict(lambda: dict.fromkeys(CARD_COLUMNS, 0.0))
+    per_p: dict[str, dict[str, float]] = defaultdict(lambda: dict.fromkeys(CARD_COLUMNS, 0.0))
+    for r in rows:
+        if r[3] in cur or r[3] in prev:
+            tgt = per_c[r[4]] if r[3] in cur else per_p[r[4]]
+            for i, col in enumerate(CARD_COLUMNS):
+                tgt[col] += r[5 + i]
+    return per_c, per_p
+
+
+def _movers(cards: list[dict[str, Any]], n: int = 10) -> tuple[list[str], list[str]]:
+    """The `n` cards whose popularity rose most and the `n` that fell most since the previous period."""
+    movers = [c for c in cards if c["change_pp"] is not None]
+    risers = [
+        c["card_id"]
+        for c in sorted(movers, key=lambda c: (-c["change_pp"], c["card_id"]))
+        if c["change_pp"] > 0
+    ][:n]
+    fallers = [
+        c["card_id"]
+        for c in sorted(movers, key=lambda c: (c["change_pp"], c["card_id"]))
+        if c["change_pp"] < 0
+    ][:n]
+    return risers, fallers
+
+
+def _summary_baseline(base: dict[str, float]) -> dict[str, Any]:
+    """The side baseline a summary's card figures are compared with."""
+    wr = base["side_wins"] / base["side_games"] if base["side_games"] else None
+    wr_all = base["side_wins_all"] / base["side_games_all"] if base["side_games_all"] else None
+    cut = base["side_cut_hc"] / base["side_entries_hc"] if base["side_entries_hc"] else None
+    return {
+        "decks": int(base["side_decks"]),
+        "games": int(base["side_games"]),
+        "wins": _num(base["side_wins"]),
+        "winrate": round(wr, 4) if wr is not None else None,
+        "entries_hc": int(base["side_entries_hc"]),
+        "cut_hc": int(base["side_cut_hc"]),
+        "cut_rate": round(cut, 4) if cut is not None else None,
+        "tournaments": int(base["tournaments"]),
+        "tournaments_hc": int(base["tournaments_hc"]),
+        "games_all": int(base["side_games_all"]),
+        "wins_all": _num(base["side_wins_all"]),
+        "winrate_all": round(wr_all, 4) if wr_all is not None else None,
+    }
+
+
+class SliceIndex:
+    """Count rows grouped once by side, then by (restriction, tier), so a slice reads only its rows.
+
+    The rows come from `_rows` ordered by (side, restriction_id, tier, month, ...), so every
+    (side, restriction, tier) block is contiguous. `rows()` walks the blocks in that same order,
+    which yields exactly the rows a full scan filtered by slice would, in the same order: sums over
+    them (floats included) come out bit for bit the same, while a slice costs its own rows instead
+    of every row in the table.
+    """
+
+    def __init__(self, rows: list[Row]) -> None:
+        self.by_side: dict[str, dict[tuple[str, str], list[Row]]] = {}
+        block: list[Row] | None = None
+        key: tuple[Any, ...] | None = None
+        for r in rows:
+            if r[:3] != key:
+                key = r[:3]
+                blocks = self.by_side.setdefault(r[0], {})
+                if (r[1], r[2]) in blocks:
+                    raise ValueError(f"rows not ordered by side, restriction, tier: {key} seen twice")
+                block = blocks[(r[1], r[2])] = []
+            assert block is not None
+            block.append(r)
+
+    def rows(self, side: str, restriction: str, group: str) -> Iterator[Row]:
+        for (r, tier), block in self.by_side.get(side, {}).items():
+            if restriction in ("all", r) and group in ("all", tier):
+                yield from block
+
+
+@dataclass(frozen=True)
+class Scope:
+    """The card and side-baseline rows of one deck scope: every deck, or top-cut decks only."""
+
+    cards: SliceIndex
+    base: SliceIndex
 
 
 class SnapshotBuilder:
@@ -163,38 +286,25 @@ class SnapshotBuilder:
         self.tiers = tier_config()
         self.version = version or version_of(now)
         compute_counts(con, catalog, settings)
-        self.cards = _rows(
-            con, "card_counts", ["side", "restriction_id", "tier", "month", "card_id"], CARD_COLUMNS
-        )
-        self.base = _rows(con, "side_counts", ["side", "restriction_id", "tier", "month"], BASELINE_COLUMNS)
-        # (card rows, baseline rows) per deck scope: every deck, or top-cut decks only.
+        self.cards = _rows(con, "card_counts", [*_SLICE_KEYS, "card_id"], CARD_COLUMNS)
+        self.base = _rows(con, "side_counts", _SLICE_KEYS, BASELINE_COLUMNS)
+        cut_cards = _rows(con, "card_counts_cut", [*_SLICE_KEYS, "card_id"], CARD_COLUMNS)
+        cut_base = _rows(con, "side_counts_cut", _SLICE_KEYS, BASELINE_COLUMNS)
         self.scopes = {
-            "all": (self.cards, self.base),
-            "cut": (
-                _rows(
-                    con,
-                    "card_counts_cut",
-                    ["side", "restriction_id", "tier", "month", "card_id"],
-                    CARD_COLUMNS,
-                ),
-                _rows(con, "side_counts_cut", ["side", "restriction_id", "tier", "month"], BASELINE_COLUMNS),
-            ),
+            "all": Scope(SliceIndex(self.cards), SliceIndex(self.base)),
+            "cut": Scope(SliceIndex(cut_cards), SliceIndex(cut_base)),
         }
-        self.idents = _rows(
-            con, "identity_counts", ["side", "restriction_id", "tier", "month", "identity"], IDENTITY_COLUMNS
-        )
-        self.ibase = _rows(
-            con,
-            "identity_side_counts",
-            ["side", "restriction_id", "tier", "month"],
-            IDENTITY_BASELINE_COLUMNS,
-        )
+        self.idents = SliceIndex(_rows(con, "identity_counts", [*_SLICE_KEYS, "identity"], IDENTITY_COLUMNS))
+        self.ibase = SliceIndex(_rows(con, "identity_side_counts", _SLICE_KEYS, IDENTITY_BASELINE_COLUMNS))
         order = {r: i for i, r in enumerate(catalog.standard_restrictions())}
         present = {r[1] for r in self.base}
         self.restrictions = sorted(present, key=lambda r: (order.get(r, 10**6), r))
         self.months = (
             month_range(min(r[3] for r in self.base), max(r[3] for r in self.base)) if self.base else []
         )
+        self._month_idx = {m: i for i, m in enumerate(self.months)}
+        self._restriction_idx = {r: i for i, r in enumerate(self.restrictions)}
+        self._periods: dict[tuple[str, str, str], tuple[list[str], list[str]]] = {}
         self.data_as_of = con.execute("SELECT max(date) FROM tournament").fetchone()
         # The events the counts cover (table t from compute_counts), with what the page lists.
         cur = con.execute(
@@ -210,107 +320,74 @@ class SnapshotBuilder:
 
     # ----- slicing -----
 
-    @staticmethod
-    def _match(row: tuple[Any, ...], side: str, restriction: str, group: str) -> bool:
-        return row[0] == side and restriction in ("all", row[1]) and group in ("all", row[2])
-
     def _period(self, side: str, restriction: str, group: str) -> tuple[list[str], list[str]]:
-        months = sorted({r[3] for r in self.base if self._match(r, side, restriction, group) and r[4] > 0})
+        """(current, previous) period months of a slice, from every deck (so both scopes align)."""
+        key = (side, restriction, group)
+        if key not in self._periods:
+            base = self.scopes["all"].base.rows(side, restriction, group)
+            self._periods[key] = self._period_from({r[3] for r in base if r[4] > 0})
+        return self._periods[key]
+
+    def _period_from(self, months: set[str]) -> tuple[list[str], list[str]]:
         if not months:
             return [], []
-        to = months[-1]
+        to = max(months)
         p = self.settings.thresholds.period_months
         cur = month_range(add_months(to, -(p - 1)), to)
         prev = month_range(add_months(to, -(2 * p - 1)), add_months(to, -p))
         return cur, prev
 
-    def summary(
-        self, side: str, restriction: str, group: str, scope: str = "all"
-    ) -> tuple[dict[str, Any], dict[str, Any]]:
+    def summary(self, side: str, restriction: str, group: str, scope: str = "all") -> dict[str, Any]:
         """The summary for one deck scope; its period is always that of every deck, so both scopes align."""
         cur, prev = self._period(side, restriction, group)
-        card_rows, base_rows = self.scopes[scope]
+        data = self.scopes[scope]
         cs, ps = set(cur), set(prev)
-        base_c = dict.fromkeys(BASELINE_COLUMNS, 0.0)
-        base_p = dict.fromkeys(BASELINE_COLUMNS, 0.0)
-        for r in base_rows:
-            if self._match(r, side, restriction, group):
-                tgt = base_c if r[3] in cs else base_p if r[3] in ps else None
-                if tgt is not None:
-                    for i, col in enumerate(BASELINE_COLUMNS):
-                        tgt[col] += r[4 + i]
-        per_c: dict[str, dict[str, float]] = defaultdict(lambda: dict.fromkeys(CARD_COLUMNS, 0.0))
-        per_p: dict[str, dict[str, float]] = defaultdict(lambda: dict.fromkeys(CARD_COLUMNS, 0.0))
-        for r in card_rows:
-            if self._match(r, side, restriction, group) and (r[3] in cs or r[3] in ps):
-                tgt = per_c[r[4]] if r[3] in cs else per_p[r[4]]
-                for i, col in enumerate(CARD_COLUMNS):
-                    tgt[col] += r[5 + i]
-        cards = []
-        empty = dict.fromkeys(CARD_COLUMNS, 0.0)
+        base_c, base_p = _sum_baselines(data.base.rows(side, restriction, group), cs, ps)
+        per_c, per_p = _sum_cards(data.cards.rows(side, restriction, group), cs, ps)
         has_prev = base_p["side_decks"] > 0
-        for cid in sorted(set(per_c) | set(per_p)):
-            v = card_view(
-                per_c.get(cid, empty),
-                base_c,
-                per_p.get(cid) if has_prev else None,
-                base_p if has_prev else None,
-                self.settings,
-            )
-            cards.append({"card_id": cid, **v})
-        cards.sort(key=lambda c: (-c["decks"], c["card_id"]))
-        for i, c in enumerate(cards, start=1):
-            c["rank"] = i if c["decks"] > 0 else None
-        movers = [c for c in cards if c["change_pp"] is not None and max(c["decks"], 1) >= 1]
-        risers = [
-            c["card_id"]
-            for c in sorted(movers, key=lambda c: (-c["change_pp"], c["card_id"]))
-            if c["change_pp"] > 0
-        ][:10]
-        fallers = [
-            c["card_id"]
-            for c in sorted(movers, key=lambda c: (c["change_pp"], c["card_id"]))
-            if c["change_pp"] < 0
-        ][:10]
-        base_wr = base_c["side_wins"] / base_c["side_games"] if base_c["side_games"] else None
-        all_wr = base_c["side_wins_all"] / base_c["side_games_all"] if base_c["side_games_all"] else None
-        base_cut = base_c["side_cut_hc"] / base_c["side_entries_hc"] if base_c["side_entries_hc"] else None
-        head = self._head("summary", side, restriction, group)
-        s = {
-            **head,
+        cards = self._ranked_cards(per_c, per_p, base_c, base_p if has_prev else None)
+        risers, fallers = _movers(cards)
+        return {
+            **self._head("summary", side, restriction, group),
             "period": {"from": cur[0], "to": cur[-1]} if cur else None,
             "previous_period": {"from": prev[0], "to": prev[-1]} if has_prev else None,
-            "baseline": {
-                "decks": int(base_c["side_decks"]),
-                "games": int(base_c["side_games"]),
-                "wins": _num(base_c["side_wins"]),
-                "winrate": round(base_wr, 4) if base_wr is not None else None,
-                "entries_hc": int(base_c["side_entries_hc"]),
-                "cut_hc": int(base_c["side_cut_hc"]),
-                "cut_rate": round(base_cut, 4) if base_cut is not None else None,
-                "tournaments": int(base_c["tournaments"]),
-                "tournaments_hc": int(base_c["tournaments_hc"]),
-                "games_all": int(base_c["side_games_all"]),
-                "wins_all": _num(base_c["side_wins_all"]),
-                "winrate_all": round(all_wr, 4) if all_wr is not None else None,
-            },
+            "baseline": _summary_baseline(base_c),
             "cards": [c for c in cards if c["decks"] > 0 or c["prev_popularity"]],
             "risers": risers,
             "fallers": fallers,
         }
-        idents = self.identities(side, restriction, group, cur)
-        return s, idents
 
-    def identities(self, side: str, restriction: str, group: str, cur: list[str]) -> dict[str, Any]:
+    def _ranked_cards(
+        self,
+        per_c: dict[str, dict[str, float]],
+        per_p: dict[str, dict[str, float]],
+        base_c: dict[str, float],
+        base_p: dict[str, float] | None,
+    ) -> list[dict[str, Any]]:
+        """Every card seen in either period, most-played first; `rank` only for cards played now."""
+        empty = dict.fromkeys(CARD_COLUMNS, 0.0)
+        cards = []
+        for cid in sorted(set(per_c) | set(per_p)):
+            prev = per_p.get(cid) if base_p is not None else None
+            v = card_view(per_c.get(cid, empty), base_c, prev, base_p, self.settings)
+            cards.append({"card_id": cid, **v})
+        cards.sort(key=lambda c: (-c["decks"], c["card_id"]))
+        for i, c in enumerate(cards, start=1):
+            c["rank"] = i if c["decks"] > 0 else None
+        return cards
+
+    def identities(self, side: str, restriction: str, group: str) -> dict[str, Any]:
+        """Identity counts over the slice's current period (the same period as its summary)."""
+        cur, _ = self._period(side, restriction, group)
         cs = set(cur)
         base = dict.fromkeys(IDENTITY_BASELINE_COLUMNS, 0.0)
-        for r in self.ibase:
-            if self._match(r, side, restriction, group) and r[3] in cs:
+        for r in self.ibase.rows(side, restriction, group):
+            if r[3] in cs:
                 for i, col in enumerate(IDENTITY_BASELINE_COLUMNS):
                     base[col] += r[4 + i]
         per: dict[str, dict[str, float]] = defaultdict(lambda: dict.fromkeys(IDENTITY_COLUMNS, 0.0))
-        for r in self.idents:
-            if self._match(r, side, restriction, group) and r[3] in cs:
+        for r in self.idents.rows(side, restriction, group):
+            if r[3] in cs:
                 for i, col in enumerate(IDENTITY_COLUMNS):
                     per[r[4]][col] += r[5 + i]
         rows = [{"card_id": cid, **identity_view(v, base, self.settings)} for cid, v in per.items()]
@@ -335,32 +412,25 @@ class SnapshotBuilder:
         }
 
     def trends(self, side: str, restriction: str, group: str, scope: str = "all") -> dict[str, Any]:
-        card_rows, base_rows = self.scopes[scope]
-        m_idx = {m: i for i, m in enumerate(self.months)}
-        r_idx = {r: i for i, r in enumerate(self.restrictions)}
+        data = self.scopes[scope]
+        m_idx, r_idx = self._month_idx, self._restriction_idx
         base: dict[tuple[int, int], list[float]] = defaultdict(lambda: [0.0] * len(BASELINE_COLUMNS))
-        for r in base_rows:
-            if self._match(r, side, restriction, group):
-                acc = base[(m_idx[r[3]], r_idx[r[1]])]
-                for i in range(len(BASELINE_COLUMNS)):
-                    acc[i] += r[4 + i]
+        for r in data.base.rows(side, restriction, group):
+            _add_into(base[(m_idx[r[3]], r_idx[r[1]])], r, 4)
         cards: dict[str, dict[tuple[int, int], list[float]]] = defaultdict(
             lambda: defaultdict(lambda: [0.0] * len(CARD_COLUMNS))
         )
-        for r in card_rows:
-            if self._match(r, side, restriction, group):
-                acc = cards[r[4]][(m_idx[r[3]], r_idx[r[1]])]
-                for i in range(len(CARD_COLUMNS)):
-                    acc[i] += r[5 + i]
+        for r in data.cards.rows(side, restriction, group):
+            _add_into(cards[r[4]][(m_idx[r[3]], r_idx[r[1]])], r, 5)
         return {
             **self._head("trends", side, restriction, group),
             "months": self.months,
             "restrictions": self.restrictions,
             "columns": CARD_COLUMNS,
             "baseline_columns": BASELINE_COLUMNS,
-            "baseline": [[m, ri, *(_num(x) for x in v)] for (m, ri), v in sorted(base.items()) if any(v)],
+            "baseline": [_trend_row(m, ri, v) for (m, ri), v in sorted(base.items()) if any(v)],
             "cards": {
-                cid: [[m, ri, *(_num(x) for x in v)] for (m, ri), v in sorted(rows.items())]
+                cid: [_trend_row(m, ri, v) for (m, ri), v in sorted(rows.items())]
                 for cid, rows in sorted(cards.items())
             },
         }
@@ -439,13 +509,10 @@ class SnapshotBuilder:
             for restriction in ["all", *self.restrictions]:
                 for group in ["all", *self.groups]:
                     fmt = {"side": side, "restriction": restriction, "tier_group": group}
-                    summary, idents = self.summary(side, restriction, group)
-                    files[PATHS["summary"].format(**fmt)] = summary
-                    files[PATHS["identities"].format(**fmt)] = idents
+                    files[PATHS["summary"].format(**fmt)] = self.summary(side, restriction, group)
+                    files[PATHS["identities"].format(**fmt)] = self.identities(side, restriction, group)
                     files[PATHS["trends"].format(**fmt)] = self.trends(side, restriction, group)
-                    files[PATHS["summary_cut"].format(**fmt)] = self.summary(side, restriction, group, "cut")[
-                        0
-                    ]
+                    files[PATHS["summary_cut"].format(**fmt)] = self.summary(side, restriction, group, "cut")
                     files[PATHS["trends_cut"].format(**fmt)] = self.trends(side, restriction, group, "cut")
         for restriction in ["all", *self.restrictions]:
             for group in ["all", *self.groups]:
@@ -603,19 +670,43 @@ def build(stores: Stores, settings: Settings, now: datetime) -> tuple[Snapshot, 
     return snap, errors
 
 
-def publish(stores: Stores, snap: Snapshot, errors: list[str]) -> int:
-    """Uploads the version, then the manifest. Returns the number of slice files published."""
+def publish(stores: Stores, snap: Snapshot, errors: list[str], *, workers: int = UPLOAD_WORKERS) -> int:
+    """Uploads the version, then the manifest. Returns the number of slice files published.
+
+    The `v=<version>/` files go up concurrently (`workers` at a time); the manifest only once every
+    one of them is stored, so readers never see a manifest pointing at a partial version. If any
+    upload fails, the rest are cancelled, the error propagates and the manifest is left as it was.
+    """
     if errors:
         for e in errors[:20]:
             log.error("snapshot_invalid", error=e)
         raise PublishError(f"{len(errors)} validation errors; nothing published")
     prefix = f"v={snap.version}/"
-    for path, obj in sorted(snap.files.items()):
+
+    def upload(path: str) -> None:
         stores.published.put(
-            prefix + path, encode(obj), content_type="application/json", cache_control=IMMUTABLE
+            prefix + path, encode(snap.files[path]), content_type="application/json", cache_control=IMMUTABLE
         )
+
+    _upload_all(upload, sorted(snap.files), workers)
     stores.published.put(
         "manifest.json", encode(snap.manifest), content_type="application/json", cache_control=MANIFEST_CACHE
     )
     log.info("published", version=snap.version, files=len(snap.files))
     return len(snap.files)
+
+
+def _upload_all(upload: Callable[[str], None], paths: list[str], workers: int) -> None:
+    """Runs `upload` for every path on a bounded pool; raises the first failure once the pool is idle."""
+    with ThreadPoolExecutor(max_workers=max(1, workers), thread_name_prefix="publish") as pool:
+        futures = [pool.submit(upload, p) for p in paths]
+        done, pending = wait(futures, return_when=FIRST_EXCEPTION)
+        failed = [f for f in done if f.exception() is not None]
+        if failed:
+            for f in pending:
+                f.cancel()
+    if failed:
+        log.error("upload_failed", failed=len(failed), cancelled=len(pending))
+        exc = failed[0].exception()
+        assert exc is not None
+        raise exc
