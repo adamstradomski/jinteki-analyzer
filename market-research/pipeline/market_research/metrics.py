@@ -20,6 +20,7 @@ import duckdb
 
 from market_research.catalog import Catalog
 from market_research.config import Settings
+from market_research.db import insert_rows
 
 Z95 = 1.959963984540054
 
@@ -125,8 +126,7 @@ def compute_counts(con: duckdb.DuckDBPyConnection, catalog: Catalog, settings: S
         ).fetchall()
     ]
     rows = [(cid, r) for r in restrictions for cid in sorted(catalog.cards) if catalog.legal_in(cid, r)]
-    if rows:
-        con.executemany("INSERT INTO legal VALUES (?, ?)", rows)
+    insert_rows(con, "legal", rows)
     con.execute(
         f"""
         CREATE OR REPLACE TABLE t AS
