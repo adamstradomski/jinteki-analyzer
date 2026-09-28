@@ -82,10 +82,16 @@ def parse_event(ev: dict[str, Any], q: IngestQuality, fetched_at: str) -> AbrTou
     q.check_drift("abr.tournament", ev.keys(), EVENT_KEYS)
     type_value = ev.get("type_id", ev.get("type"))
     country = ev.get("location_country")
+    start = parse_date(ev.get("date"))
+    try:
+        end: str | None = parse_date(ev.get("end_date")) if ev.get("end_date") else None
+    except ParseError:
+        end = None  # optional; a bad end date must not lose the event
     return AbrTournament(
         id=strict_int(ev.get("id")),
         fetched_at=fetched_at,
-        date=parse_date(ev.get("date")),
+        date=start,
+        end_date=end if end is not None and end > start else None,
         type_id=str(type_value)[:60] if type_value not in (None, "") else None,
         format=str(ev.get("format") or "").strip().lower()[:40] or None,
         cardpool=str(ev.get("cardpool") or "")[:80] or None,

@@ -418,3 +418,47 @@ def test_coverage(fixture_run):
 
 def test_expected_canonical_dir():
     assert Path(EXPECTED / "canonical").is_dir() or UPDATE
+
+
+def _linking(env, edit_tournament, edit_entries):
+    src = {i.key: env.stores.source.get(i.key) for i in env.stores.source.list()}
+    t = json.loads(src["abr/tournament/5310.json"])
+    e = json.loads(src["abr/entries/5310.json"])
+    edit_tournament(t)
+    edit_entries(e["entries"])
+    src["abr/tournament/5310.json"] = json.dumps(t).encode()
+    src["abr/entries/5310.json"] = json.dumps(e).encode()
+    n = Normalizer(src, env.settings)  # type: ignore[arg-type]
+    n.run()
+    return {x["tid"]: x["abr_id"] for x in n.q.links}, n.q.link_mismatches
+
+
+def test_link_multi_day_abr_event_with_unclaimed_spot(fixture_run):
+    # Seen live: a continental championship listed 11-13 Sep on ABR and 12 Sep on Cobra, where ABR's
+    # entries leave out one unclaimed spot.
+    env, _, _, _ = fixture_run
+
+    def days(t):
+        t["date"], t["end_date"] = "2026-09-10", "2026-09-13"
+
+    def unclaimed(entries):
+        entries[:] = [x for x in entries if x["swiss_rank"] != 5]
+
+    links, mismatches = _linking(env, days, unclaimed)
+    assert links["c5012"] == 5310
+    assert mismatches == []
+
+
+def test_link_rejects_too_few_shared_identities(fixture_run):
+    env, _, _, _ = fixture_run
+
+    def swap(entries):
+        for a, b in ((0, 1), (2, 3), (4, 5)):
+            entries[a]["corp"]["identity"], entries[b]["corp"]["identity"] = (
+                entries[b]["corp"]["identity"],
+                entries[a]["corp"]["identity"],
+            )
+
+    links, mismatches = _linking(env, lambda t: None, swap)
+    assert "c5012" not in links
+    assert [m["reason"] for m in mismatches if m["tid"] == "c5012"] == ["fallback_identities_differ"]

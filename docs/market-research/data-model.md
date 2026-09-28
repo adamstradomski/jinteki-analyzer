@@ -79,7 +79,10 @@ Examples of every record type are in `market-research/tests/fixtures/expected/so
   `standard`. The ban list is Cobra's `deckbuilding_restriction_id` when it is a Standard restriction,
   otherwise the NRDB Standard snapshot in force on the event date.
 - **Linking:** a Cobra `abr_code` that is an existing ABR ID links directly; otherwise a unique ABR
-  event within ±1 day with the same player count and the same multiset of (corp, runner) identities.
+  event whose dates (`date` to `end_date` for multi-day events, ±1 day for time zones) include the
+  Cobra date, with the same player count, and where at least 90% of ABR's (corp, runner) identity
+  pairs are also in the Cobra event (ABR leaves unclaimed spots out of its entries). A candidate that
+  fails only on identities is reported as `fallback_identities_differ` in the quality report.
   ABR entries attach to Cobra players by swiss rank and must agree on identities; a disagreement goes
   to the quality report and that entry's ABR claim is not used.
 - **Games** are derived from pairings: single-sided swiss gives one game per pairing (3 = win,

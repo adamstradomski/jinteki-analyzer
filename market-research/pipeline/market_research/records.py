@@ -171,6 +171,7 @@ class AbrTournament(Record):
     fetched_at: str
     record_hash: str = ""
     date: str
+    end_date: str | None = None  # last day of a multi-day event; None for one-day events
     type_id: str | None = None
     format: str | None = None
     cardpool: str | None = None

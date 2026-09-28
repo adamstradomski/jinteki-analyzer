@@ -14,7 +14,7 @@ from collections import Counter
 from collections.abc import Iterable
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
-from datetime import date
+from datetime import date, timedelta
 from typing import Any
 
 import duckdb
@@ -37,6 +37,8 @@ log = logs.get("market_research.normalize")
 
 CACHE_KEY = "state/source_cache.parquet"
 TABLE_PREFIX = "tables/"
+# Share of an ABR event's identity pairs that must also be in the Cobra event for the fallback link.
+LINK_MIN_IDENTITY_SHARE = 0.9
 NORMALIZE_QUALITY_KEY = "state/normalize_quality.json"
 
 TABLES: dict[str, list[tuple[str, str]]] = {
@@ -327,27 +329,35 @@ class Normalizer:
                 for p in t.players
             )
             cands = []
+            near: list[dict[str, Any]] = []
+            played = date.fromisoformat(t.date)
             for aid, a in sorted(self.abr_t.items()):
                 if aid in used:
                     continue
-                if abs((date.fromisoformat(a.date) - date.fromisoformat(t.date)).days) > 1:
+                # ABR events can span several days (end_date); allow a day either side for time zones.
+                start = date.fromisoformat(a.date)
+                end = date.fromisoformat(a.end_date) if a.end_date else start
+                if not (start - timedelta(days=1) <= played <= end + timedelta(days=1)):
                     continue
                 if a.players_count != len(t.players):
                     continue
                 e = self.abr_e.get(aid)
-                a_idents = (
-                    Counter(
+                if e is not None:
+                    # ABR leaves unclaimed spots out of its entries, so its identity pairs are compared
+                    # as a near-subset of Cobra's: most of the pairs ABR has must also be in Cobra.
+                    a_idents = Counter(
                         (
                             self.ident_from_printing(x.corp.identity),
                             self.ident_from_printing(x.runner.identity),
                         )
                         for x in e.entries
+                        if x.corp.identity and x.runner.identity
                     )
-                    if e
-                    else None
-                )
-                if a_idents is not None and a_idents != idents:
-                    continue
+                    known = sum(a_idents.values())
+                    shared = sum((a_idents & idents).values())
+                    if known and shared < LINK_MIN_IDENTITY_SHARE * known:
+                        near.append({"abr_id": aid, "shared_pairs": shared, "abr_pairs": known})
+                        continue
                 cands.append(aid)
             if len(cands) == 1:
                 links[cid] = cands[0]
@@ -355,6 +365,11 @@ class Normalizer:
                 self.q.links.append({"tid": f"c{cid}", "abr_id": cands[0], "method": "date_size_identities"})
             elif len(cands) > 1:
                 self.q.link_mismatches.append({"tid": f"c{cid}", "reason": "ambiguous_fallback_match"})
+            elif near:
+                # Same dates and size but too few shared identities: probably the same event, not linked.
+                self.q.link_mismatches.append(
+                    {"tid": f"c{cid}", "reason": "fallback_identities_differ", **near[0]}
+                )
         return links
 
     # ----- build -----
