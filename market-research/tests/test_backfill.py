@@ -55,7 +55,7 @@ def test_plan_lists_only_and_counts_match_fixtures(tmp_path, clock):
     assert "phase 0" in text and "nrdb" in text and "total" in text
 
 
-def test_backfill_phases_publish_in_order_and_skip_rules(tmp_path, clock):
+def test_backfill_publishes_each_phase_in_order(tmp_path, clock):
     env = make_env(tmp_path, clock)
     res = backfill(rt(env), SINCE)
     assert res.phases_published == [1, 2, 3]
@@ -63,17 +63,6 @@ def test_backfill_phases_publish_in_order_and_skip_rules(tmp_path, clock):
     assert len(manifests) == 3
     versions = [k.split("/")[0] for k in env.stores.published.puts if k.endswith("catalog/cards.json")]  # type: ignore[attr-defined]
     assert versions == sorted(versions) and len(set(versions)) == 3
-    urls = [normalize_url(str(c.url)) for c in env.routes.calls]
-    assert not any("entries?id=5305" in u for u in urls)  # no claims, no match data
-    assert not any("/tournaments/5012/players/" in u for u in urls)  # open stage: no deck pages
-    bulk = set()
-    for info in env.stores.source.list("nrdb/decklists/by_date/"):
-        for d in env.stores.source.get_json(info.key)["decklists"]:
-            bulk |= {d["id"], d["uuid"]}
-    singles = [u.rsplit("/", 1)[1] for u in urls if "/public/decklist/" in u]
-    assert singles and not set(singles) & bulk
-    days = [u for u in urls if "/decklists/by_date/" in u]
-    assert len(days) == len(set(days)) == (date(2026, 9, 27) - SINCE).days + 1
 
 
 def test_default_since(tmp_path, clock):

@@ -271,6 +271,22 @@ def backfill_ingest(env, since: date = BACKFILL_SINCE):
     return ing.run()
 
 
+def test_backfill_reads_each_day_once_and_keeps_the_skip_rules(tmp_path, clock):
+    env = make_env(tmp_path, clock)
+    backfill_ingest(env)
+    fetched = urls(env)
+    assert not any("entries?id=5305" in u for u in fetched)  # no claims, no match data
+    assert not any("/tournaments/5012/players/" in u for u in fetched)  # open stage: no deck pages
+    bulk = set()
+    for info in env.stores.source.list("nrdb/decklists/by_date/"):
+        for d in env.stores.source.get_json(info.key)["decklists"]:
+            bulk |= {d["id"], d["uuid"]}
+    singles = [u.rsplit("/", 1)[1] for u in fetched if "/public/decklist/" in u]
+    assert singles and not set(singles) & bulk
+    days = [u for u in fetched if "/decklists/by_date/" in u]
+    assert len(days) == len(set(days)) == (date(2026, 9, 27) - BACKFILL_SINCE).days + 1
+
+
 def test_interrupted_backfill_resumes_without_refetching(tmp_path, clock, monkeypatch):
     env = make_env(tmp_path, clock)
     boom = normalize_url("https://tournaments.nullsignal.games/tournaments/4990/players/59700/view_decks")
