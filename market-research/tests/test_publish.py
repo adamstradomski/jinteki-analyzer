@@ -7,9 +7,12 @@ import time
 from dataclasses import replace
 from pathlib import Path
 
+import duckdb
 import jsonschema
 import pytest
 
+from market_research.metrics import compute_counts
+from market_research.normalize import Normalizer, load_sources, load_tables
 from market_research.publish import (
     IMMUTABLE,
     MANIFEST_CACHE,
@@ -20,6 +23,7 @@ from market_research.publish import (
     encode,
     publish,
     schema,
+    validate,
 )
 from market_research.storage import LocalObjectStore
 
@@ -108,37 +112,100 @@ def test_invalid_snapshot_publishes_nothing(built):
     assert stores.published.get("manifest.json") == old
 
 
-def test_validation_catches_bad_content(fixture_run, built, tmp_path):
-    from market_research import publish as pub
-
+@pytest.fixture(scope="module")
+def counted(fixture_run, tmp_path_factory):
+    """The canonical tables and their counts in DuckDB, which validate() checks the totals against."""
     env, _, _, _ = fixture_run
-    _, snap, errors = built
-    assert not errors
-    s = snap.files[PATHS["summary"].format(side="corp", restriction="all", tier_group="all")]
-    s["cards"][0]["card_id"] = "made_up_card"
-    snap.files["meta/corp/all/all/trends.json"]["baseline"][0][2] += 1
-    import duckdb
-
-    from market_research.normalize import load_tables
-
     con = duckdb.connect()
-    load_tables(env.stores.canonical, con, str(tmp_path))
-    from market_research.catalog import Catalog  # noqa: F401
-    from market_research.metrics import compute_counts
-    from market_research.normalize import Normalizer, load_sources
-
+    load_tables(env.stores.canonical, con, str(tmp_path_factory.mktemp("tables")))
     src = {
         k: v
         for k, v in load_sources(env.stores.source, env.stores.canonical).items()
         if k.startswith("nrdb/catalog/")
     }
     compute_counts(con, Normalizer(src, env.settings).catalog, env.settings)
-    errs = pub.validate(snap, con)
-    assert any("not in the catalog" in e for e in errs)
-    assert any("published decks" in e for e in errs)
-    big = snap.files["meta/corp/all/all/trends.json"]
-    big["cards"]["filler"] = [[0, 0, *[123456789012] * 10]] * 20000
-    assert any("2 MB" in e for e in pub.validate(snap, con))
+    yield con
+    con.close()
+
+
+ALL = {"restriction": "all", "tier_group": "all"}
+# The files validate() checks totals in, plus the headline summaries: validating these instead of
+# all ~170 files keeps each case below fast (schema checks dominate validate()).
+CROSS_CHECKED = [
+    PATHS["catalog"],
+    PATHS["tournaments"].format(**ALL),
+    *(
+        PATHS[k].format(side=side, **ALL)
+        for k in ("summary", "trends", "trends_cut")
+        for side in ("corp", "runner")
+    ),
+]
+
+
+@pytest.fixture
+def slim(snapshot):
+    """A copy of the snapshot with only the CROSS_CHECKED files."""
+    snap, _ = snapshot
+    return replace(
+        snap,
+        files=copy.deepcopy({p: snap.files[p] for p in CROSS_CHECKED}),
+        manifest=copy.deepcopy(snap.manifest),
+    )
+
+
+def test_validation_passes_the_built_snapshot(snapshot, slim, counted):
+    _, errors = snapshot
+    assert errors == validate(slim, counted) == []
+
+
+def _bump_baseline(kind: str, col: int):
+    def edit(snap):
+        snap.files[PATHS[kind].format(side="runner", **ALL)]["baseline"][0][col] += 1
+
+    return edit
+
+
+def _drop_tournament(snap):
+    snap.files[PATHS["tournaments"].format(**ALL)]["tournaments"].pop()
+
+
+def _schema(snap):
+    snap.files[PATHS["summary"].format(side="corp", **ALL)]["schema"] = "mr.summary/2"
+
+
+def _manifest(snap):
+    snap.manifest["version"] = 5
+
+
+def _unknown_card(snap):
+    snap.files[PATHS["summary"].format(side="corp", **ALL)]["cards"][0]["card_id"] = "made_up_card"
+
+
+def _oversized(snap):
+    snap.files[PATHS["trends"].format(side="corp", **ALL)]["cards"]["filler"] = [
+        [0, 0, *[123456789012] * 10]
+    ] * 20000
+
+
+@pytest.mark.parametrize(
+    ("edit", "error"),
+    [
+        (_schema, "meta/corp/all/all/summary.json: 'mr.summary/1' was expected"),
+        (_manifest, "manifest.json: 5 is not of type 'string'"),
+        (_unknown_card, "meta/corp/all/all/summary.json: card ids not in the catalog: ['made_up_card']"),
+        (_oversized, "meta/corp/all/all/trends.json: "),
+        (_drop_tournament, "tournaments listed "),
+        (_bump_baseline("trends", 2), "runner: published decks "),
+        (_bump_baseline("trends", 3), "runner: published games "),
+        (_bump_baseline("trends_cut", 2), "runner: published top-cut decks != canonical"),
+    ],
+)
+def test_validation_reports_each_problem(slim, counted, edit, error):
+    edit(slim)
+    errors = validate(slim, counted)
+    assert [e for e in errors if e.startswith(error)] == errors != [], errors
+    if edit is _oversized:
+        assert errors[0].endswith("exceeds the 2 MB slice limit")
 
 
 def test_only_catalog_titles_and_numbers(built):

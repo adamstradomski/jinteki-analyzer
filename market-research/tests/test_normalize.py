@@ -629,3 +629,75 @@ def test_online_events_are_recognised(fixture_run):
     t = {r["tid"]: r for r in out.rows["tournament"]}
     assert t["c5012"]["online"] and t["c5012"]["tier"] == "store"
     assert not t["c4990"]["online"]
+
+
+def _normalized(env, src) -> tuple[set[str], Normalizer]:
+    n = Normalizer(src, env.settings)  # type: ignore[arg-type]
+    return {r["tid"] for r in n.run().rows["tournament"]}, n
+
+
+def _edited(env, key: str, edit) -> dict[str, bytes]:
+    src = {i.key: env.stores.source.get(i.key) for i in env.stores.source.list()}
+    rec = json.loads(src[key])
+    edit(rec)
+    src[key] = json.dumps(rec).encode()
+    return src
+
+
+@pytest.mark.parametrize(
+    ("key", "edit", "tid", "reason"),
+    [
+        (
+            "cobra/tournament/5015.json",
+            lambda t: t.update(results_fetched=False),
+            "c5015",
+            "cobra_no_results",
+        ),
+        ("cobra/tournament/5015.json", lambda t: t.update(players=t["players"][:7]), "c5015", "too_small"),
+        # A Cobra event follows the guards of the ABR event it is linked to.
+        ("abr/tournament/5284.json", lambda a: a.update(approved=0), "c4990", "abr_guard"),
+        ("abr/tournament/5284.json", lambda a: a.update(claim_conflict=True), "c4990", "abr_guard"),
+        ("abr/tournament/5301.json", lambda a: a.update(approved=0), "a5301", "abr_guard"),
+        ("abr/tournament/5301.json", lambda a: a.update(concluded=False), "a5301", "abr_guard"),
+        ("abr/tournament/5301.json", lambda a: a.update(claim_conflict=True), "a5301", "abr_guard"),
+        ("abr/tournament/5240.json", lambda a: a.update(players_count=7), "a5240", "too_small"),
+    ],
+)
+def test_guards_leave_events_out_and_count_why(fixture_run, key, edit, tid, reason):
+    env, _, data, q = fixture_run
+    assert tid in {r["tid"] for r in data.rows["tournament"]}
+    kept, n = _normalized(env, _edited(env, key, edit))
+    assert tid not in kept
+    assert n.q.skipped[reason] == q.skipped[reason] + 1
+
+
+def test_abr_event_without_entries_is_left_out(fixture_run):
+    env, _, data, q = fixture_run
+    src = {i.key: env.stores.source.get(i.key) for i in env.stores.source.list()}
+    del src["abr/entries/5240.json"]
+    kept, n = _normalized(env, src)
+    assert "a5240" in {r["tid"] for r in data.rows["tournament"]} and "a5240" not in kept
+    assert n.q.skipped["abr_no_entries"] == q.skipped["abr_no_entries"] + 1
+
+
+def test_two_fallback_candidates_link_neither(fixture_run):
+    env, _, _, _ = fixture_run
+    src = {i.key: env.stores.source.get(i.key) for i in env.stores.source.list()}
+    twin = json.loads(src["abr/tournament/5310.json"])
+    twin["id"] = 5311
+    src["abr/tournament/5311.json"] = json.dumps(twin).encode()
+    entries = json.loads(src["abr/entries/5310.json"])
+    entries["tournament_id"] = 5311
+    src["abr/entries/5311.json"] = json.dumps(entries).encode()
+    _, n = _normalized(env, src)
+    assert "c5012" not in {x["tid"] for x in n.q.links}
+    assert {"tid": "c5012", "reason": "ambiguous_fallback_match"} in n.q.link_mismatches
+
+
+def test_unknown_abr_code_is_reported(fixture_run):
+    env, _, _, _ = fixture_run
+    kept, n = _normalized(
+        env, _edited(env, "cobra/tournament/5015.json", lambda t: t.update(abr_code="9999"))
+    )
+    assert "c5015" in kept
+    assert {"tid": "c5015", "reason": "abr_code_unresolved"} in n.q.link_mismatches

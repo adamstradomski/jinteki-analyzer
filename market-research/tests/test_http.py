@@ -251,3 +251,33 @@ def test_404_is_not_a_failure(settings, clock, rng, mock):
     h = make(settings, clock, rng)
     assert h.get(f"{ABR}/nf").status == 404
     assert h.stats()["abr"].consecutive_failures == 0
+
+
+def test_unreadable_retry_after_falls_back_to_backoff(settings, clock, rng, mock):
+    mock.get(f"{ABR}/api/x").mock(
+        side_effect=[httpx.Response(503, headers={"Retry-After": "soon"}), httpx.Response(200, json={})]
+    )
+    assert make(settings, clock, rng).get(f"{ABR}/api/x").status == 200
+    assert 2.0 in clock.sleeps  # the first backoff step
+
+
+def test_redirect_without_location_is_returned_as_is(settings, clock, rng, mock):
+    mock.get(f"{ABR}/r").respond(302)
+    assert make(settings, clock, rng).get(f"{ABR}/r").status == 302
+
+
+def test_redirect_loop_is_refused(settings, clock, rng, mock):
+    loop = mock.get(f"{ABR}/loop").respond(302, headers={"Location": "/loop"})
+    with pytest.raises(RequestRefused, match="too many redirects"):
+        make(settings, clock, rng).get(f"{ABR}/loop")
+    assert loop.call_count == 4  # the request and three redirects
+
+
+def test_size_cap_applies_to_a_body_without_content_length(settings, clock, rng, mock):
+    settings.max_response_bytes = 1000
+    chunked = mock.get(f"{ABR}/chunked").mock(
+        return_value=httpx.Response(200, content=iter([b"x" * 600, b"x" * 600]))
+    )
+    with pytest.raises(ResponseTooLarge, match="over 1000 bytes"):
+        make(settings, clock, rng).get(f"{ABR}/chunked")
+    assert "content-length" not in chunked.calls.last.response.headers
