@@ -53,7 +53,7 @@ PATHS = {
     "quality": "quality/report.json",
 }
 ATTRIBUTION = {
-    "text": "Tournament results from AlwaysBeRunning.net and NSG Cobra; decklists from NetrunnerDB.",
+    "text": "Tournament results from AlwaysBeRunning.net and NSG Cobra; decklists from NetrunnerDB and NSG Cobra; card data from NetrunnerDB.",
     "links": [
         {"name": "AlwaysBeRunning.net", "url": "https://alwaysberunning.net"},
         {"name": "NSG Cobra", "url": "https://tournaments.nullsignal.games"},

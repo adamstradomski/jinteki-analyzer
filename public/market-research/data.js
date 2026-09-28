@@ -103,6 +103,13 @@ export function parseHash(hash, manifest) {
   return state;
 }
 
+/** Ban lists for the filter: "All ban lists" first, then the newest list first. */
+export function banlistOptions(manifest) {
+  const [all, ...lists] = manifest.restrictions;
+  const key = (r) => r.date_start || '';
+  return [all, ...[...lists].sort((a, b) => key(b).localeCompare(key(a)) || b.id.localeCompare(a.id))];
+}
+
 export function formatHash(state) {
   const period = state.from && state.to ? `${state.from}..${state.to}` : '';
   return `#${state.restriction}/${state.tier}/${period}/${state.side}${state.cut ? '/cut' : ''}`;

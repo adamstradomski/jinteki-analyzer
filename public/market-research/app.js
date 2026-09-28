@@ -172,7 +172,7 @@ function option(value, label, selected) {
 
 function setupFilters() {
   sideToggle = JW.mountSideToggle($('side-toggle'), state.side, (side) => { state.side = side; commit(); });
-  $('f-restriction').replaceChildren(...manifest.restrictions.map((r) => option(r.id, r.name, r.id === state.restriction)));
+  $('f-restriction').replaceChildren(...D.banlistOptions(manifest).map((r) => option(r.id, r.name, r.id === state.restriction)));
   $('f-tier').replaceChildren(...manifest.tier_groups.map((t) => option(t.id, t.name, t.id === state.tier)));
   for (const id of ['f-from', 'f-to']) {
     $(id).replaceChildren(...manifest.months.map((m) => option(m, monthName(m), false)));
@@ -281,6 +281,34 @@ function setupSampleToggle(id, key, render) {
 /** Drops cards below the minimum games when the panel's switch is on. */
 const sampled = (key, rows, ok) => (hideSmall[key] ? rows.filter(ok) : rows);
 
+// ---------------------------------------------------------------- column help (header tooltips)
+
+function help() {
+  const side = state.side === 'corp' ? 'Corp' : 'Runner';
+  const decks = state.cut ? `top-cut ${side} decks (decks that made the cut, in events with a cut)` : `${side} decks`;
+  const base = `the winrate of all ${decks} with a known decklist in this filter (${fmtPct(view.baseline.winrate)})`;
+  return {
+    rank: 'Position by the number of decks playing the card in this period.',
+    card: 'Card name and faction. Select it for details and its monthly trend.',
+    type: 'Card type.',
+    inclusion: `Share of ${decks} with a known decklist in this filter that play at least one copy: decks with the card ÷ all decks.`,
+    avgCopies: 'Average number of copies, over the decks that play the card.',
+    change: 'Inclusion in this period minus inclusion in the previous period of the same length, in percentage points.',
+    decks: `Number of ${decks} with a known decklist that play the card.`,
+    winrateDiff: `Winrate of the games played by decks with the card, minus ${base}. Draws count as half a win; intentional draws are excluded.`,
+    interval: 'Wilson 95% confidence interval of the card\'s winrate, minus the baseline. When it spans 0, the difference may be chance.',
+    winrate: 'Games won ÷ games played by decks with the card. Draws count as half a win.',
+    games: 'Games played by decks with the card, where the deck is known.',
+    identRank: 'Position by the number of entries.',
+    identity: 'Identity name and faction.',
+    share: `Share of ${side} entries in this filter (players with a known identity) on this identity.`,
+    identWinrate: `Game winrate of players on this identity, minus the winrate of all ${side} players with a known identity. Draws count as half a win.`,
+    identGames: 'Games played on this identity.',
+    conversion: `Share of entries on this identity that made the top cut, in events with a cut where most identities are known. In brackets: that share ÷ the share for all ${side} entries.`,
+    cutEntries: 'Entries on this identity in events with a cut where most identities are known: the sample the conversion is based on.',
+  };
+}
+
 // ---------------------------------------------------------------- tables
 
 /** A sortable table with real header buttons and an optional "show all" button. */
@@ -293,7 +321,7 @@ function dataTable(host, columns, rows, { initial, sortKey = null, sortDir = 'de
     const sorted = key ? D.sortRows(rows, key, dir, col?.value || ((r) => r[key])) : initial ? initial(rows) : rows;
     const shown = all ? sorted : sorted.slice(0, limit);
     const head = el('tr', {}, ...columns.map((c) => {
-      const th = el('th', { class: c.num ? 'num' : '', scope: 'col', 'aria-sort': c.key === key ? dir : null });
+      const th = el('th', { class: c.num ? 'num' : '', scope: 'col', 'aria-sort': c.key === key ? dir : null, title: c.help || null });
       if (c.sortable === false) th.textContent = c.label;
       else th.append(el('button', { type: 'button', class: 'mr-sort', onclick: () => {
         if (key === c.key) dir = dir === 'descending' ? 'ascending' : 'descending';
@@ -322,46 +350,49 @@ function meterCell(v) {
 }
 
 function renderPlayed() {
+  const h = help();
   const rows = view.cards.filter((c) => c.decks > 0);
   const emptyPlayed = state.cut ? 'No top-cut decks with known decklists in this filter.' : 'No cards in this filter.';
   dataTable($('played-body'), [
-    { key: 'rank', label: 'Rank', num: true, cell: (r) => el('td', { class: 'num', text: fmtInt(r.rank) }) },
-    { key: 'title', label: 'Card', value: (r) => cardName(r.card_id), cell: (r) => cardCell(r.card_id) },
-    { key: 'type', label: 'Type', value: (r) => D.typeName(cards.get(r.card_id)?.type), cell: (r) => el('td', { text: D.typeName(cards.get(r.card_id)?.type) }) },
-    { key: 'popularity', label: 'Inclusion', num: true, cell: (r) => meterCell(r.popularity) },
-    { key: 'avg_copies', label: 'Avg copies', num: true, cell: (r) => el('td', { class: 'num', text: fmtNum(r.avg_copies) }) },
-    { key: 'change_pp', label: 'Change', num: true, cell: (r) => changeCell(r.change_pp) },
-    { key: 'decks', label: 'Decks', num: true, cell: (r) => el('td', { class: 'num', text: fmtN(r.decks) }) },
+    { key: 'rank', label: 'Rank', num: true, help: h.rank, cell: (r) => el('td', { class: 'num', text: fmtInt(r.rank) }) },
+    { key: 'title', label: 'Card', help: h.card, value: (r) => cardName(r.card_id), cell: (r) => cardCell(r.card_id) },
+    { key: 'type', label: 'Type', help: h.type, value: (r) => D.typeName(cards.get(r.card_id)?.type), cell: (r) => el('td', { text: D.typeName(cards.get(r.card_id)?.type) }) },
+    { key: 'popularity', label: 'Inclusion', num: true, help: h.inclusion, cell: (r) => meterCell(r.popularity) },
+    { key: 'avg_copies', label: 'Avg copies', num: true, help: h.avgCopies, cell: (r) => el('td', { class: 'num', text: fmtNum(r.avg_copies) }) },
+    { key: 'change_pp', label: 'Change', num: true, help: h.change, cell: (r) => changeCell(r.change_pp) },
+    { key: 'decks', label: 'Decks', num: true, help: h.decks, cell: (r) => el('td', { class: 'num', text: fmtN(r.decks) }) },
   ], rows, { sortKey: 'rank', sortDir: 'ascending', empty: emptyPlayed });
 }
 
 function renderIdentities() {
+  const h = help();
   const list = identities?.identities || [];
   const p = identities?.period;
   $('identities-note').textContent = p
     ? `Share of entries, winrate difference from the ${state.side === 'corp' ? 'Corp' : 'Runner'} baseline and top-cut conversion, ${monthName(p.from)} → ${monthName(p.to)}.${state.custom && view.period && (p.from !== view.period.from || p.to !== view.period.to) ? ' Identities always show the default period.' : ''}`
     : '';
   dataTable($('identities-body'), [
-    { key: 'rank', label: 'Rank', num: true, cell: (r) => el('td', { class: 'num', text: fmtInt(r.rank) }) },
-    { key: 'title', label: 'Identity', value: (r) => cardName(r.card_id), cell: (r) => cardCell(r.card_id) },
-    { key: 'share', label: 'Share', num: true, cell: (r) => meterCell(r.share) },
-    { key: 'winrate_diff_pp', label: 'Winrate vs baseline', num: true, cell: (r) => diffCell(r.winrate_diff_pp, r.winrate_status !== 'ok') },
-    { key: 'games', label: 'Games', num: true, cell: (r) => el('td', { class: 'num', text: fmtN(r.games) }) },
-    { key: 'conversion', label: 'Conversion', num: true, cell: (r) => el('td', { class: 'num', text: `${fmtPct(r.conversion)} (${fmtRatio(r.conversion_ratio)})` }) },
-    { key: 'cut_entries', label: 'Entries in cut events', num: true, cell: (r) => el('td', { class: 'num', text: fmtN(r.cut_entries) }) },
+    { key: 'rank', label: 'Rank', num: true, help: h.identRank, cell: (r) => el('td', { class: 'num', text: fmtInt(r.rank) }) },
+    { key: 'title', label: 'Identity', help: h.identity, value: (r) => cardName(r.card_id), cell: (r) => cardCell(r.card_id) },
+    { key: 'share', label: 'Share', num: true, help: h.share, cell: (r) => meterCell(r.share) },
+    { key: 'winrate_diff_pp', label: 'Winrate vs baseline', num: true, help: h.identWinrate, cell: (r) => diffCell(r.winrate_diff_pp, r.winrate_status !== 'ok') },
+    { key: 'games', label: 'Games', num: true, help: h.identGames, cell: (r) => el('td', { class: 'num', text: fmtN(r.games) }) },
+    { key: 'conversion', label: 'Conversion', num: true, help: h.conversion, cell: (r) => el('td', { class: 'num', text: `${fmtPct(r.conversion)} (${fmtRatio(r.conversion_ratio)})` }) },
+    { key: 'cut_entries', label: 'Entries in cut events', num: true, help: h.cutEntries, cell: (r) => el('td', { class: 'num', text: fmtN(r.cut_entries) }) },
   ], list, { sortKey: 'rank', sortDir: 'ascending', rowClass: (r) => (r.winrate_status !== 'ok' ? 'mr-insufficient' : ''), empty: 'No identities in this filter.' });
 }
 
 function renderWinrate() {
+  const h = help();
   const min = manifest.thresholds.min_games;
   $('winrate-note').textContent = `Game winrate of decks with the card minus the ${state.side === 'corp' ? 'Corp' : 'Runner'} baseline over games with decklists (${fmtPct(view.baseline.winrate)}), with the Wilson 95% interval. Draws count as half a win; intentional draws are excluded. ${hideSmall.winrate ? `Cards under ${min} games are hidden.` : `Rows under ${min} games are greyed and listed last.`}`;
   const rows = sampled('winrate', D.winrateRows(view.cards), (r) => r.winrate_status === 'ok');
   dataTable($('winrate-body'), [
-    { key: 'title', label: 'Card', value: (r) => cardName(r.card_id), cell: (r) => cardCell(r.card_id) },
-    { key: 'winrate_diff_pp', label: 'Winrate vs baseline', num: true, cell: (r) => diffCell(r.winrate_diff_pp, r.winrate_status !== 'ok') },
-    { key: 'wilson_low_pp', label: '95% interval', num: true, sortable: false, cell: (r) => el('td', { class: 'num', text: `${fmtPp(r.wilson_low_pp)} → ${fmtPp(r.wilson_high_pp)}` }) },
-    { key: 'winrate', label: 'Winrate', num: true, cell: (r) => el('td', { class: 'num', text: fmtPct(r.winrate) }) },
-    { key: 'games', label: 'Games', num: true, cell: (r) => el('td', { class: 'num', text: fmtN(r.games) }) },
+    { key: 'title', label: 'Card', help: h.card, value: (r) => cardName(r.card_id), cell: (r) => cardCell(r.card_id) },
+    { key: 'winrate_diff_pp', label: 'Winrate vs baseline', num: true, help: h.winrateDiff, cell: (r) => diffCell(r.winrate_diff_pp, r.winrate_status !== 'ok') },
+    { key: 'wilson_low_pp', label: '95% interval', num: true, sortable: false, help: h.interval, cell: (r) => el('td', { class: 'num', text: `${fmtPp(r.wilson_low_pp)} → ${fmtPp(r.wilson_high_pp)}` }) },
+    { key: 'winrate', label: 'Winrate', num: true, help: h.winrate, cell: (r) => el('td', { class: 'num', text: fmtPct(r.winrate) }) },
+    { key: 'games', label: 'Games', num: true, help: h.games, cell: (r) => el('td', { class: 'num', text: fmtN(r.games) }) },
   ], rows, { rowClass: (r) => (r.winrate_status !== 'ok' ? 'mr-insufficient' : ''), empty: hideSmall.winrate ? `No card has ${min} games with decklists in this filter.` : 'No games with decklists in this filter.' });
 }
 
@@ -514,7 +545,8 @@ function drawTrends() {
     el('span', { class: 'legend-swatch', style: `background: var(--chart-${t.slot + 1})` }), cardName(t.id))));
   lineChart($('trend-chart'), series, markers, { label: `Monthly inclusion of ${series.map((x) => x.name).join(', ')}` });
   // Table alternative
-  const head = el('tr', {}, el('th', { scope: 'col', text: 'Month' }), ...series.map((x) => el('th', { class: 'num', scope: 'col', text: x.name })));
+  const monthly = `Share of ${state.cut ? 'top-cut ' : ''}${state.side === 'corp' ? 'Corp' : 'Runner'} decks with a known decklist from that month that play the card.`;
+  const head = el('tr', {}, el('th', { scope: 'col', text: 'Month' }), ...series.map((x) => el('th', { class: 'num', scope: 'col', text: x.name, title: monthly })));
   const rows = months.map((mo, i) => el('tr', {}, el('td', { text: monthName(mo) }), ...series.map((x) => el('td', { class: 'num', text: fmtPct(x.points[i].popularity) }))));
   $('trend-table').replaceChildren(el('div', { class: 'mr-scroll' }, el('table', { class: 'data-table' }, el('thead', {}, head), el('tbody', {}, ...rows))));
 }
@@ -532,12 +564,13 @@ function renderScatter() {
   const side = state.side === 'corp' ? 'Corp' : 'Runner';
   $('scatter-note').textContent = `Across: inclusion, the share of ${side} decks with a known decklist in this filter that play the card. Up and down: the card's game winrate minus the baseline, which is the winrate of every ${side} deck with a known decklist in this filter (${fmtPct(b.winrate)} over ${fmtInt(b.games)} games). Point size shows games; hollow points are below the minimum sample.${scatterView.top ? ` Showing the ${SCATTER_TOP} most included cards and the ${SCATTER_TOP} with the best winrate difference.` : ''}`;
   drawScatter();
+  const h = help();
   const pts = scatterData();
   dataTable($('scatter-table'), [
-    { key: 'title', label: 'Card', value: (r) => cardName(r.card_id), cell: (r) => cardCell(r.card_id) },
-    { key: 'x', label: 'Inclusion', num: true, cell: (r) => el('td', { class: 'num', text: `${r.x.toFixed(1)}%` }) },
-    { key: 'y', label: 'Winrate vs baseline', num: true, cell: (r) => diffCell(r.y, !r.sufficient) },
-    { key: 'games', label: 'Games', num: true, cell: (r) => el('td', { class: 'num', text: fmtN(r.games) }) },
+    { key: 'title', label: 'Card', help: h.card, value: (r) => cardName(r.card_id), cell: (r) => cardCell(r.card_id) },
+    { key: 'x', label: 'Inclusion', num: true, help: h.inclusion, cell: (r) => el('td', { class: 'num', text: `${r.x.toFixed(1)}%` }) },
+    { key: 'y', label: 'Winrate vs baseline', num: true, help: h.winrateDiff, cell: (r) => diffCell(r.y, !r.sufficient) },
+    { key: 'games', label: 'Games', num: true, help: h.games, cell: (r) => el('td', { class: 'num', text: fmtN(r.games) }) },
   ], pts, { sortKey: 'x', rowClass: (r) => (r.sufficient ? '' : 'mr-insufficient') });
 }
 
