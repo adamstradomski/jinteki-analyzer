@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from datetime import date
 
 import httpx
 import pytest
@@ -10,6 +11,7 @@ import pytest
 from helpers import make_env
 from market_research.frontier import Frontier
 from market_research.ingest import Ingestor
+from market_research.records import CobraTournament, dump
 from market_research.sources.common import ParseError, opt_printing
 from market_research.testing import normalize_url
 
@@ -24,6 +26,26 @@ def run(env, **kw):
 
 def urls(env):
     return [normalize_url(str(c.url)) for c in env.routes.calls]
+
+
+BACKFILL_SINCE = date(2026, 6, 1)
+# The items a backfill reads first to find events; the same set `runner.plan` reads.
+LISTINGS = frozenset({"abr_list_full", "cobra_index", "cobra_catalog"})
+
+
+def discover(env, since: date) -> set[str]:
+    """Runs only a backfill's discovery listings. Returns the frontier keys of the events known after."""
+    ing = Ingestor(
+        env.settings,
+        env.clock,
+        env.http(unlimited_budget=True),
+        env.stores,
+        since=since,
+        backfill=True,
+        parallel=False,
+    )
+    ing.run(accept=lambda it: it.kind in LISTINGS)
+    return {k for k, it in ing.frontier.items.items() if it.kind in ("abr_event", "cobra_tournament")}
 
 
 def test_first_run_fetches_expected_items(tmp_path, clock):
@@ -210,3 +232,82 @@ def test_event_names_are_cleaned():
     assert opt_title("  Worlds\n2026\t Top Cut ") == "Worlds 2026 Top Cut"
     assert opt_title("x" * 200) == "x" * 120
     assert opt_title("   ") is None and opt_title(None) is None
+
+
+def test_longer_backfill_discovers_events_a_shorter_one_did_not_reach(tmp_path, clock):
+    # Seen live: a 30-day backfill followed by a two-year one found no older events, because the
+    # listings were already done and Cobra's index stopped at the first known event.
+    env = make_env(tmp_path / "rerun", clock)
+    short = discover(env, date(2026, 9, 1))
+    longer = discover(env, BACKFILL_SINCE)
+    fresh = discover(make_env(tmp_path / "fresh", clock), BACKFILL_SINCE)
+    assert fresh > short
+    assert longer == fresh
+
+
+def test_backfill_index_read_fills_in_a_missing_cobra_name(tmp_path, clock):
+    # Tournaments stored before names were kept get theirs on the next backfill's index read.
+    env = make_env(tmp_path, clock)
+    discover(env, BACKFILL_SINCE)
+    key = "cobra/tournament/4990.json"
+    stored = CobraTournament.model_validate(env.stores.source.get_json(key))
+    assert stored.name
+    # As collected before names were kept: no name, and a hash computed without one.
+    env.stores.source.put_json(key, dump(stored.model_copy(update={"name": None}).hashed()))
+    discover(env, BACKFILL_SINCE)
+    assert env.stores.source.get_json(key)["name"] == stored.name
+
+
+def backfill_ingest(env, since: date = BACKFILL_SINCE):
+    ing = Ingestor(
+        env.settings,
+        env.clock,
+        env.http(unlimited_budget=True),
+        env.stores,
+        since=since,
+        backfill=True,
+        parallel=False,
+    )
+    return ing.run()
+
+
+def test_backfill_reads_each_day_once_and_keeps_the_skip_rules(tmp_path, clock):
+    env = make_env(tmp_path, clock)
+    backfill_ingest(env)
+    fetched = urls(env)
+    assert not any("entries?id=5305" in u for u in fetched)  # no claims, no match data
+    assert not any("/tournaments/5012/players/" in u for u in fetched)  # open stage: no deck pages
+    bulk = set()
+    for info in env.stores.source.list("nrdb/decklists/by_date/"):
+        for d in env.stores.source.get_json(info.key)["decklists"]:
+            bulk |= {d["id"], d["uuid"]}
+    singles = [u.rsplit("/", 1)[1] for u in fetched if "/public/decklist/" in u]
+    assert singles and not set(singles) & bulk
+    days = [u for u in fetched if "/decklists/by_date/" in u]
+    assert len(days) == len(set(days)) == (date(2026, 9, 27) - BACKFILL_SINCE).days + 1
+
+
+def test_interrupted_backfill_resumes_without_refetching(tmp_path, clock, monkeypatch):
+    env = make_env(tmp_path, clock)
+    boom = normalize_url("https://tournaments.nullsignal.games/tournaments/4990/players/59700/view_decks")
+    respond = env.routes.respond
+
+    def explode(request):
+        if normalize_url(str(request.url)) == boom:
+            raise RuntimeError("network gone")
+        return respond(request)
+
+    monkeypatch.setattr(env.routes, "respond", explode)
+    with pytest.raises(RuntimeError):
+        backfill_ingest(env)
+    done_first = urls(env)
+    assert done_first
+    monkeypatch.setattr(env.routes, "respond", respond)
+    env.routes.calls.clear()
+    backfill_ingest(env)
+    again = urls(env)
+    # A backfill always re-reads the discovery listings; nothing else is fetched twice.
+    listing = ("robots.txt", "/api/tournaments/results", "/public/tournaments?")
+    refetched = [u for u in again if u in done_first and not any(x in u for x in listing)]
+    assert boom in again
+    assert refetched == []

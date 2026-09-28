@@ -77,6 +77,25 @@ def schema(name: str) -> dict[str, Any]:
     return loaded
 
 
+@cache
+def _validator(name: str) -> jsonschema.protocols.Validator:
+    s = schema(name)
+    cls = jsonschema.validators.validator_for(s)
+    cls.check_schema(s)
+    return cls(s)
+
+
+def check(obj: Any, name: str) -> None:
+    """Raises what `jsonschema.validate(obj, schema(name))` raises.
+
+    `jsonschema.validate` checks the schema itself and builds a new validator on every call, which
+    took most of a publish's validation time over ~170 files; the validator here is built once.
+    """
+    err = jsonschema.exceptions.best_match(_validator(name).iter_errors(obj))
+    if err is not None:
+        raise err
+
+
 def encode(obj: Any) -> bytes:
     return json.dumps(obj, ensure_ascii=False, separators=(",", ":"), sort_keys=False).encode("utf-8")
 
@@ -519,7 +538,7 @@ def validate(snap: Snapshot, con: duckdb.DuckDBPyConnection) -> list[str]:
         name = path.rsplit("/", 1)[1].removesuffix(".json")
         kind = kinds["catalog" if path == PATHS["catalog"] else name]
         try:
-            jsonschema.validate(obj, schema(kind))
+            check(obj, kind)
         except jsonschema.ValidationError as e:
             errors.append(f"{path}: {e.message[:200]}")
         size = len(encode(obj))
@@ -538,7 +557,7 @@ def validate(snap: Snapshot, con: duckdb.DuckDBPyConnection) -> list[str]:
         if missing:
             errors.append(f"{path}: card ids not in the catalog: {sorted(missing)[:5]}")
     try:
-        jsonschema.validate(snap.manifest, schema("manifest"))
+        check(snap.manifest, "manifest")
     except jsonschema.ValidationError as e:
         errors.append(f"manifest.json: {e.message[:200]}")
     # Totals in the published slices must match the canonical tables.

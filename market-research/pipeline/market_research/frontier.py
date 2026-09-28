@@ -9,6 +9,7 @@ from datetime import UTC, date, datetime, timedelta
 
 import duckdb
 
+from market_research.db import insert_rows
 from market_research.storage import ObjectStore
 
 FRONTIER_KEY = "state/frontier.parquet"
@@ -137,8 +138,7 @@ class Frontier:
                 tuple(_naive(v) for v in asdict(i).values())
                 for i in sorted(self.items.values(), key=lambda i: i.key)
             ]
-            if rows:
-                con.executemany("INSERT INTO f VALUES (" + ",".join(["?"] * 16) + ")", rows)
+            insert_rows(con, "f", rows)
             with tempfile.TemporaryDirectory() as tmp:
                 path = os.path.join(tmp, "f.parquet")
                 con.execute(f"COPY (SELECT * FROM f ORDER BY key) TO '{path}' (FORMAT PARQUET)")

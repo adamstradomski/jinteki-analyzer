@@ -23,6 +23,7 @@ import duckdb
 from market_research import logs
 from market_research.catalog import Catalog
 from market_research.config import Settings, tier_config
+from market_research.db import insert_rows
 from market_research.records import (
     AbrEntries,
     AbrTournament,
@@ -87,9 +88,7 @@ class Canonical:
     def load_into(self, con: duckdb.DuckDBPyConnection) -> None:
         for t, cols in TABLES.items():
             con.execute(f'CREATE OR REPLACE TABLE "{t}" (' + ", ".join(f'"{c}" {ty}' for c, ty in cols) + ")")
-            data = [tuple(r[c] for c, _ in cols) for r in self.rows[t]]
-            if data:
-                con.executemany(f'INSERT INTO "{t}" VALUES (' + ",".join("?" * len(cols)) + ")", data)
+            insert_rows(con, t, [tuple(r[c] for c, _ in cols) for r in self.rows[t]])
 
 
 @dataclass
@@ -164,9 +163,7 @@ def load_sources(store: ObjectStore, canonical: ObjectStore, *, workers: int = 1
         con = duckdb.connect()
         try:
             con.execute("CREATE TABLE c (key VARCHAR, etag VARCHAR, body VARCHAR)")
-            rows = [(k, listing[k], out[k].decode("utf-8")) for k in sorted(out)]
-            if rows:
-                con.executemany("INSERT INTO c VALUES (?, ?, ?)", rows)
+            insert_rows(con, "c", [(k, listing[k], out[k].decode("utf-8")) for k in sorted(out)])
             with tempfile.TemporaryDirectory() as tmp:
                 p = os.path.join(tmp, "c.parquet")
                 con.execute(f"COPY c TO '{p}' (FORMAT PARQUET, COMPRESSION ZSTD)")

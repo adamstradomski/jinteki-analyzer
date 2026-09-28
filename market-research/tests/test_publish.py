@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import json
 from dataclasses import replace
 from pathlib import Path
@@ -7,17 +8,35 @@ from pathlib import Path
 import jsonschema
 import pytest
 
-from market_research.publish import IMMUTABLE, MANIFEST_CACHE, PATHS, PublishError, build, publish, schema
+from market_research.publish import (
+    IMMUTABLE,
+    MANIFEST_CACHE,
+    PATHS,
+    PublishError,
+    build,
+    check,
+    publish,
+    schema,
+)
 from market_research.storage import LocalObjectStore
 
 DOCS = Path(__file__).resolve().parents[2] / "docs" / "market-research" / "snapshot-contract"
 
 
+@pytest.fixture(scope="module")
+def snapshot(fixture_run, tmp_path_factory):
+    """One snapshot built from the shared fixture run; tests get a copy through `built`."""
+    env, _, _, _ = fixture_run
+    stores = replace(env.stores, published=LocalObjectStore(tmp_path_factory.mktemp("published")))
+    return build(stores, env.settings, env.clock.now())
+
+
 @pytest.fixture
-def built(fixture_run, tmp_path):
+def built(fixture_run, snapshot, tmp_path):
+    """(stores with an empty published store, a copy of the snapshot, its validation errors)."""
     env, _, _, _ = fixture_run
     stores = replace(env.stores, published=LocalObjectStore(tmp_path / "published"))
-    snap, errors = build(stores, env.settings, env.clock.now())
+    snap, errors = copy.deepcopy(snapshot)
     return stores, snap, errors
 
 
@@ -34,9 +53,9 @@ def test_snapshot_is_valid(built):
     }
     for path, obj in snap.files.items():
         kind = "catalog" if path == PATHS["catalog"] else names[path.rsplit("/", 1)[1][:-5]]
-        jsonschema.validate(obj, schema(kind))
+        check(obj, kind)
         assert obj["schema"].startswith("mr.")
-    jsonschema.validate(snap.manifest, schema("manifest"))
+    check(snap.manifest, "manifest")
 
 
 def test_every_slice_path_exists_and_is_deterministic(built):
@@ -86,11 +105,11 @@ def test_invalid_snapshot_publishes_nothing(built):
     assert stores.published.get("manifest.json") == old
 
 
-def test_validation_catches_bad_content(fixture_run, tmp_path):
+def test_validation_catches_bad_content(fixture_run, built, tmp_path):
     from market_research import publish as pub
 
     env, _, _, _ = fixture_run
-    snap, errors = build(env.stores, env.settings, env.clock.now())
+    _, snap, errors = built
     assert not errors
     s = snap.files[PATHS["summary"].format(side="corp", restriction="all", tier_group="all")]
     s["cards"][0]["card_id"] = "made_up_card"
@@ -150,7 +169,7 @@ def test_docs_contract_matches_package_schemas():
     for ex in sorted(DOCS.glob("examples/*.json")):
         obj = json.loads(ex.read_text())
         kind = ex.stem.split(".")[0]
-        jsonschema.validate(obj, schema(kind))
+        check(obj, kind)
 
 
 def test_catalog_contains_only_standard_legal_cards(built):
@@ -160,3 +179,15 @@ def test_catalog_contains_only_standard_legal_cards(built):
     assert "account_siphon" not in ids  # rotated out of Standard
     assert "hedge_fund" in ids
     assert all(c["legal_in"] for c in cat["cards"])
+
+
+def test_check_raises_what_jsonschema_validate_raises():
+    manifest = json.loads((DOCS / "examples" / "manifest.example.json").read_text())
+    check(manifest, "manifest")
+    del manifest["version"]
+    manifest["generated_at"] = 5
+    with pytest.raises(jsonschema.ValidationError) as ours:
+        check(manifest, "manifest")
+    with pytest.raises(jsonschema.ValidationError) as theirs:
+        jsonschema.validate(manifest, schema("manifest"))
+    assert (ours.value.message, list(ours.value.path)) == (theirs.value.message, list(theirs.value.path))
