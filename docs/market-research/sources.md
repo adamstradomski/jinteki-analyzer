@@ -40,10 +40,12 @@ manifest (`attribution`) do.
 | Monthly full sweep, backfill | `GET /api/tournaments/results?limit=200&offset=<n>` (never more than 200 per page) |
 | Entries | `GET /api/entries?id=<tournament id>` |
 
-Event fields kept: `id`, `date`, `type` (or `type_id`), `format`, `cardpool`, `approved`, `concluded`,
-`players_count`, `top_count`, `claim_count`, `claim_conflict`, `matchdata`, `location_country`,
-`winner_corp_identity`, `winner_runner_identity`. Everything else (title, contact, creator, address,
-venue, coordinates, links, …) is recognised and dropped.
+Event fields kept: `id`, `date`, `end_date` (multi-day events; dropped when unreadable or not after
+`date`), `title` (the public name, cleaned and capped at 120 characters), `type` (or `type_id`),
+`format`, `cardpool`, `approved`, `concluded`, `players_count`, `top_count`, `claim_count`,
+`claim_conflict`, `matchdata`, `location_country` (only a plain country name), whether `location`
+is `online`, `winner_corp_identity`, `winner_runner_identity`. Everything else (contact, creator,
+address, venue, coordinates, links, …) is recognised and dropped.
 
 Entry fields kept: `rank_swiss` (the entry key; ABR entries have no ID), `rank_top`
 (`null` = missed the cut, `0` = no cut), `corp_deck_identity_id`, `runner_deck_identity_id`

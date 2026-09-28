@@ -12,13 +12,16 @@ and pipeline state (`mr-canonical`), and published **snapshots** (`mr-published`
 - **Drift check.** Unknown fields are ignored; their **names** (never values) are logged as a
   `drift_warning` and listed in the quality report.
 - **Dropped everywhere:** player names, pronouns, NRDB/Cobra/ABR user IDs, `user_import_name`, deck
-  names and titles, deck and tournament descriptions, tournament names, organiser names and
-  contacts, event and stream links, addresses, venues, coordinates, and card titles from decks (the
-  catalog provides titles).
+  names and titles, deck and tournament descriptions, organiser names and contacts, event and
+  stream links, addresses, venues, coordinates, and card titles from decks (the catalog provides
+  titles).
+- **The one text kept** is a tournament's public name (ABR's `title`, Cobra's `name`), with control
+  characters removed, whitespace collapsed and at most 120 characters, for the published list of
+  tournaments counted.
 - **Players exist only as source-local keys:** the Cobra player ID and the ABR `rank_swiss`. There is
   no global player identity and nothing links a player across tournaments.
-- **Snapshots are aggregates only:** IDs, catalog card titles and numbers. Nothing per player or per
-  entry is published, and no user free text appears anywhere.
+- **Snapshots are aggregates only:** IDs, catalog card titles, tournament names and numbers. Nothing
+  per player or per entry is published, and no other free text appears anywhere.
 - **Quarantine.** An unparsable response is recorded as its frontier key, the error class and
   message (never payload text) and a payload hash field, and the run continues. No payload is kept.
 - **Tests prove it.** Every personal field in the fixtures holds a `PII_CANARY_*` value; the tests
@@ -58,7 +61,7 @@ Examples of every record type are in `market-research/tests/fixtures/expected/so
 
 | Table | Key | Columns |
 |---|---|---|
-| `tournament` | `tid` | cobra_id, abr_id, date, type, tier, format, restriction_id, card_set, country, online, players, cut_size, has_games, deck_visibility, decklist_coverage |
+| `tournament` | `tid` | cobra_id, abr_id, name, date, type, tier, format, swiss_format, restriction_id, card_set, country, online, players, cut_size, has_games, deck_visibility, decklist_coverage |
 | `entry` | `tid, entry_no` (= swiss rank) | cut_rank, made_cut, corp_identity, runner_identity, points, cobra_pid, abr_swiss_rank |
 | `deck` | `deck_id` = hash(tid, entry_no, side) | side, identity_card, source (`cobra` > `nrdb_decklist` > `nrdb_deck`), source_ref, card_count, plain_text, content_hash, comparison (`match`, `mismatch`, `cobra_only`, `nrdb_only`), legal, issues |
 | `deck_card` | `deck_id, card_id` | qty, printing_id |
@@ -96,7 +99,10 @@ Examples of every record type are in `market-research/tests/fixtures/expected/so
   1 = draw); double-sided swiss gives two (one per side; a 2-for-1 pairing yields none); elimination
   gives one with the reported winner. Byes and unreported pairings yield none.
 - **decklist_coverage** = entry-sides with a deck / (2 × entries).
-- **Guards:** only ABR `approved = 1`, no `claim_conflict`, at least 8 players (configurable).
+- **Guards:** only ABR `approved = 1`, `concluded`, no `claim_conflict` (a Cobra event linked to an
+  ABR event must pass the first and last too), at least 8 players (configurable), and results
+  (Cobra) or entries (ABR) stored. Each event left out is counted by reason in the quality
+  report's `skipped_tournaments`.
 - **Tier groups** (`pipeline/market_research/data/tiers.json`): GNK/CTK; Store/District;
   Megacity+ (megacity, national, continental, intercontinental, worlds, CBI); Online/Community/Other.
 
