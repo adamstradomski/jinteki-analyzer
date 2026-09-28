@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import io
 import random
 from datetime import UTC, datetime
 from pathlib import Path
@@ -11,6 +12,16 @@ from market_research.config import Settings, load_settings
 
 FIXTURES = Path(__file__).parent / "fixtures"
 NOW = datetime(2026, 9, 27, 4, 0, tzinfo=UTC)
+
+
+@pytest.fixture(autouse=True)
+def _fresh_logs():
+    """Leaves no log setup behind: the CLI points structlog at the runner's stdout, closed after the test."""
+    yield
+    from market_research import logs
+
+    logs.stop_capture()
+    logs.configure(io.StringIO())
 
 
 @pytest.fixture
