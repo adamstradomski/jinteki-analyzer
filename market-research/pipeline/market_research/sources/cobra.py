@@ -269,8 +269,8 @@ def has_unreported(t: CobraTournament) -> bool:
     if not t.pairings:
         return True
     for p in t.pairings:
-        if p.p2 is None:
-            continue  # bye
+        if p.p1 is None or p.p2 is None:
+            continue  # bye: Cobra puts the player in either seat (seen live with only p2 set)
         if p.elimination:
             if p.winner is None:
                 return True

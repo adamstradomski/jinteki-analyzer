@@ -46,6 +46,23 @@ def tourney(fmt: str, pairings: list[CobraPairing], n: int = 4) -> CobraTourname
     )
 
 
+def test_bye_in_either_seat_is_not_unreported():
+    # Seen live: Cobra byes with the player as p2 and p1 empty kept finished events "live" for
+    # months, so their public decks were never fetched.
+    from market_research.sources.cobra import has_unreported
+
+    done = CobraPairing(
+        stage=1, round=1, table=1, p1=100, p2=101, p1_side="corp", p1_corp_score=3, p2_runner_score=0
+    )
+    for bye in (
+        CobraPairing(stage=1, round=1, table=2, p1=102, p2=None),
+        CobraPairing(stage=1, round=1, table=2, p1=None, p2=102),
+    ):
+        assert not has_unreported(tourney("single_sided", [done, bye]))
+    missing = CobraPairing(stage=1, round=2, table=1, p1=100, p2=102)
+    assert has_unreported(tourney("single_sided", [done, missing]))
+
+
 def games_of(t: CobraTournament) -> list[dict]:
     n = Normalizer({}, __import__("market_research.config", fromlist=["load_settings"]).load_settings({}))
     return list(n.games(t, {p.pid: p.swiss_rank for p in t.players}, "c1"))
