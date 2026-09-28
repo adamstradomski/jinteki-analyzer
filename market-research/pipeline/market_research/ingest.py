@@ -557,6 +557,7 @@ class Ingestor:
                 key = f"cobra:tournament:{meta.id}"
                 if self.frontier.get(key) is not None:
                     if self.backfill:
+                        self.fill_cobra_name(meta)
                         continue  # a backfill reads on to its start date: older events may be new
                     stop = True  # newest first: everything after this is known
                     break
@@ -605,6 +606,14 @@ class Ingestor:
             page += 1
         with self._lock:
             self.frontier.complete(it, self.now, changed=True, status="ok", etag=first_etag)
+
+    def fill_cobra_name(self, meta: CobraTournament) -> None:
+        """Adds the public name to a stored tournament collected before names were kept."""
+        stored = self.read(f"cobra/tournament/{meta.id}.json")
+        if not isinstance(stored, dict) or stored.get("name") or not meta.name:
+            return
+        rec = CobraTournament.model_validate(stored).model_copy(update={"name": meta.name}).hashed()
+        self.write(f"cobra/tournament/{meta.id}.json", rec, known_hash=stored.get("record_hash"))
 
     def h_cobra_tournament(self, it: Item) -> None:
         tid = int(it.entity_id)

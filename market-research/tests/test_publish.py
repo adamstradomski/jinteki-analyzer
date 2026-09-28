@@ -30,6 +30,7 @@ def test_snapshot_is_valid(built):
         "trends": "trends",
         "identities": "identities",
         "report": "quality",
+        "tournaments": "tournaments",
     }
     for path, obj in snap.files.items():
         kind = "catalog" if path == PATHS["catalog"] else names[path.rsplit("/", 1)[1][:-5]]
@@ -47,7 +48,14 @@ def test_every_slice_path_exists_and_is_deterministic(built):
                 for kind in ("summary", "trends", "identities", "summary_cut", "trends_cut"):
                     path = m["paths"][kind].format(side=side, restriction=r["id"], tier_group=g["id"])
                     assert path in snap.files, path
-    expected = 2 * len(m["restrictions"]) * len(m["tier_groups"]) * 5 + 2
+    for r in m["restrictions"]:
+        for g in m["tier_groups"]:
+            assert m["paths"]["tournaments"].format(restriction=r["id"], tier_group=g["id"]) in snap.files
+    expected = (
+        2 * len(m["restrictions"]) * len(m["tier_groups"]) * 5
+        + len(m["restrictions"]) * len(m["tier_groups"])
+        + 2
+    )
     assert len(snap.files) == expected
     assert m["base_path"] == f"v={m['version']}/"
 
@@ -136,7 +144,7 @@ def _strings(o):
 
 
 def test_docs_contract_matches_package_schemas():
-    for name in ("manifest", "summary", "trends", "identities", "catalog", "quality"):
+    for name in ("manifest", "summary", "trends", "identities", "catalog", "quality", "tournaments"):
         doc = json.loads((DOCS / f"{name}.schema.json").read_text())
         assert doc == schema(name), name
     for ex in sorted(DOCS.glob("examples/*.json")):

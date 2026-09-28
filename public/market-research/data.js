@@ -330,6 +330,28 @@ export function scatterPoints(cards) {
     }));
 }
 
+/** The tournaments of a list within a month range; with `cut`, only events that had a top cut. */
+export function eventsInView(list, range, cut = false) {
+  return (list || []).filter((t) => {
+    const m = t.date.slice(0, 7);
+    return (!range || (m >= range.from && m <= range.to)) && (!cut || t.cut_size > 0);
+  });
+}
+
+/** Totals for a tournament list: events, players, legal decklists out of 2 decks per player. */
+export function eventTotals(list) {
+  const players = list.reduce((a, t) => a + t.players, 0);
+  const decklists = list.reduce((a, t) => a + t.decklists, 0);
+  return { events: list.length, players, decks: 2 * players, decklists, share: players ? decklists / (2 * players) : null };
+}
+
+/** "Single-sided swiss, top 16" and the like; AlwaysBeRunning-only events have no swiss format. */
+export function eventFormat(t) {
+  const swiss = t.swiss_format === 'single_sided' ? 'Single-sided swiss' : t.swiss_format === 'double_sided' ? 'Double-sided swiss' : null;
+  const cut = t.cut_size > 0 ? `top ${t.cut_size}` : 'no cut';
+  return swiss ? `${swiss}, ${cut}` : cut.charAt(0).toUpperCase() + cut.slice(1);
+}
+
 /** Points whose card title contains the query (case- and accent-insensitive); all when empty. */
 export function filterByName(points, query, title) {
   const q = fold(String(query || '').trim());

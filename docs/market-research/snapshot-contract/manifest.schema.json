@@ -153,7 +153,8 @@
         "identities",
         "quality",
         "summary_cut",
-        "trends_cut"
+        "trends_cut",
+        "tournaments"
       ],
       "additionalProperties": false,
       "properties": {
@@ -176,6 +177,9 @@
           "type": "string"
         },
         "trends_cut": {
+          "type": "string"
+        },
+        "tournaments": {
           "type": "string"
         }
       }

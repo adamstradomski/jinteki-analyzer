@@ -1,7 +1,7 @@
 [
  {
   "id": 5240,
-  "title": "PII_CANARY_TOURNAMENT_602",
+  "title": "Fixture Tournament 602",
   "contact": "PII_CANARY_CONTACT@example.invalid",
   "approved": 1,
   "registration_count": 12,
@@ -37,7 +37,7 @@
  },
  {
   "id": 5250,
-  "title": "PII_CANARY_TOURNAMENT_600",
+  "title": "Fixture Tournament 600",
   "contact": "PII_CANARY_CONTACT@example.invalid",
   "approved": 1,
   "registration_count": 20,

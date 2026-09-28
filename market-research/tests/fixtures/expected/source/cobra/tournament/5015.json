@@ -9,6 +9,7 @@
  "fetched_at": "2026-09-27T04:00:30Z",
  "format_id": 1,
  "id": 5015,
+ "name": "Fixture Tournament 104",
  "pairings": [
   {
    "elimination": false,
@@ -465,7 +466,7 @@
  ],
  "players_active": 10,
  "players_dropped": 0,
- "record_hash": "sha256:da7aa05276dc6de33d28de92e681611ad87f65f1b8e78f2a18d176f1ef726cd3",
+ "record_hash": "sha256:0a014c9084f9eecb54bc11c581c7136fe712bb6ca983cce5d5cc161b0b95274c",
  "restriction_id": "standard_balance_update_26_08",
  "results_fetched": true,
  "schema": "cobra.tournament/1",

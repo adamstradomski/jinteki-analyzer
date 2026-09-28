@@ -19,6 +19,7 @@ let cards = new Map();
 let state = null;
 let view = null; // current summary (from summary.json or recomputed from trends)
 let identities = null;
+let events = null; // the included tournaments of the current ban list and tier
 let trendCards = []; // [{ id, slot }] – colour slots stay with the card
 let detailCard = null;
 let sideToggle = null;
@@ -101,7 +102,7 @@ function cardCell(id) {
 // ---------------------------------------------------------------- loading state
 
 // Panels whose content comes from the card slices; Trends and the card detail load on their own.
-const DATA_PANELS = ['stats', 'played', 'identities', 'scatter', 'winrate'];
+const DATA_PANELS = ['stats', 'events', 'played', 'identities', 'scatter', 'winrate'];
 
 /** Blurs the given panels under a spinning wheel (on) or reveals them (off). */
 function setBusy(ids, on) {
@@ -258,6 +259,7 @@ async function refresh() {
   try {
     const summary = await slice('summary');
     identities = await slice('identities');
+    const evs = manifest.paths.tournaments ? await slice('tournaments') : null;
     let v = summary;
     if (state.custom && summary.period && (state.from !== summary.period.from || state.to !== summary.period.to)) {
       const trends = await slice('trends');
@@ -265,6 +267,7 @@ async function refresh() {
     }
     if (token !== refreshToken) return;
     view = v;
+    events = evs;
     if (!state.custom && view.period) { state.from = view.period.from; state.to = view.period.to; syncFilters(); }
     renderAll();
     setBusy(DATA_PANELS, false);
@@ -278,6 +281,7 @@ async function refresh() {
 
 function renderAll() {
   renderStats();
+  renderEvents();
   renderPlayed();
   renderIdentities();
   renderWinrate();
@@ -345,6 +349,37 @@ function help() {
   };
 }
 
+// ---------------------------------------------------------------- included tournaments
+
+const COBRA_URL = 'https://tournaments.nullsignal.games/tournaments/';
+const ABR_URL = 'https://alwaysberunning.net/tournaments/';
+
+function renderEvents() {
+  const box = $('events');
+  box.hidden = !events;
+  if (!events) return;
+  const list = D.eventsInView(events.tournaments, trendRange(), state.cut);
+  const tot = D.eventTotals(list);
+  const banName = new Map(manifest.restrictions.map((r) => [r.id, r.name]));
+  $('events-summary').textContent = `Included tournaments (${fmtInt(tot.events)})`;
+  $('events-note').textContent = list.length
+    ? `${fmtInt(tot.events)} tournaments, ${fmtInt(tot.players)} players: decklists are known for ${fmtInt(tot.decklists)} of ${fmtInt(tot.decks)} decks (${fmtPct(tot.share)}), counting Corp and Runner for each player.${state.cut ? ' Only events with a top cut, as the top-cut switch is on.' : ''}`
+    : '';
+  const link = (href, id) => el('td', {}, id ? el('a', { href: href + id, rel: 'noopener', target: '_blank' }, `#${id}`) : '–');
+  const share = (t) => (t.players ? t.decklists / (2 * t.players) : null);
+  dataTable($('events-body'), [
+    { key: 'name', label: 'Tournament', help: 'The event\'s public name on Cobra or AlwaysBeRunning.', value: (t) => t.name || '', cell: (t) => el('td', { text: t.name || '–' }) },
+    { key: 'date', label: 'Date', help: 'The day the event started.', cell: (t) => el('td', { class: 'num', text: t.date }) },
+    { key: 'restriction', label: 'Ban list', help: 'The ban list the event\'s decks were checked against: the organiser\'s, unless the decks clearly fit another one.', value: (t) => banName.get(t.restriction) || t.restriction, cell: (t) => el('td', { text: banName.get(t.restriction) || t.restriction }) },
+    { key: 'online', label: 'Location', help: 'Online or in person, with the country when AlwaysBeRunning lists it.', value: (t) => (t.online ? 'Online' : `Offline ${t.country || ''}`), cell: (t) => el('td', { text: t.online ? 'Online' : t.country ? `Offline · ${t.country}` : 'Offline' }) },
+    { key: 'players', label: 'Players', num: true, help: 'Players who took part.', cell: (t) => el('td', { class: 'num', text: fmtInt(t.players) }) },
+    { key: 'format', label: 'Format', help: 'Swiss rounds (single-sided or double-sided) and the size of the top cut. Events known only from AlwaysBeRunning have no swiss format.', value: (t) => D.eventFormat(t), cell: (t) => el('td', { text: D.eventFormat(t) }) },
+    { key: 'decklists', label: 'Decklists', num: true, help: 'Legal decks with a known decklist, out of two per player (Corp and Runner), and that share. Only these decks count in the card statistics.', value: (t) => share(t), cell: (t) => el('td', { class: 'num', text: `${fmtInt(t.decklists)} / ${fmtInt(2 * t.players)} (${fmtPct(share(t), 0)})` }) },
+    { key: 'cobra_id', label: 'Cobra', help: 'The event on NSG Cobra.', sortable: false, cell: (t) => link(COBRA_URL, t.cobra_id) },
+    { key: 'abr_id', label: 'ABR', help: 'The event on AlwaysBeRunning.net.', sortable: false, cell: (t) => link(ABR_URL, t.abr_id) },
+  ], list, { sortKey: 'date', sortDir: 'descending', noun: 'tournaments', empty: 'No tournaments match this filter.' });
+}
+
 // ---------------------------------------------------------------- tables
 
 // Tables whose column guide the viewer opened, so it stays open when the table redraws.
@@ -362,7 +397,7 @@ function columnGuide(host, columns) {
 }
 
 /** A sortable table with real header buttons and an optional "show all" button. */
-function dataTable(host, columns, rows, { initial, sortKey = null, sortDir = 'descending', rowClass = () => '', limit = TABLE_ROWS, empty = 'No cards in this filter.' }) {
+function dataTable(host, columns, rows, { initial, sortKey = null, sortDir = 'descending', rowClass = () => '', limit = TABLE_ROWS, empty = 'No cards in this filter.', noun = 'cards' }) {
   let key = sortKey;
   let dir = sortDir;
   let all = false;
@@ -385,7 +420,7 @@ function dataTable(host, columns, rows, { initial, sortKey = null, sortDir = 'de
     const parts = [rows.length ? el('div', { class: 'mr-scroll' }, table) : el('p', { class: 'mr-note', text: empty })];
     if (sorted.length > limit) {
       parts.push(el('button', { type: 'button', class: 'btn secondary mr-more', onclick: () => { all = !all; draw(); } },
-        all ? `Show top ${limit}` : `Show all ${fmtInt(sorted.length)} cards`));
+        all ? `Show top ${limit}` : `Show all ${fmtInt(sorted.length)} ${noun}`));
     }
     const guide = rows.length ? columnGuide(host, columns) : null;
     if (guide) parts.push(guide);

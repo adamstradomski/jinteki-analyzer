@@ -54,9 +54,11 @@ run's full log is kept in R2 (`logs/…`, see [CLI](#cli)).
 
 **Collecting**
 
-- **Only allowlisted fields are kept.** Names, user IDs, deck titles and free text are dropped before
-  anything is stored; tests plant `PII_CANARY` values in the fixtures and fail if one reaches a record,
-  a table, a snapshot or a log.
+- **Only allowlisted fields are kept.** Player names, user IDs, organisers, deck titles, descriptions
+  and other free text are dropped before anything is stored; tests plant `PII_CANARY` values in the
+  fixtures and fail if one reaches a record, a table, a snapshot or a log. The one piece of text kept
+  is the event's public name (AlwaysBeRunning's title, Cobra's name), cleaned of control characters
+  and capped at 120 characters, for the list of included tournaments.
 - **Unknown fields** in a source's response are logged once as `drift_warnings`, so format changes
   show up before they break anything.
 - **Unreadable data is quarantined item by item** (`parser_failures`), not the whole response:

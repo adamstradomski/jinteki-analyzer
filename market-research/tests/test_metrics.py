@@ -79,6 +79,8 @@ def tournament(tid, d, tier, cut, cov=1.0):
         "has_games": True,
         "deck_visibility": "x",
         "decklist_coverage": cov,
+        "name": None,
+        "swiss_format": None,
     }
 
 
