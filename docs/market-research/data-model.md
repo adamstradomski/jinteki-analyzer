@@ -76,8 +76,12 @@ Examples of every record type are in `market-research/tests/fixtures/expected/so
   (agenda, asset, upgrade, operation, ice; event, hardware, resource, program) then title. It is
   identical for identical lists from any source; `content_hash` is its SHA-256.
 - **Standard and ban list:** Standard when Cobra's format is named "Standard" or ABR's `format` is
-  `standard`. The ban list is Cobra's `deckbuilding_restriction_id` when it is a Standard restriction,
-  otherwise the NRDB Standard snapshot in force on the event date.
+  `standard`. The ban list starts as Cobra's `deckbuilding_restriction_id` when it is a Standard
+  restriction, otherwise the NRDB Standard snapshot in force on the event date. It is then checked
+  against the event's decks: of that list, the one in force and its neighbours, the one under which
+  most decks are legal replaces it, but only with at least 2 more legal decks and at least 10% of the
+  event's decks (organisers play new lists early, keep old ones, or cannot pick them in Cobra). Each
+  replacement is listed in the quality report's `restriction_overrides`.
 - **Linking:** a Cobra `abr_code` that is an existing ABR ID links directly; otherwise a unique ABR
   event whose dates (`date` to `end_date` for multi-day events, ±1 day for time zones) include the
   Cobra date, with the same player count, and where at least 90% of ABR's (corp, runner) identity

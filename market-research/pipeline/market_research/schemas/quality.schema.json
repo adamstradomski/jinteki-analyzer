@@ -15,7 +15,8 @@
     "links",
     "drift_warnings",
     "rejected_deck_refs",
-    "skipped_tournaments"
+    "skipped_tournaments",
+    "restriction_overrides"
   ],
   "additionalProperties": false,
   "properties": {
@@ -146,6 +147,12 @@
       "type": "object",
       "additionalProperties": {
         "type": "integer"
+      }
+    },
+    "restriction_overrides": {
+      "type": "array",
+      "items": {
+        "type": "object"
       }
     }
   }

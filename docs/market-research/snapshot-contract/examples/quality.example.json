@@ -46,5 +46,15 @@
   "rejected_deck_refs": 1,
   "skipped_tournaments": {
     "abr_no_entries": 1
-  }
+  },
+  "restriction_overrides": [
+    {
+      "tid": "c4727",
+      "from": "standard_ban_list_26_05",
+      "to": "standard_ban_list_26_03",
+      "decks": 7,
+      "legal_before": 0,
+      "legal_after": 7
+    }
+  ]
 }

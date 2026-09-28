@@ -493,3 +493,39 @@ def test_link_rejects_too_few_shared_identities(fixture_run):
     links, mismatches = _linking(env, lambda t: None, swap)
     assert "c5012" not in links
     assert [m["reason"] for m in mismatches if m["tid"] == "c5012"] == ["fallback_identities_differ"]
+
+
+def test_ban_list_follows_the_decks(fixture_run):
+    # Organisers may play a new ban list early, keep an old one, or be unable to pick it in Cobra
+    # (seen live: an event on 25 Apr set to a list starting 1 May). The list under which most of
+    # an event's decks are legal wins, and the change is reported.
+    from market_research.catalog import Legality
+
+    env, _, _, q = fixture_run
+    assert q.restriction_overrides == []  # the fixtures' own settings already fit their decks
+    src = {i.key: env.stores.source.get(i.key) for i in env.stores.source.list()}
+    n = Normalizer(src, env.settings)  # type: ignore[arg-type]
+    older = "standard_ban_list_26_05"
+    n.catalog.check_deck = lambda side, ident, cards, rid: Legality(
+        rid == older, [] if rid == older else ["x"]
+    )  # type: ignore[method-assign]
+    out = n.run()
+    over = {o["tid"]: o for o in n.q.restriction_overrides}
+    assert over["c4990"]["from"] == "standard_balance_update_26_08" and over["c4990"]["to"] == older
+    assert over["c4990"]["legal_after"] == over["c4990"]["decks"] > over["c4990"]["legal_before"] == 0
+    t = {r["tid"]: r for r in out.rows["tournament"]}
+    assert t["c4990"]["restriction_id"] == older
+    assert all(d["legal"] for d in out.rows["deck"] if d["tid"] == "c4990")
+    # One deck is not enough evidence: with a single deck illegal under the given list, nothing moves.
+    bad: list[int] = []
+
+    def one_bad(side, ident, cards, rid):
+        if not bad:
+            bad.append(id(cards))
+        ok = rid == older or id(cards) != bad[0]
+        return Legality(ok, [] if ok else ["x"])
+
+    n2 = Normalizer(src, env.settings)  # type: ignore[arg-type]
+    n2.catalog.check_deck = one_bad  # type: ignore[method-assign]
+    n2.run()
+    assert n2.q.restriction_overrides == []
