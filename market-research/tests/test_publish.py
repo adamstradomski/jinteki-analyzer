@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import copy
 import json
+import threading
+import time
 from dataclasses import replace
 from pathlib import Path
 
@@ -15,6 +17,7 @@ from market_research.publish import (
     PublishError,
     build,
     check,
+    encode,
     publish,
     schema,
 )
@@ -191,3 +194,61 @@ def test_check_raises_what_jsonschema_validate_raises():
     with pytest.raises(jsonschema.ValidationError) as theirs:
         jsonschema.validate(manifest, schema("manifest"))
     assert (ours.value.message, list(ours.value.path)) == (theirs.value.message, list(theirs.value.path))
+
+
+class SlowStore(LocalObjectStore):
+    """A local bucket whose puts take a moment and can fail for one key; records how many overlap."""
+
+    def __init__(self, root: Path, fail: str | None = None) -> None:
+        super().__init__(root)
+        self.fail = fail
+        self.in_flight = 0
+        self.max_in_flight = 0
+        self.threads: set[str] = set()
+        self._count = threading.Lock()
+
+    def put(self, key, body, *, content_type="application/json", cache_control=None):
+        with self._count:
+            self.in_flight += 1
+            self.max_in_flight = max(self.max_in_flight, self.in_flight)
+            self.threads.add(threading.current_thread().name)
+        try:
+            time.sleep(0.002)
+            if key == self.fail:
+                raise OSError(f"upload of {key} failed")
+            super().put(key, body, content_type=content_type, cache_control=cache_control)
+        finally:
+            with self._count:
+                self.in_flight -= 1
+
+
+def test_publish_uploads_concurrently_and_manifest_last(built, tmp_path):
+    stores, snap, errors = built
+    store = SlowStore(tmp_path / "slow")
+    n = publish(replace(stores, published=store), snap, errors, workers=8)
+    assert n == len(snap.files)
+    assert store.max_in_flight > 1  # the slice files really went up in parallel
+    assert 1 < len(store.threads) <= 9  # at most 8 workers, plus the caller for the manifest
+    assert store.puts[-1] == "manifest.json"
+    assert store.puts.count("manifest.json") == 1
+    prefix = snap.manifest["base_path"]
+    assert sorted(store.puts[:-1]) == sorted(prefix + p for p in snap.files)
+    for path, obj in snap.files.items():
+        assert store.get(prefix + path) == encode(obj)
+        assert store.head(prefix + path).cache_control == IMMUTABLE
+
+
+def test_failed_upload_raises_and_keeps_the_old_manifest(built, tmp_path):
+    stores, snap, errors = built
+    bad = snap.manifest["base_path"] + PATHS["summary"].format(
+        side="runner", restriction="all", tier_group="all"
+    )
+    store = SlowStore(tmp_path / "slow", fail=bad)
+    old = b'{"schema":"mr.manifest/1","version":"old"}'
+    store.put("manifest.json", old, cache_control=MANIFEST_CACHE)
+    store.puts.clear()
+    with pytest.raises(OSError, match="failed"):
+        publish(replace(stores, published=store), snap, errors, workers=4)
+    assert "manifest.json" not in store.puts
+    assert store.get("manifest.json") == old
+    assert bad not in store.puts

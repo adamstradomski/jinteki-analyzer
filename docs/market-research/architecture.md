@@ -79,7 +79,7 @@ flowchart LR
 | `ingest.py` | Discovery (ABR lists, Cobra index, catalogs, NRDB by day), handlers per item kind, rounds across hosts in parallel, periodic flush (every 100 items or 5 minutes, and on any exit). |
 | `normalize.py`, `catalog.py` | Canonical tables, Cobra↔ABR linking, deck precedence and comparison, game derivation, Standard and ban-list resolution, legality. |
 | `metrics.py` | Additive counts per side, ban list, tier group, month and card; identity counts; baselines. |
-| `publish.py` | Every slice, the catalog and the quality report; JSON Schema validation and sanity checks; upload of `v=…/` (immutable) and then `manifest.json` (60 s). |
+| `publish.py` | Every slice, the catalog and the quality report; JSON Schema validation and sanity checks; parallel upload of `v=…/` (immutable), then `manifest.json` (60 s) once every file is stored. |
 | `runner.py`, `cli.py` | `run-all`, `backfill` phases and `--plan`, exit codes, run summary. |
 | `storage.py` | `ObjectStore` with `R2ObjectStore` and `LocalObjectStore`; nothing else touches storage. |
 

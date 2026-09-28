@@ -126,7 +126,9 @@ run's full log is kept in R2 (`logs/…`, see [CLI](#cli)).
 
 - Every slice is validated against its JSON schema and a 2 MB size limit, and the published totals
   are checked against the canonical tables. If anything fails, nothing is published and the previous
-  version stays live; the manifest is uploaded last, so readers never see a half-published version.
+  version stays live. The slice files are uploaded in parallel (16 at a time) and the manifest only
+  after all of them succeeded, so readers never see a half-published version; a failed upload fails
+  the run and leaves the previous manifest live.
 
 ## Development
 
