@@ -84,6 +84,7 @@ run's full log is kept in R2 (`logs/…`, see [CLI](#cli)).
 - Cobra events created before Cobra had a format setting (early 2025) have none. They follow their
   linked AlwaysBeRunning event; unlinked ones are left out when the name names another format
   (Startup, Eternal, draft, …) or an identity is not legal in Standard around the event date.
+  Events with no identities recorded count only when their name says Standard.
   Startup events without the word in their name count as Standard (their card pool is a subset).
   A backfill re-checks events an earlier run skipped as not Standard.
 - AlwaysBeRunning events must be approved, concluded and free of claim conflicts.

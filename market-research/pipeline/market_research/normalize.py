@@ -263,7 +263,8 @@ class Normalizer:
         Events created before Cobra had a format setting (early 2025) carry none. For them the
         linked ABR event's format decides; without one, a name naming another format rules it out,
         and otherwise every identity must be legal in Standard around the event date (Eternal
-        decks play rotated ones). Startup events without the word in their name pass as Standard;
+        decks play rotated ones). With no identities recorded, only a name saying Standard makes
+        it count. Startup events without the word in their name pass as Standard;
         their card pool is a subset of it.
         """
         if t.format_id is not None:
@@ -276,7 +277,10 @@ class Normalizer:
         idents = {c for c in map(self.catalog.identity_of_title, titles) if c}
         order = self.catalog.standard_restrictions()
         snap = self.catalog.snapshot_at(t.date)
-        if not idents or snap is None or snap.restriction_id not in order:
+        if not idents:
+            # Seen live: a league that recorded no identities, named "... STANDARD ...".
+            return None if re.search(r"\bstandard\b", t.name or "", re.IGNORECASE) else "format_unknown"
+        if snap is None or snap.restriction_id not in order:
             return "format_unknown"
         i = order.index(snap.restriction_id)
         near = order[max(0, i - 1) : i + 2]

@@ -367,6 +367,21 @@ def test_unlinked_cobra_event_without_format_is_judged_by_name_and_identities(fi
     assert n.q.skipped["not_standard_identities"] == 1
 
 
+def test_cobra_event_without_format_or_identities_counts_only_when_named_standard(fixture_run):
+    # Seen live: a league that recorded no identities, named "... - STANDARD - S10".
+    env, _, _, _ = fixture_run
+    src = _without_format(env, 5015)
+    t = json.loads(src["cobra/tournament/5015.json"])
+    for p in t["players"]:
+        p["corp_identity"] = p["runner_identity"] = None
+    for name, kept in (("Liga Netrunnera - STANDARD - S10", True), ("Liga Netrunnera S10", False)):
+        t["name"] = name
+        src["cobra/tournament/5015.json"] = json.dumps(t).encode()
+        n = Normalizer(src, env.settings)  # type: ignore[arg-type]
+        assert _kept(n, "c5015") is kept
+    assert n.q.skipped["format_unknown"] == 1
+
+
 def test_cobra_abr_linking(fixture_run):
     _, _, data, q = fixture_run
     assert {(x["tid"], x["abr_id"], x["method"]) for x in q.links} == {
