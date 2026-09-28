@@ -2,6 +2,8 @@
    system tokens (tokens.css) and components (bundle.css); no raw colour values here. */
 
 body { margin: 0; background: var(--bg); }
+/* The hidden attribute always wins over layout rules like .mr-panels { display: flex }. */
+[hidden] { display: none !important; }
 .mr-wrap { padding: var(--space-5) 16px var(--space-5); box-sizing: border-box; }
 .mr-header { margin-bottom: var(--space-4); }
 .mr-beta-badge { vertical-align: middle; font-size: 0.35em; letter-spacing: 0.08em; color: inherit; border-color: currentColor; }
