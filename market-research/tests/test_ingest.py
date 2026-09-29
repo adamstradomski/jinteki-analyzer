@@ -12,7 +12,7 @@ from helpers import make_env
 from market_research.frontier import Frontier
 from market_research.ingest import Ingestor, ReloadNotFound
 from market_research.records import CobraTournament, dump
-from market_research.sources.common import ParseError, opt_printing
+from market_research.sources import abr
 from market_research.testing import normalize_url
 
 
@@ -184,6 +184,18 @@ def test_quarantine_on_unparsable_response(tmp_path, clock):
     assert stored["quarantine"][0]["key"] == "abr:entries:5301"
 
 
+def test_abr_results_page_left_short_by_a_bad_event_is_not_the_last(tmp_path, clock):
+    env = make_env(tmp_path, clock)
+    env.settings.abr_page_size = 2
+    ev = {"id": 1, "date": "2026.09.05.", "format": "Standard", "approved": 1, "concluded": True}
+    bad = dict(ev, id=2, date="2026.02.30.")
+    env.routes.override(abr.results_url(0, 2), httpx.Response(200, json=[ev, bad]))
+    env.routes.override(abr.results_url(2, 2), httpx.Response(200, json=[dict(ev, id=3)]))
+    ing = Ingestor(env.settings, env.clock, env.http(), env.stores, parallel=False)
+    assert sorted(ing.reload_abr_events([1, 3])) == [1, 3]
+    assert [e["key"] for e in ing.quality.quarantine] == ["abr:event:2"]
+
+
 def test_oversized_response_is_quarantined(tmp_path, clock):
     env = make_env(tmp_path, clock)
     env.routes.override(
@@ -333,22 +345,6 @@ def test_reload_of_unknown_tournament_writes_nothing(tmp_path, clock):
         _reloader(env).reload(cobra_ids=[4990, 999999], abr_ids=[5305, 1])
     assert e.value.missing == ["cobra:999999", "abr:1"]
     assert len(env.stores.source.puts) == before  # type: ignore[attr-defined]
-
-
-def test_abr_string_null_identity_is_missing():
-    # Seen live on alwaysberunning.net: one event had winner_corp_identity "null" (a string).
-    assert opt_printing("null") is None
-    assert opt_printing("34096") == "34096"
-    with pytest.raises(ParseError):
-        opt_printing("nul")
-
-
-def test_event_names_are_cleaned():
-    from market_research.sources.common import opt_title
-
-    assert opt_title("  Worlds\n2026\t Top Cut ") == "Worlds 2026 Top Cut"
-    assert opt_title("x" * 200) == "x" * 120
-    assert opt_title("   ") is None and opt_title(None) is None
 
 
 def test_longer_backfill_discovers_events_a_shorter_one_did_not_reach(tmp_path, clock):

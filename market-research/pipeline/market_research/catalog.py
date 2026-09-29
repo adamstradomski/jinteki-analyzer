@@ -5,7 +5,6 @@ from __future__ import annotations
 import re
 import unicodedata
 from dataclasses import dataclass
-from datetime import date
 
 from market_research.records import CatCard, CatRestriction, CatSnapshot, NrdbCatalog
 
@@ -17,8 +16,14 @@ TYPE_ORDER = [
 
 
 def title_key(title: str) -> str:
-    t = unicodedata.normalize("NFKD", title).encode("ascii", "ignore").decode()
-    t = t.replace("“", '"').replace("”", '"').replace("’", "'")
+    # NFKD splits "é" into "e" and an accent, which is dropped, as is any other non-ASCII letter or
+    # digit. Other non-ASCII characters (curly quotes, dashes, ellipses) separate words like the
+    # ASCII punctuation an export may straighten them to, so "O’Brian" keys like "O'Brian".
+    t = "".join(
+        ch if ch.isascii() else "" if ch.isalnum() else " "
+        for ch in unicodedata.normalize("NFKD", title)
+        if not unicodedata.combining(ch)
+    )
     return re.sub(r"[^a-z0-9]+", " ", t.lower()).strip()
 
 
@@ -176,7 +181,3 @@ class Catalog:
             if agenda_points not in (need, need + 1):
                 issues.append("agenda_points")
         return Legality(not issues, issues)
-
-
-def month_of(d: str) -> str:
-    return date.fromisoformat(d).strftime("%Y-%m")

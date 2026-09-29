@@ -2,7 +2,8 @@
 // shortener can't be used as an open redirect or for phishing links.
 // Real games compress to a few KB (the 25-round log in test/ is about 5.5K characters).
 export const MAX_PAYLOAD_CHARS = 32 * 1024;
-const MAX_DECODED_BYTES = 2 * 1024 * 1024; // zip-bomb guard
+// Zip-bomb guard for gz payloads; a raw payload is already bounded by MAX_PAYLOAD_CHARS.
+const MAX_DECODED_BYTES = 2 * 1024 * 1024;
 const PAYLOAD_RE = /^(gz|raw)\.[A-Za-z0-9_-]+$/;
 // Same turn-start phrasing the page's parser recognises (turnStartRe), with
 // every pronoun jinteki.net can substitute (select-pronoun in say.clj).
@@ -67,8 +68,6 @@ export async function validatePayload(payload) {
       if (e instanceof ValidationError) throw e;
       throw new ValidationError('invalid gzip data');
     }
-  } else if (bytes.length > MAX_DECODED_BYTES) {
-    throw new ValidationError('decoded log too large');
   }
   let text;
   try {

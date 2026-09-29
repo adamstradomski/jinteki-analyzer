@@ -6,10 +6,13 @@ import re
 from datetime import date
 from typing import Any
 
+from pydantic import ValidationError
+
 from market_research.config import ABR_HOST
 from market_research.records import AbrEntries, AbrEntry, AbrSide, AbrTournament, DeckRef
 from market_research.scrub import IngestQuality
 from market_research.sources.common import (
+    INT_ID,
     ParseError,
     as_bool,
     opt_int,
@@ -105,16 +108,26 @@ def parse_event(ev: dict[str, Any], q: IngestQuality, fetched_at: str) -> AbrTou
         claim_count=opt_int(ev.get("claim_count")) or 0,
         claim_conflict=as_bool(ev.get("claim_conflict")),
         matchdata=as_bool(ev.get("matchdata")),
-        country=str(country)[:60] if country and re.match(r"^[A-Za-z .'-]{2,60}$", str(country)) else None,
+        country=str(country)[:60] if country and re.fullmatch(r"[A-Za-z .'-]{2,60}", str(country)) else None,
         winner_corp_identity=opt_printing(ev.get("winner_corp_identity")),
         winner_runner_identity=opt_printing(ev.get("winner_runner_identity")),
     ).hashed()
 
 
 def parse_events(payload: object, q: IngestQuality, fetched_at: str) -> list[AbrTournament]:
+    """The readable events of a listing. An unreadable one is quarantined under its event key and
+    left out, so one bad event (a date like 2026.02.30.) doesn't lose the rest of the listing."""
     if not isinstance(payload, list):
         raise ParseError("tournament list is not an array")
-    return [parse_event(ev, q, fetched_at) for ev in payload]
+    events = []
+    for ev in payload:
+        try:
+            events.append(parse_event(ev, q, fetched_at))
+        except (ParseError, ValidationError) as e:
+            raw_id = str(ev.get("id")) if isinstance(ev, dict) else ""
+            key = f"abr:event:{raw_id if INT_ID.fullmatch(raw_id) else 'unknown'}"
+            q.add_quarantine(key, f"{type(e).__name__}: {str(e).splitlines()[0][:120]}", str(ev).encode())
+    return events
 
 
 def parse_entries(tid: int, payload: object, q: IngestQuality) -> AbrEntries:

@@ -10,6 +10,7 @@ on:
       - "market-research/tests/ui/**"
       - "scripts/**"
       - "package.json"
+      - "wrangler.template.toml"
       - ".github/workflows/site.yml"
   pull_request:
     paths:
@@ -19,6 +20,7 @@ on:
       - "market-research/tests/ui/**"
       - "scripts/**"
       - "package.json"
+      - "wrangler.template.toml"
       - ".github/workflows/site.yml"
 
 permissions:

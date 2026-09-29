@@ -22,12 +22,14 @@ NOW = datetime(2026, 9, 27, 4, 0, tzinfo=UTC)
 
 @pytest.fixture(autouse=True)
 def _fresh_logs():
-    """Leaves no log setup behind: the CLI points structlog at the runner's stdout, closed after the test."""
+    """Leaves no log setup behind: the CLI points structlog at the runner's stdout, closed after the
+    test, and registers secrets for redaction, which are forgotten again."""
     yield
     from market_research import logs
 
     logs.stop_capture()
     logs.configure(io.StringIO())
+    logs.forget_secrets()
 
 
 @pytest.fixture

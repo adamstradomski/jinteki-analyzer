@@ -79,11 +79,6 @@ DECK_CARD_KEYS = frozenset({
     "id", "deck_id", "title", "quantity", "influence", "influence_cost", "nrdb_card_id",
     "nrdb_printing_id", "card_type_id", "faction_id", "created_at", "updated_at",
 })  # fmt: skip
-PLAYER_ATTRS = frozenset({
-    "id", "tournament_id", "user_id", "name", "pronouns", "active", "seed", "fixed_table_number",
-    "manual_seed", "first_round_bye", "include_in_stream", "registration_locked",
-    "corp_identity_id", "runner_identity_id",
-})  # fmt: skip
 CATALOG_ATTRS = {
     "formats": frozenset({"id", "name", "position", "created_at", "updated_at"}),
     "tournament_types": frozenset(
@@ -363,16 +358,6 @@ def parse_catalog(kind: str, items: list[dict[str, Any]], q: IngestQuality) -> C
     return CobraCatalog(kind=kind, items=sorted(out, key=lambda r: r.id)).hashed()
 
 
-def parse_players_api(items: list[dict[str, Any]], q: IngestQuality) -> list[CobraPlayer]:
-    """Scrubs the JSON:API players resource (kept for reference; ingest uses the NRTM export)."""
-    out = []
-    for it in items:
-        a = attributes(it)
-        q.check_drift("cobra.player.attributes", a.keys(), PLAYER_ATTRS)
-        out.append(CobraPlayer(pid=strict_int(a.get("id")), active=as_bool(a.get("active"))))
-    return out
-
-
 # ---------------- fetchers ----------------
 
 
@@ -398,13 +383,6 @@ def fetch_catalog(
             if n:
                 items.extend(page)
     return parse_catalog(kind, items, q), first.etag
-
-
-def fetch_players_api(http: PoliteHttp, tid: int, q: IngestQuality, size: int = 50) -> list[CobraPlayer]:
-    items: list[dict[str, Any]] = []
-    for page in jsonapi_pages(http, BASE, f"{API}/tournaments/{strict_int(tid)}/players", size=size):
-        items.extend(page)
-    return parse_players_api(items, q)
 
 
 def parse_show(doc: object, q: IngestQuality, fetched_at: str) -> CobraTournament:

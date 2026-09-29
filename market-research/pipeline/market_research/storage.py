@@ -20,7 +20,7 @@ _KEY_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._=/-]*$")
 
 
 def _check_key(key: str) -> str:
-    if not _KEY_RE.match(key) or ".." in key or "//" in key:
+    if not _KEY_RE.fullmatch(key) or ".." in key or "//" in key:
         raise ValueError(f"invalid object key: {key!r}")
     return key
 

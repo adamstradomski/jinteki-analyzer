@@ -49,8 +49,10 @@ flowchart TB
   the new data and writes the files back. One maintainer, runs never overlap, so there is no locking.
 - **R2 buckets:** `mr-source` (source records, rewritten only when their hash changes),
   `mr-canonical` (tables and `state/`), `mr-published` (served read-only on `data.jinteki.win`).
-- **The page** is plain HTML, CSS and one ES module in `public/market-research/`, served with the
-  rest of jinteki.win by its existing Worker as static assets (no code runs for these paths).
+- **The page** is plain HTML, CSS and ES modules in `public/market-research/` (`app.js` and what it
+  imports: `data.js` for the arithmetic, `charts.js`, `table.js`, `combo.js`, `dom.js`, `format.js`),
+  served with the rest of jinteki.win by its existing Worker as static assets (no code runs for
+  these paths).
 
 ## 3. Pipeline components
 
@@ -82,6 +84,8 @@ flowchart LR
 | `publish.py` | Every slice, the catalog and the quality report; JSON Schema validation and sanity checks; parallel upload of `v=…/` (immutable), then `manifest.json` (60 s) once every file is stored. |
 | `runner.py`, `cli.py` | `run-all`, `backfill` phases and `--plan`, exit codes, run summary. |
 | `storage.py` | `ObjectStore` with `R2ObjectStore` and `LocalObjectStore`; nothing else touches storage. |
+| `config.py`, `clock.py`, `logs.py`, `db.py` | Settings from environment variables and the tier mapping; the injectable clock; JSON logs with secret redaction and the run log upload; DuckDB bulk inserts. |
+| `testing.py`, `fixtures_refresh.py` | The fixture transport behind `--fixtures` and the tests; `fixtures refresh`, the manual capture of one live tournament. |
 
 **A normal run** (`run-all`) makes about 100–250 requests in a few minutes: three ABR list checks at
 most, the Cobra index until the first known tournament, conditional catalog checks, NRDB by-day for

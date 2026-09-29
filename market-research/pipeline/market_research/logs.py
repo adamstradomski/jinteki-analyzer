@@ -29,6 +29,11 @@ def register_secret(value: str | None) -> None:
         _SECRETS.add(value)
 
 
+def forget_secrets() -> None:
+    """Drops every registered secret (a new process starts with none; tests need the same)."""
+    _SECRETS.clear()
+
+
 def _redact_value(v: Any) -> Any:
     if isinstance(v, str):
         for s in _SECRETS:

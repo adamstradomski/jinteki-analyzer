@@ -76,7 +76,6 @@ class Settings(BaseModel):
     abr_page_size: int = 200
     flush_every_items: int = 100
     flush_every_s: float = 300.0
-    data_base_url: str = "https://data.jinteki.win"
 
     @property
     def user_agent(self) -> str:
@@ -123,11 +122,11 @@ def load_settings(env: Mapping[str, str] | None = None) -> Settings:
         r2_account_id=e.get("R2_ACCOUNT_ID") or None,
         r2_access_key_id=SecretStr(key_id) if key_id else None,
         r2_secret_access_key=SecretStr(secret) if secret else None,
-        bucket_source=e.get("MR_BUCKET_SOURCE", "mr-source"),
-        bucket_canonical=e.get("MR_BUCKET_CANONICAL", "mr-canonical"),
-        bucket_published=e.get("MR_BUCKET_PUBLISHED", "mr-published"),
+        bucket_source=e.get("MR_BUCKET_SOURCE") or "mr-source",
+        bucket_canonical=e.get("MR_BUCKET_CANONICAL") or "mr-canonical",
+        bucket_published=e.get("MR_BUCKET_PUBLISHED") or "mr-published",
         local_store=e.get("MR_LOCAL_STORE") or None,
-        contact=e.get("CONTACT", "unset"),
+        contact=e.get("CONTACT") or "unset",
         hosts=hosts,
         thresholds=t,
     )

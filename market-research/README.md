@@ -35,6 +35,11 @@ market-research/
     normalize.py, catalog.py  canonical Parquet tables, linking, legality
     metrics.py, publish.py    additive counts, snapshot slices, validation, publishing
     runner.py, cli.py         run-all, backfill phases and --plan, CLI
+    config.py, clock.py       settings from environment variables, injectable clock
+    storage.py, db.py         R2 and local object stores, DuckDB bulk inserts
+    logs.py                   JSON logs, secret redaction, the run log upload
+    testing.py                fixture transport behind --fixtures and the tests
+    fixtures_refresh.py       `fixtures refresh`: capture one live tournament as fixtures
     schemas/                  JSON Schemas of the snapshot contract
     data/tiers.json           the tier-group mapping (the one place it lives)
   tests/                      offline tests (network disabled) and anonymised fixtures
@@ -62,8 +67,10 @@ run's full log is kept in R2 (`logs/…`, see [CLI](#cli)).
 - **Unknown fields** in a source's response are logged once as `drift_warnings`, so format changes
   show up before they break anything.
 - **Unreadable data is quarantined item by item** (`parser_failures`), not the whole response:
-  one tournament with a date like `20260-05-21` no longer hides the rest of Cobra's list. A
-  quarantined item is retried after a day.
+  one tournament with a date like `20260-05-21` or `2026-02-30` no longer hides the rest of Cobra's
+  or AlwaysBeRunning's list (it is logged under its event key, and the list is still paged by what
+  the source sent). A quarantined item is retried after a day, an event from a list with the next
+  list.
 - **Responses over 5 MB are refused**; NetrunnerDB's card and printing lists are fetched 500 per page
   to stay under that.
 - **Polite fetching:** one request at a time per site at a fixed rate, conditional requests, retries
@@ -71,7 +78,8 @@ run's full log is kept in R2 (`logs/…`, see [CLI](#cli)).
   `2` and still publishes what it has).
 - **Known source quirks handled:**
   - AlwaysBeRunning sometimes sends the text `"null"` for a missing identity; it counts as missing.
-  - AlwaysBeRunning events can span several days (`end_date`).
+  - AlwaysBeRunning events can span several days (`end_date`); an unreadable end date is dropped,
+    not the event.
   - Cobra lists tournaments by creation, not by date, and some are created long after the date they
     carry; listing stops on creation date and skips older-dated events one by one.
   - Cobra records a bye with the player in either seat.
@@ -148,6 +156,7 @@ uv sync                          # creates .venv with the package (editable) and
 uv run ruff check pipeline tests && uv run ruff format --check pipeline tests
 uv run mypy
 uv run pytest --cov              # sockets are disabled for every test
+uv run pytest -n 0               # the same in one process: catches tests that leak global state
 uv run market-research --help
 ```
 
@@ -204,6 +213,24 @@ market-research fixtures refresh --cobra ID | --abr ID [--out DIR]   # manual on
 
 Every command reads its configuration from environment variables ([.env.example](.env.example)).
 Without `--dry-run` it uses the R2 buckets, or the directory in `MR_LOCAL_STORE` when that is set.
+An empty value means the default; a number that doesn't parse stops the command before it starts.
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` | none | The R2 account and a token scoped to the three buckets. Never logged. |
+| `MR_BUCKET_SOURCE`, `MR_BUCKET_CANONICAL`, `MR_BUCKET_PUBLISHED` | `mr-source`, `mr-canonical`, `mr-published` | Bucket names. |
+| `MR_LOCAL_STORE` | none | Use this directory instead of R2 (development). |
+| `CONTACT` | `unset` | An email or URL for source maintainers, sent in the User-Agent. |
+| `MR_BUDGET` | `400` | Requests per host per run (`--budget` overrides it). |
+| `MR_BUDGET_ABR`, `MR_BUDGET_COBRA`, `MR_BUDGET_NRDB` | `MR_BUDGET` | The same, for one host. |
+| `MR_RATE_ABR_S`, `MR_RATE_COBRA_S`, `MR_RATE_NRDB_S` | `2`, `2`, `1` | Seconds between requests to a host. |
+| `MR_JITTER_ABR`, `MR_JITTER_COBRA`, `MR_JITTER_NRDB` | `0.2` | Random spread of that interval (0.2 = ±20%). |
+| `MR_MIN_PLAYERS` | `8` | Smallest tournament counted. |
+| `MR_COVERAGE_HC` | `0.7` | Decklist coverage for a high-coverage tournament (identity and top-cut conversion). |
+| `MR_MIN_GAMES` | `30` | Games under which a card or identity winrate is marked a small sample. |
+| `MR_MIN_ENTRIES` | `20` | Entries under which identity conversion is marked a small sample. |
+| `MR_PERIOD_MONTHS` | `3` | Length of the page's default period (manifest `period_months`). |
+| `MR_UPDATE_GOLDEN` | none | Tests only: `1` rewrites the golden files in `tests/fixtures/expected/`. |
 
 | Command | What it does | Network | Writes | Publishes | Log in R2 |
 |---|---|---|---|---|---|

@@ -37,9 +37,14 @@ async function route(request, env, ctx) {
 export default {
   fetch: route,
 
-  // Daily: drop links nobody has opened within RETENTION_DAYS.
+  // Daily: drop links nobody has opened within RETENTION_DAYS. The build refuses anything but a
+  // positive whole number; a bad value that gets here anyway deletes nothing (0 would delete all).
   async scheduled(event, env, ctx) {
     const days = Number(env.RETENTION_DAYS || 180);
+    if (!Number.isInteger(days) || days < 1) {
+      console.error(`RETENTION_DAYS is not a positive whole number: ${JSON.stringify(env.RETENTION_DAYS)}`);
+      return;
+    }
     const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
     ctx.waitUntil(env.DB.prepare('DELETE FROM links WHERE last_hit < ?').bind(cutoff).run());
   },

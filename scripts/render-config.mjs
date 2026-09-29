@@ -13,13 +13,19 @@ const RAW = {
   WORKERS_DEV: (v) => v === 'true' || v === 'false',
   ROUTES: (v) => /^\[.*\]$/s.test(v.trim()),
 };
+// Further checks on values inserted inside a string. The daily cron deletes links not opened
+// within RETENTION_DAYS, so 0 would delete every link.
+const STRING = {
+  RETENTION_DAYS: (v) => /^[1-9][0-9]{0,4}$/.test(v),
+};
 
 const missing = [];
 const invalid = [];
 const rendered = template.replace(/\$\{([A-Z0-9_]+)\}/g, (_, key) => {
   const value = process.env[key];
   if (value === undefined || value === '') { missing.push(key); return ''; }
-  if (RAW[key] ? !RAW[key](value) : /["\\\n\r]/.test(value)) invalid.push(key);
+  const ok = RAW[key] ? RAW[key](value) : !/["\\\n\r]/.test(value) && (!STRING[key] || STRING[key](value));
+  if (!ok) invalid.push(key);
   return value;
 });
 

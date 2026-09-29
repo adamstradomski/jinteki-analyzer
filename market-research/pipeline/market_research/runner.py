@@ -17,7 +17,7 @@ import httpx
 from market_research import logs
 from market_research.clock import Clock
 from market_research.config import Settings
-from market_research.frontier import SIGNAL_BONUS, TIER_WEIGHT, Item
+from market_research.frontier import TIER_WEIGHT, Item, base_priority
 from market_research.http import PoliteHttp
 from market_research.ingest import Ingestor, ReloadNotFound
 from market_research.normalize import normalize
@@ -168,7 +168,7 @@ def default_since(today: date, stores: Stores) -> date:
 
 
 def tier_of_priority(priority: float) -> str:
-    weight = int((priority % SIGNAL_BONUS) // 1000)
+    weight = int(base_priority(priority) // 1000)
     for g, w in TIER_WEIGHT.items():
         if w == weight:
             return g

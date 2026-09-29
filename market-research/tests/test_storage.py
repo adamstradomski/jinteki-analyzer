@@ -120,8 +120,9 @@ def test_put_and_list(s3):
 
 def test_keys_are_checked_before_any_request(s3):
     client, _ = s3
-    with pytest.raises(ValueError, match="invalid object key"):
-        R2ObjectStore(BUCKET, client).exists("../etc/passwd")
+    for key in ("../etc/passwd", "a//b.json", "/a.json", "a b.json", "a.json\n", ""):
+        with pytest.raises(ValueError, match="invalid object key"):
+            R2ObjectStore(BUCKET, client).exists(key)
 
 
 def test_local_head_and_exists(tmp_path):
