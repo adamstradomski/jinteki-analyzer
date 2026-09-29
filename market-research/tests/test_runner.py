@@ -6,7 +6,7 @@ from datetime import UTC, date, datetime, timedelta
 
 import pytest
 
-from market_research.frontier import SIGNAL_BONUS, Frontier, event_priority
+from market_research.frontier import PRIVATE_DECK_BONUS, SIGNAL_BONUS, Frontier, event_priority
 from market_research.runner import format_plan, parse_now, phase_of, tier_of_priority
 
 TODAY = date(2026, 9, 27)
@@ -42,8 +42,9 @@ def test_events_by_age_then_tier():
     assert phase_of(item("cobra_tournament", event_date=days_ago(91), priority=mega), TODAY) == 2
     assert phase_of(item("cobra_tournament", event_date=days_ago(91), priority=store), TODAY) == 3
     # A change signal lifts the priority but keeps the tier; so does the private deck bonus.
-    assert phase_of(item("abr_entries", event_date=days_ago(400), priority=mega + SIGNAL_BONUS), TODAY) == 2
-    assert phase_of(item("nrdb_deck", event_date=days_ago(400), priority=mega + SIGNAL_BONUS / 2), TODAY) == 2
+    old = days_ago(400)
+    assert phase_of(item("abr_entries", event_date=old, priority=mega + SIGNAL_BONUS), TODAY) == 2
+    assert phase_of(item("nrdb_deck", event_date=old, priority=mega + PRIVATE_DECK_BONUS), TODAY) == 2
     assert phase_of(item("nrdb_decklist"), TODAY) == 1  # no event date
 
 

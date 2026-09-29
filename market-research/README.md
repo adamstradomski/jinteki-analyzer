@@ -68,7 +68,9 @@ run's full log is kept in R2 (`logs/…`, see [CLI](#cli)).
   show up before they break anything.
 - **Unreadable data is quarantined item by item** (`parser_failures`), not the whole response:
   one tournament with a date like `20260-05-21` or `2026-02-30` no longer hides the rest of Cobra's
-  list. A quarantined item is retried after a day.
+  or AlwaysBeRunning's list (it is logged under its event key, and the list is still paged by what
+  the source sent). A quarantined item is retried after a day, an event from a list with the next
+  list.
 - **Responses over 5 MB are refused**; NetrunnerDB's card and printing lists are fetched 500 per page
   to stay under that.
 - **Polite fetching:** one request at a time per site at a fixed rate, conditional requests, retries

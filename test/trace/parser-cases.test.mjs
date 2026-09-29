@@ -6,7 +6,8 @@ import assert from 'node:assert/strict';
 
 import { loadParser, plain } from './load-parser.mjs';
 
-const { parseLog } = loadParser();
+const touched = [];
+const { parseLog } = loadParser(touched);
 const parse = (lines) => plain(parseLog(lines.join('\n')));
 
 // One round with a click for credit each, whose turn-end credits add up.
@@ -135,4 +136,9 @@ test('text without turn lines yields no players and no errors', () => {
   assert.deepEqual(d.players, []);
   assert.equal(d.rounds, 0);
   assert.equal(d.playerCountError, null);
+});
+
+// Last, so it covers every case above (tests in a file run in order).
+test('no case touched a browser global', () => {
+  assert.deepEqual(touched, []);
 });

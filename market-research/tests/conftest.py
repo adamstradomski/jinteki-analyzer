@@ -29,7 +29,7 @@ def _fresh_logs():
 
     logs.stop_capture()
     logs.configure(io.StringIO())
-    logs._SECRETS.clear()
+    logs.forget_secrets()
 
 
 @pytest.fixture

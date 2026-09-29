@@ -6,7 +6,8 @@ import assert from 'node:assert/strict';
 
 import { loadParser } from './load-parser.mjs';
 
-const { evaluateAchievements, ACHIEVEMENTS } = loadParser();
+const touched = [];
+const { evaluateAchievements, ACHIEVEMENTS } = loadParser(touched);
 
 // A finished parse result that earns nothing: no winner, a click for credit and a draw click each,
 // 5 credits left, nothing scored, trashed, taken or mulliganed.
@@ -123,4 +124,9 @@ test("a credit stretch that overshoots the printed total can't earn the rich ach
 test('a player without a known side earns nothing', () => {
   const d = game({ winner: 'C', playerSide: { R: 'runner' }, clickCredits: {}, drawClicks: {} });
   assert.deepEqual(names(d), { C: [], R: [] });
+});
+
+// Last, so it covers every case above (tests in a file run in order).
+test('no case touched a browser global', () => {
+  assert.deepEqual(touched, []);
 });

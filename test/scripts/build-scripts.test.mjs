@@ -59,12 +59,14 @@ test('render-config fills in every build variable and stamps the footer', (t) =>
 
 test('render-config fails on missing build variables and writes nothing', (t) => {
   const dir = sandbox(t, RENDER);
+  // Compared with the copy, not with "Build: dev": a local `npm run build` stamps the working tree.
+  const page = read(dir, 'public/trace/index.html');
   const { D1_ID, RL_MISS_NS, ...some } = GOOD_VARS;
   const r = run(dir, 'scripts/render-config.mjs', { ...some, RL_CREATE_NS: '' });
   assert.equal(r.status, 1);
   assert.match(r.stderr, /^Missing build variables: D1_ID, RL_CREATE_NS, RL_MISS_NS$/m);
   assert.equal(fs.existsSync(path.join(dir, 'wrangler.toml')), false);
-  assert.match(read(dir, 'public/trace/index.html'), /Build: dev</);
+  assert.equal(read(dir, 'public/trace/index.html'), page);
 });
 
 test('render-config refuses values that would break the TOML', (t) => {
@@ -75,6 +77,17 @@ test('render-config refuses values that would break the TOML', (t) => {
   assert.equal(r.status, 1);
   assert.match(r.stderr, /^Invalid build variables: WORKERS_DEV, ROUTES, RETENTION_DAYS, D1_NAME$/m);
   assert.equal(fs.existsSync(path.join(dir, 'wrangler.toml')), false);
+});
+
+test('render-config accepts only a positive whole number of RETENTION_DAYS', (t) => {
+  const dir = sandbox(t, RENDER);
+  for (const days of ['0', '-5', '1.5', '180 ', 'six months', '1e3']) {
+    const r = run(dir, 'scripts/render-config.mjs', { ...GOOD_VARS, RETENTION_DAYS: days });
+    assert.equal(r.status, 1, days);
+    assert.match(r.stderr, /^Invalid build variables: RETENTION_DAYS$/m, days);
+  }
+  assert.equal(fs.existsSync(path.join(dir, 'wrangler.toml')), false);
+  assert.equal(run(dir, 'scripts/render-config.mjs', { ...GOOD_VARS, RETENTION_DAYS: '1' }).status, 0);
 });
 
 test('stamp-build fails when the footer has no Build: text', (t) => {

@@ -11,6 +11,7 @@ import duckdb
 import jsonschema
 import pytest
 
+from market_research import publish as publish_module
 from market_research.metrics import compute_counts
 from market_research.normalize import Normalizer, load_sources, load_tables
 from market_research.publish import (
@@ -181,19 +182,12 @@ def _unknown_card(snap):
     snap.files[PATHS["summary"].format(side="corp", **ALL)]["cards"][0]["card_id"] = "made_up_card"
 
 
-def _oversized(snap):
-    snap.files[PATHS["trends"].format(side="corp", **ALL)]["cards"]["filler"] = [
-        [0, 0, *[123456789012] * 10]
-    ] * 20000
-
-
 @pytest.mark.parametrize(
     ("edit", "error"),
     [
         (_schema, "meta/corp/all/all/summary.json: 'mr.summary/1' was expected"),
         (_manifest, "manifest.json: 5 is not of type 'string'"),
         (_unknown_card, "meta/corp/all/all/summary.json: card ids not in the catalog: ['made_up_card']"),
-        (_oversized, "meta/corp/all/all/trends.json: "),
         (_drop_tournament, "tournaments listed "),
         (_bump_baseline("trends", 2), "runner: published decks "),
         (_bump_baseline("trends", 3), "runner: published games "),
@@ -204,8 +198,17 @@ def test_validation_reports_each_problem(slim, counted, edit, error):
     edit(slim)
     errors = validate(slim, counted)
     assert [e for e in errors if e.startswith(error)] == errors != [], errors
-    if edit is _oversized:
-        assert errors[0].endswith("exceeds the 2 MB slice limit")
+
+
+def test_validation_reports_a_slice_over_the_size_limit(slim, counted, monkeypatch):
+    # A limit just under the largest file's size, instead of growing a file past 2 MB (which the
+    # schema check then walks for seconds).
+    sizes = {path: len(encode(obj)) for path, obj in slim.files.items()}
+    second, largest = sorted(sizes.values())[-2:]
+    assert largest > second
+    monkeypatch.setattr(publish_module, "MAX_SLICE_BYTES", second)
+    path = max(sizes, key=sizes.__getitem__)
+    assert validate(slim, counted) == [f"{path}: {largest} bytes exceeds the 2 MB slice limit"]
 
 
 def test_only_catalog_titles_and_numbers(built):

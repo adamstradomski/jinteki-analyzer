@@ -10,32 +10,13 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
+
+import { BROWSER_GLOBALS, loadClassicScript, loadParser } from './load-parser.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const TRACE = path.join(ROOT, 'public/trace');
 const GOLDEN = path.join(ROOT, 'test/trace/golden');
-
-// Browser globals parser.js must never touch. Each one is a getter that
-// records the access (and then fails), so a stray reference is reported
-// even if the parser catches the error.
-const BROWSER_GLOBALS = ['window', 'document', 'navigator', 'location', 'localStorage',
-  'sessionStorage', 'fetch', 'XMLHttpRequest', 'JW', 'alert', 'history', 'self'];
-
-// Runs a classic script the way a <script> tag would, in a fresh context
-// that has only the JavaScript built-ins plus the traps above.
-function loadClassicScript(file, touched = []){
-  const sandbox = {};
-  for (const name of BROWSER_GLOBALS){
-    Object.defineProperty(sandbox, name, {
-      get(){ touched.push(name); throw new Error(`${path.basename(file)} accessed ${name}`); }
-    });
-  }
-  const context = vm.createContext(sandbox);
-  vm.runInContext(fs.readFileSync(file, 'utf8'), context, { filename: file });
-  return context;
-}
 
 // Key-sorted copy, so the JSON doesn't depend on property insertion order.
 function canonical(value){
@@ -68,7 +49,7 @@ function goldenInputs(){
 }
 
 const touched = [];
-const parser = loadClassicScript(path.join(TRACE, 'parser.js'), touched).TraceParser;
+const parser = loadParser(touched);
 const inputs = goldenInputs();
 
 test('parser.js exposes TraceParser', () => {

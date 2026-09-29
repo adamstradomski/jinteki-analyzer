@@ -2,11 +2,17 @@ from __future__ import annotations
 
 from datetime import timedelta
 
+import pytest
+
 from market_research.frontier import (
     DAY,
     LIVE_INTERVAL,
+    PRIORITY_BONUS,
+    PRIVATE_DECK_BONUS,
     SIGNAL_BONUS,
+    TIER_WEIGHT,
     Frontier,
+    base_priority,
     ceiling_s,
     event_priority,
 )
@@ -147,3 +153,11 @@ def test_parquet_roundtrip(clock, tmp_path):
     for k in f.items:
         assert g.items[k] == f.items[k]
     assert Frontier.load(LocalObjectStore(tmp_path / "empty")).items == {}
+
+
+def test_base_priority_drops_every_bonus():
+    top = event_priority(max(TIER_WEIGHT, key=TIER_WEIGHT.__getitem__), 10_000, recency_days=0)
+    assert top < PRIORITY_BONUS
+    for p in (0.0, event_priority("store", 40, recency_days=30), top):
+        for bonus in (0, SIGNAL_BONUS, PRIVATE_DECK_BONUS, SIGNAL_BONUS + PRIVATE_DECK_BONUS):
+            assert base_priority(p + bonus) == pytest.approx(p)

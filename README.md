@@ -43,7 +43,7 @@ Run from the repository root. The Market Research pipeline has its own CLI, docu
 |---|---|
 | `npx serve public` (or any static file server with `public/` as its root) | Serves the site locally. Every page loads its files by relative path; Market Research needs a server because it loads as ES modules, while Trace and the landing page also work opened as files. |
 | `npm install` | Installs Wrangler, the only dependency (needs Node.js 22 or newer). |
-| `npm run build` | The Workers Builds step: `scripts/render-config.mjs` renders `wrangler.toml` from `wrangler.template.toml` and the build variables, then `scripts/stamp-build.mjs` stamps the build time (Warsaw time) and commit (`WORKERS_CI_COMMIT_SHA`, else `git rev-parse HEAD`) into Trace's footer. Don't commit the stamped page. Exits `1`, writing nothing, when a variable is missing or empty, or invalid: `WORKERS_DEV` not `true`/`false`, `ROUTES` not a TOML array, or another value holding a quote, backslash or line break. `stamp-build.mjs` alone exits `1` if the footer has no `Build:` text. |
+| `npm run build` | The Workers Builds step: `scripts/render-config.mjs` renders `wrangler.toml` from `wrangler.template.toml` and the build variables, then `scripts/stamp-build.mjs` stamps the build time (Warsaw time) and commit (`WORKERS_CI_COMMIT_SHA`, else `git rev-parse HEAD`) into Trace's footer. Don't commit the stamped page. Exits `1`, writing nothing, when a variable is missing or empty, or invalid: `WORKERS_DEV` not `true`/`false`, `ROUTES` not a TOML array, `RETENTION_DAYS` not a positive whole number, or another value holding a quote, backslash or line break. `stamp-build.mjs` alone exits `1` if the footer has no `Build:` text. |
 | `npx wrangler dev` | Runs the Worker locally (site plus shortener) after `npm run build` has rendered `wrangler.toml`. |
 | `npx wrangler deploy` | The Workers Builds deploy step. |
 | `node public/shared/jw/build-tokens.mjs` | Regenerates `public/shared/jw/tokens.css` from `tokens.json` (`npm test` fails if the committed file differs). |
@@ -59,7 +59,7 @@ Run from the repository root. The Market Research pipeline has its own CLI, docu
 The site runs on one Cloudflare Worker per environment, built from this repo with Workers Builds:
 
 - `public/` holds the static site, served directly as Worker static assets.
-- `src/` is the Worker code for the link shortener: `POST /api/shorten` creates a short link, `GET /s/<id>` redirects to `/trace/#log=<payload>`, and a daily cron (`17 3 * * *`) deletes links not opened for `RETENTION_DAYS` (180 when unset). Only these paths run code.
+- `src/` is the Worker code for the link shortener: `POST /api/shorten` creates a short link, `GET /s/<id>` redirects to `/trace/#log=<payload>`, and a daily cron (`17 3 * * *`) deletes links not opened for `RETENTION_DAYS` days (a build variable; a value that isn't a positive whole number makes the cron log an error and delete nothing). Only these paths run code.
 - `schema.sql` is the D1 schema; each environment has its own database. It only uses `IF NOT EXISTS`, so re-running it on an existing database adds anything new (such as the `idx_links_created_at` index the daily cap uses): `npx wrangler d1 execute <D1_NAME> --remote --file schema.sql`.
 - `public/_headers` adds security headers (`nosniff`, no framing, HSTS, Referrer-Policy) to every static file; `src/index.js` sets the same ones on the shortener's responses, which `_headers` doesn't reach. Each page sets its own Content-Security-Policy in a `<meta>` tag.
 

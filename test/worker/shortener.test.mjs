@@ -123,12 +123,20 @@ test('resolves a short link with security headers and 404s unknown ones', async 
   assert.equal(miss.headers.get('X-Content-Type-Options'), 'nosniff');
 });
 
-test('accepts every turn-start pronoun the page parser knows', async () => {
+// The pronoun list in one of the two files' turn-start patterns, read from its source.
+function pronounsIn(file, pattern) {
+  const m = readFileSync(new URL(file, import.meta.url), 'utf8').match(pattern);
+  assert.ok(m, `no turn-start pronoun list found in ${file}`);
+  return m[1].split('|').sort();
+}
+
+test('accepts exactly the turn-start pronouns the page parser knows', async () => {
   // validate.js must accept exactly the logs public/trace/parser.js can read.
-  const parser = readFileSync(new URL('../../public/trace/parser.js', import.meta.url), 'utf8');
-  const pronouns = parser.match(/const PRONOUN = '\(\?:([a-z|]+)\)'/)[1].split('|');
-  assert.ok(pronouns.length >= 12);
-  for (const p of pronouns) await validatePayload(gz(`Corp started ${p} turn 1 with 5 and 5 cards in HQ.`));
+  const parser = pronounsIn('../../public/trace/parser.js', /const PRONOUN = '\(\?:([a-z|]+)\)'/);
+  const validator = pronounsIn('../../src/validate.js', /const LOG_MARKER = \/started \(\?:([a-z|]+)\) turn /);
+  assert.deepEqual(validator, parser);
+  assert.ok(parser.length >= 12);
+  for (const p of parser) await validatePayload(gz(`Corp started ${p} turn 1 with 5 and 5 cards in HQ.`));
 });
 
 test('rejects payloads that are not base64, gzip or UTF-8 text', async () => {
@@ -287,4 +295,16 @@ test('the daily cron deletes links not opened within RETENTION_DAYS', async (t) 
     await Promise.all(pending);
     assert.deepEqual(env.DB.calls, [{ sql: 'DELETE FROM links WHERE last_hit < ?', args: [NOW - expected * DAY] }]);
   }
+});
+
+test('the daily cron deletes nothing when RETENTION_DAYS is not a positive whole number', async (t) => {
+  const errors = t.mock.method(console, 'error', () => {});
+  for (const days of ['0', '-1', '1.5', 'six months']) {
+    const env = makeEnv({ RETENTION_DAYS: days });
+    const pending = [];
+    await worker.scheduled({}, env, { waitUntil: (p) => pending.push(p) });
+    await Promise.all(pending);
+    assert.deepEqual(env.DB.calls, [], days);
+  }
+  assert.equal(errors.mock.callCount(), 4);
 });

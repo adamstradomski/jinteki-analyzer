@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import threading
 import time
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Iterator
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
@@ -21,7 +21,7 @@ from pydantic import ValidationError
 from market_research import logs
 from market_research.clock import Clock
 from market_research.config import Settings, tier_config
-from market_research.frontier import SIGNAL_BONUS, Frontier, Item, event_priority
+from market_research.frontier import PRIVATE_DECK_BONUS, Frontier, Item, base_priority, event_priority
 from market_research.http import (
     BudgetExhausted,
     FetchFailed,
@@ -455,17 +455,28 @@ class Ingestor:
         """ABR has no single-event endpoint: its results listing is read until every ID is found."""
         found: dict[int, AbrTournament] = {}
         wanted = set(ids)
+        if not wanted:
+            return found
+        for page in self.abr_results(self.fetched_at()):
+            found.update((ev.id, ev) for ev in page if ev.id in wanted)
+            if wanted <= found.keys():
+                break
+        return found
+
+    def abr_results(self, fetched: str) -> Iterator[list[AbrTournament]]:
+        """ABR's results listing, page by page, until a page comes back short."""
+        size = self.settings.abr_page_size
         offset = 0
-        while wanted - found.keys():
-            r = self.http.get(abr.results_url(offset, self.settings.abr_page_size))
+        while True:
+            r = self.http.get(abr.results_url(offset, size))
             if r.status != 200:
                 raise NotFound(f"status {r.status}")
-            page = abr.parse_events(r.json(), self.quality, self.fetched_at())
-            found.update((ev.id, ev) for ev in page if ev.id in wanted)
-            if len(page) < self.settings.abr_page_size:
-                break
-            offset += self.settings.abr_page_size
-        return found
+            payload = r.json()
+            yield abr.parse_events(payload, self.quality, fetched)  # raises unless a list
+            # Counted as sent: parse_events leaves unreadable events out of a full page.
+            if not isinstance(payload, list) or len(payload) < size:
+                return
+            offset += size
 
     # ------------------------------------------------------------------ ABR
 
@@ -488,18 +499,10 @@ class Ingestor:
                     raise NotFound(f"status {r.status}")
                 events += abr.parse_events(r.json(), self.quality, fetched)
         else:
-            offset = 0
-            while True:
-                r = self.http.get(abr.results_url(offset, self.settings.abr_page_size))
-                if r.status != 200:
-                    raise NotFound(f"status {r.status}")
-                page = abr.parse_events(r.json(), self.quality, fetched)
+            for page in self.abr_results(fetched):
                 events += page
-                if len(page) < self.settings.abr_page_size:
+                if self.since and page and all(date.fromisoformat(e.date) < self.since for e in page):
                     break
-                if self.since and all(date.fromisoformat(e.date) < self.since for e in page):
-                    break
-                offset += self.settings.abr_page_size
         for ev in events:
             self.consider_abr_event(ev)
         with self._lock:
@@ -564,7 +567,7 @@ class Ingestor:
             raise NotFound(f"status {r.status}")
         rec = abr.parse_entries(tid, r.json(), self.quality)
         changed = self.write(f"abr/entries/{tid}.json", rec, known_hash=it.record_hash)
-        base = it.priority % SIGNAL_BONUS
+        base = base_priority(it.priority)
         if changed or self._reload is not None:
             ev_date = date.fromisoformat(it.event_date) if it.event_date else self.today
             refs = [
@@ -593,7 +596,7 @@ class Ingestor:
                         "nrdb",
                         "nrdb_deck",
                         ref,
-                        priority=base + SIGNAL_BONUS / 2,
+                        priority=base + PRIVATE_DECK_BONUS,
                         event_date=it.event_date,
                     )
         with self._lock:
@@ -732,7 +735,7 @@ class Ingestor:
                 "cobra",
                 "cobra_settings",
                 str(tid),
-                priority=it.priority % SIGNAL_BONUS,
+                priority=base_priority(it.priority),
                 event_date=meta.date,
             )
         r = self.http.get(cobra.nrtm_url(tid), etag=it.etag if meta.results_fetched else None)
@@ -747,7 +750,7 @@ class Ingestor:
         changed = self.write(key, rec, known_hash=stored.get("record_hash"))
         live = cobra.is_live(rec, self.today)
         if not live:
-            self.enqueue_cobra_decks(rec, it.priority % SIGNAL_BONUS)
+            self.enqueue_cobra_decks(rec, base_priority(it.priority))
         with self._lock:
             self.frontier.complete(
                 it, self.now, changed=changed, status="ok", record_hash=rec.record_hash, etag=etag, live=live
@@ -819,7 +822,7 @@ class Ingestor:
                     "nrdb",
                     "nrdb_deck",
                     d.nrdb_uuid,
-                    priority=it.priority + SIGNAL_BONUS / 2,
+                    priority=it.priority + PRIVATE_DECK_BONUS,
                     event_date=t.date,
                 )
         with self._lock:

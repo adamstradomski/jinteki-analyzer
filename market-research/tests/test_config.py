@@ -7,6 +7,26 @@ import pytest
 from market_research import __version__
 from market_research.config import load_settings
 
+# Every variable in README.md's configuration table.
+VARIABLES = [
+    "R2_ACCOUNT_ID",
+    "R2_ACCESS_KEY_ID",
+    "R2_SECRET_ACCESS_KEY",
+    "MR_BUCKET_SOURCE",
+    "MR_BUCKET_CANONICAL",
+    "MR_BUCKET_PUBLISHED",
+    "MR_LOCAL_STORE",
+    "CONTACT",
+    "MR_BUDGET",
+    *(f"MR_{kind}_{host}" for kind in ("BUDGET", "JITTER") for host in ("ABR", "COBRA", "NRDB")),
+    *(f"MR_RATE_{host}_S" for host in ("ABR", "COBRA", "NRDB")),
+    "MR_MIN_PLAYERS",
+    "MR_COVERAGE_HC",
+    "MR_MIN_GAMES",
+    "MR_MIN_ENTRIES",
+    "MR_PERIOD_MONTHS",
+]
+
 
 def test_defaults():
     s = load_settings({})
@@ -66,10 +86,9 @@ def test_thresholds_and_storage():
 
 
 def test_empty_values_mean_the_default():
-    # docker --env-file passes a listed but unfilled variable as an empty string.
-    s = load_settings({"MR_BUDGET": "", "MR_MIN_PLAYERS": "", "MR_LOCAL_STORE": "", "R2_ACCOUNT_ID": ""})
-    assert s.policy("abr").budget == 400 and s.thresholds.min_players == 8
-    assert s.local_store is None and s.r2_account_id is None
+    # docker --env-file passes a listed but unfilled variable as an empty string (.env.example
+    # lists CONTACT= that way).
+    assert load_settings(dict.fromkeys(VARIABLES, "")) == load_settings({})
 
 
 def test_a_bad_number_fails_at_start():

@@ -16,10 +16,14 @@ TYPE_ORDER = [
 
 
 def title_key(title: str) -> str:
-    # Curly quotes become straight ones before the ASCII fold drops them, so "O’Brian" and the
-    # "O'Brian" of an export that straightens quotes get the same key.
-    t = title.replace("“", '"').replace("”", '"').replace("’", "'")
-    t = unicodedata.normalize("NFKD", t).encode("ascii", "ignore").decode()
+    # NFKD splits "é" into "e" and an accent, which is dropped, as is any other non-ASCII letter or
+    # digit. Other non-ASCII characters (curly quotes, dashes, ellipses) separate words like the
+    # ASCII punctuation an export may straighten them to, so "O’Brian" keys like "O'Brian".
+    t = "".join(
+        ch if ch.isascii() else "" if ch.isalnum() else " "
+        for ch in unicodedata.normalize("NFKD", title)
+        if not unicodedata.combining(ch)
+    )
     return re.sub(r"[^a-z0-9]+", " ", t.lower()).strip()
 
 

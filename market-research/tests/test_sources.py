@@ -62,14 +62,14 @@ def test_dates_accept_abr_and_iso_forms():
     assert parse_date("2026-09-05T18:00:00.000Z") == "2026-09-05"
     # Seen live on Cobra: "20260-05-21". Impossible dates are a ParseError too, which callers skip
     # item by item; a bare ValueError from datetime.date used to escape them.
-    for bad in ("20260-05-21", "2026-13-01", "2026-02-30", "05.09.2026", "", None):
+    for bad in ("20260-05-21", "2026-13-01", "2026-02-30", "05.09.2026", "٢٠٢٦-09-05", "", None):
         with pytest.raises(ParseError):
             parse_date(bad)
 
 
 def test_numbers_and_flags():
     assert [opt_int(v) for v in (None, "", "7", "-3", 7, 2.9, True)] == [None, None, 7, -3, 7, 2, 1]
-    for bad in ("7.5", "seven", " 7"):
+    for bad in ("7.5", "seven", " 7", "7\n", "٧"):
         with pytest.raises(ParseError):
             opt_int(bad)
     assert [opt_float(v) for v in (None, "", "0.1234567", 3, "2")] == [None, None, 0.123457, 3.0, 2.0]
@@ -178,6 +178,25 @@ def test_abr_event_is_parsed_leniently():
         abr.parse_event(["not", "an", "object"], q, "t")  # type: ignore[arg-type]
     with pytest.raises(ParseError):
         abr.parse_events({"data": []}, q, "t")
+
+
+def test_abr_listing_leaves_out_an_unreadable_event():
+    q = IngestQuality()
+    bad = [
+        dict(EVENT, id=2, date="2026.02.30."),
+        dict(EVENT, id=3, winner_corp_identity="nul"),
+        dict(EVENT, id=4, players_count="many"),
+        dict(EVENT, id="4\n"),
+        "not an object",
+    ]
+    assert [e.id for e in abr.parse_events([*bad, dict(EVENT, id=5)], q, "t")] == [5]
+    assert [(e["key"], e["error"]) for e in q.quarantine] == [
+        ("abr:event:2", "ParseError: bad date"),
+        ("abr:event:3", "ParseError: bad printing id"),
+        ("abr:event:4", "ParseError: bad integer"),
+        ("abr:event:unknown", "ParseError: bad integer id"),
+        ("abr:event:unknown", "ParseError: event is not an object"),
+    ]
 
 
 def test_abr_entries_keep_one_entry_per_swiss_rank():

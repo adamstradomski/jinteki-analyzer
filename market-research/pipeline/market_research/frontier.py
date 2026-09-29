@@ -35,8 +35,18 @@ MIN_INTERVAL: dict[str, int] = {
     "nrdb_by_date": DAY,
 }
 LIVE_INTERVAL = 6 * HOUR  # a live Cobra tournament is checked up to 4 times a day
-SIGNAL_BONUS = 100_000.0
 TIER_WEIGHT = {"megacity": 4, "store": 3, "gnk": 2, "online": 1}
+# An item's priority is its event's event_priority(), always below PRIORITY_BONUS, plus bonuses
+# that are whole multiples of PRIORITY_BONUS, so base_priority() gets the event's priority (and
+# with it the tier) back whatever bonuses an item carries. Define any new bonus the same way.
+PRIORITY_BONUS = 50_000.0
+SIGNAL_BONUS = 2 * PRIORITY_BONUS  # a change signal pulls the item forward
+PRIVATE_DECK_BONUS = PRIORITY_BONUS  # a private NRDB deck can change after the event: fetch it first
+
+
+def base_priority(priority: float) -> float:
+    """The event priority under an item's bonuses."""
+    return priority % PRIORITY_BONUS
 
 
 @dataclass

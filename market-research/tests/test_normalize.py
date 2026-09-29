@@ -7,13 +7,20 @@ from pathlib import Path
 
 import pytest
 
-from helpers import EXPECTED
+from helpers import EXPECTED, all_files
 from market_research.catalog import Catalog, title_key
-from market_research.config import tier_config
+from market_research.config import load_settings, tier_config
 from market_research.normalize import Normalizer, _result, deck_id
 from market_research.records import CobraPairing, CobraPlayer, CobraTournament, DeckVisibility
 
 UPDATE = os.environ.get("MR_UPDATE_GOLDEN") == "1"
+
+
+def _sources() -> dict[str, bytes]:
+    """The source records a fixture ingest stores, read from tests/fixtures/expected/source (which
+    test_scrub checks against the ingest). A fresh dict each call, for the caller to edit."""
+    root = EXPECTED / "source"
+    return {p.relative_to(root).as_posix(): p.read_bytes() for p in all_files(root)}
 
 
 def rows_json(rows):
@@ -275,7 +282,7 @@ def test_private_shared_deck_used_for_claim(fixture_run):
 
 def test_plain_text_is_identical_across_sources(fixture_run):
     env, _, data, _ = fixture_run
-    src = {i.key: env.stores.source.get(i.key) for i in env.stores.source.list()}
+    src = _sources()
     n = Normalizer(src, env.settings)  # type: ignore[arg-type]
     checked = 0
     # Every "match" deck: its Cobra list and its NRDB list render the same plain text.
@@ -315,7 +322,7 @@ def test_standard_detection_and_banlist(fixture_run):
 
 def test_non_standard_cobra_dropped_in_normalization(fixture_run):
     env, _, _, _ = fixture_run
-    src = {i.key: env.stores.source.get(i.key) for i in env.stores.source.list()}
+    src = _sources()
     t = json.loads(src["cobra/tournament/5015.json"])
     t["format_id"] = 2
     src["cobra/tournament/5015.json"] = json.dumps(t).encode()
@@ -326,7 +333,7 @@ def test_non_standard_cobra_dropped_in_normalization(fixture_run):
 
 
 def _without_format(env, tid, **edit):
-    src = {i.key: env.stores.source.get(i.key) for i in env.stores.source.list()}
+    src = _sources()
     key = f"cobra/tournament/{tid}.json"
     t = json.loads(src[key])
     t.update(format_id=None, **edit)
@@ -397,7 +404,7 @@ def test_cobra_abr_linking(fixture_run):
 
 def test_link_identity_mismatch_goes_to_quality(fixture_run):
     env, _, _, _ = fixture_run
-    src = {i.key: env.stores.source.get(i.key) for i in env.stores.source.list()}
+    src = _sources()
     e = json.loads(src["abr/entries/5284.json"])
     e["entries"][0]["corp"]["identity"] = (
         e["entries"][1]["corp"]["identity"]
@@ -442,11 +449,7 @@ def test_legality_flags(fixture_run):
     env, _, data, _ = fixture_run
     illegal = [d for d in data.rows["deck"] if not d["legal"]]
     assert len(illegal) == 1 and illegal[0]["issues"].startswith("not_legal:")
-    src = {
-        i.key: env.stores.source.get(i.key)
-        for i in env.stores.source.list()
-        if i.key.startswith("nrdb/catalog/")
-    }
+    src = {k: v for k, v in _sources().items() if k.startswith("nrdb/catalog/")}
     cat = Normalizer(src, env.settings).catalog  # type: ignore[arg-type]
     rid = "standard_balance_update_26_08"
     good = next(d for d in data.rows["deck"] if d["legal"] and d["side"] == "corp")
@@ -479,11 +482,7 @@ def test_legality_flags(fixture_run):
 
 def test_rotated_card_not_legal(fixture_run):
     env, _, _, _ = fixture_run
-    src = {
-        i.key: env.stores.source.get(i.key)
-        for i in env.stores.source.list()
-        if i.key.startswith("nrdb/catalog/")
-    }
+    src = {k: v for k, v in _sources().items() if k.startswith("nrdb/catalog/")}
     cat: Catalog = Normalizer(src, env.settings).catalog  # type: ignore[arg-type]
     assert "account_siphon" in cat.cards
     assert not cat.legal_in("account_siphon", "standard_balance_update_26_08")
@@ -514,7 +513,7 @@ def test_expected_canonical_dir():
 
 
 def _linking(env, edit_tournament, edit_entries):
-    src = {i.key: env.stores.source.get(i.key) for i in env.stores.source.list()}
+    src = _sources()
     t = json.loads(src["abr/tournament/5310.json"])
     e = json.loads(src["abr/entries/5310.json"])
     edit_tournament(t)
@@ -565,7 +564,7 @@ def test_ban_list_follows_the_decks(fixture_run):
 
     env, _, _, q = fixture_run
     assert q.restriction_overrides == []  # the fixtures' own settings already fit their decks
-    src = {i.key: env.stores.source.get(i.key) for i in env.stores.source.list()}
+    src = _sources()
     n = Normalizer(src, env.settings)  # type: ignore[arg-type]
     older = "standard_ban_list_26_05"
     n.catalog.check_deck = lambda side, ident, cards, rid: Legality(
@@ -621,7 +620,7 @@ def test_online_events_are_recognised(fixture_run):
     assert not abr.parse_event(dict(ev, location="Warsaw"), IngestQuality(), "t").online
 
     env, _, _, _ = fixture_run
-    src = {i.key: env.stores.source.get(i.key) for i in env.stores.source.list()}
+    src = _sources()
     rec = json.loads(src["cobra/tournament/5012.json"])
     rec["name"] = "Polish Online Store Championship"
     src["cobra/tournament/5012.json"] = json.dumps(rec).encode()
@@ -631,17 +630,22 @@ def test_online_events_are_recognised(fixture_run):
     assert not t["c4990"]["online"]
 
 
-def _normalized(env, src) -> tuple[set[str], Normalizer]:
-    n = Normalizer(src, env.settings)  # type: ignore[arg-type]
+def _normalized(src: dict[str, bytes]) -> tuple[set[str], Normalizer]:
+    n = Normalizer(src, load_settings({}))
     return {r["tid"] for r in n.run().rows["tournament"]}, n
 
 
-def _edited(env, key: str, edit) -> dict[str, bytes]:
-    src = {i.key: env.stores.source.get(i.key) for i in env.stores.source.list()}
+def _edited(key: str, edit) -> dict[str, bytes]:
+    src = _sources()
     rec = json.loads(src[key])
     edit(rec)
     src[key] = json.dumps(rec).encode()
     return src
+
+
+@pytest.fixture(scope="module")
+def unedited() -> tuple[set[str], Normalizer]:
+    return _normalized(_sources())
 
 
 @pytest.mark.parametrize(
@@ -663,41 +667,37 @@ def _edited(env, key: str, edit) -> dict[str, bytes]:
         ("abr/tournament/5240.json", lambda a: a.update(players_count=7), "a5240", "too_small"),
     ],
 )
-def test_guards_leave_events_out_and_count_why(fixture_run, key, edit, tid, reason):
-    env, _, data, q = fixture_run
-    assert tid in {r["tid"] for r in data.rows["tournament"]}
-    kept, n = _normalized(env, _edited(env, key, edit))
+def test_guards_leave_events_out_and_count_why(unedited, key, edit, tid, reason):
+    kept_before, before = unedited
+    assert tid in kept_before
+    kept, n = _normalized(_edited(key, edit))
     assert tid not in kept
-    assert n.q.skipped[reason] == q.skipped[reason] + 1
+    assert n.q.skipped[reason] == before.q.skipped[reason] + 1
 
 
-def test_abr_event_without_entries_is_left_out(fixture_run):
-    env, _, data, q = fixture_run
-    src = {i.key: env.stores.source.get(i.key) for i in env.stores.source.list()}
+def test_abr_event_without_entries_is_left_out(unedited):
+    kept_before, before = unedited
+    src = _sources()
     del src["abr/entries/5240.json"]
-    kept, n = _normalized(env, src)
-    assert "a5240" in {r["tid"] for r in data.rows["tournament"]} and "a5240" not in kept
-    assert n.q.skipped["abr_no_entries"] == q.skipped["abr_no_entries"] + 1
+    kept, n = _normalized(src)
+    assert "a5240" in kept_before and "a5240" not in kept
+    assert n.q.skipped["abr_no_entries"] == before.q.skipped["abr_no_entries"] + 1
 
 
-def test_two_fallback_candidates_link_neither(fixture_run):
-    env, _, _, _ = fixture_run
-    src = {i.key: env.stores.source.get(i.key) for i in env.stores.source.list()}
-    twin = json.loads(src["abr/tournament/5310.json"])
-    twin["id"] = 5311
-    src["abr/tournament/5311.json"] = json.dumps(twin).encode()
-    entries = json.loads(src["abr/entries/5310.json"])
-    entries["tournament_id"] = 5311
-    src["abr/entries/5311.json"] = json.dumps(entries).encode()
-    _, n = _normalized(env, src)
+def test_two_fallback_candidates_link_neither(unedited):
+    _, before = unedited
+    assert "c5012" in {x["tid"] for x in before.q.links}
+    src = _sources()
+    for kind, field in (("tournament", "id"), ("entries", "tournament_id")):
+        twin = json.loads(src[f"abr/{kind}/5310.json"])
+        twin[field] = 5311
+        src[f"abr/{kind}/5311.json"] = json.dumps(twin).encode()
+    _, n = _normalized(src)
     assert "c5012" not in {x["tid"] for x in n.q.links}
     assert {"tid": "c5012", "reason": "ambiguous_fallback_match"} in n.q.link_mismatches
 
 
-def test_unknown_abr_code_is_reported(fixture_run):
-    env, _, _, _ = fixture_run
-    kept, n = _normalized(
-        env, _edited(env, "cobra/tournament/5015.json", lambda t: t.update(abr_code="9999"))
-    )
+def test_unknown_abr_code_is_reported():
+    kept, n = _normalized(_edited("cobra/tournament/5015.json", lambda t: t.update(abr_code="9999")))
     assert "c5015" in kept
     assert {"tid": "c5015", "reason": "abr_code_unresolved"} in n.q.link_mismatches

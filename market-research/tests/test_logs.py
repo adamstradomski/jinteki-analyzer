@@ -18,6 +18,8 @@ def test_registered_secrets_are_redacted_inside_values():
     line = logged(detail="token=super-secret-value-123", items=["a super-secret-value-123 b"])
     assert "super-secret-value-123" not in json.dumps(line)
     assert line["detail"] == "token=[redacted]"
+    logs.forget_secrets()
+    assert logged(detail="token=super-secret-value-123")["detail"] == "token=super-secret-value-123"
 
 
 def test_sensitive_keys_are_redacted_at_any_depth():

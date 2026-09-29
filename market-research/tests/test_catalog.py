@@ -161,9 +161,13 @@ def test_identities_by_title_and_short_name(cat):
     assert cat.identity_of_title("Haas-Bioroid") is None  # two identities share it
     assert cat.identity_of_title("Wall") is None  # not an identity
     assert cat.identity_of_title("") is None and cat.identity_of_title(None) is None
-    # Curly quotes key like the straight ones Cobra's export uses.
+    # Curly quotes, dashes and other typographic punctuation key like the ASCII an export uses.
     assert title_key("“Knickknack” O’Brian") == title_key('"Knickknack" O\'Brian') == "knickknack o brian"
+    assert title_key("‘Loup’ Arcemont") == title_key("'Loup' Arcemont") == "loup arcemont"
+    assert title_key("Mars–Venus—Io…") == title_key("Mars-Venus--Io...") == "mars venus io"
+    # Accents are dropped, not turned into separators.
     assert title_key("René “Loup” Arcemont") == "rene loup arcemont"
+    assert title_key("Esâ Afontov") == "esa afontov"
 
 
 def test_printings_resolve_to_cards(cat):

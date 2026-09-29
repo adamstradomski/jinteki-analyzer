@@ -1,7 +1,7 @@
 """Shared helpers for source clients: strict ID parsing, URL building and JSON:API pages.
 
-IDs are checked with `fullmatch`: with `match`, a pattern ending in `$` also accepts a trailing
-newline ("123\\n").
+IDs and integers are checked with `fullmatch` and `[0-9]`: with `match`, a pattern ending in `$`
+also accepts a trailing newline ("123\\n"), and `\\d` also matches other scripts' digits ("٧").
 """
 
 from __future__ import annotations
@@ -51,7 +51,7 @@ def url(base: str, path: str, params: dict[str, object] | None = None) -> str:
 def parse_date(value: object) -> str:
     """Accepts YYYY-MM-DD, YYYY.MM.DD. and ISO timestamps; returns YYYY-MM-DD."""
     s = str(value or "").strip()
-    m = re.match(r"^(\d{4})[-.](\d{2})[-.](\d{2})", s)
+    m = re.match(r"^([0-9]{4})[-.]([0-9]{2})[-.]([0-9]{2})", s)
     if not m:
         raise ParseError("bad date")
     try:
@@ -70,7 +70,7 @@ def opt_int(value: object) -> int | None:
     if isinstance(value, float):
         return int(value)
     s = str(value)
-    if re.match(r"^-?\d+$", s):
+    if re.fullmatch(r"-?[0-9]+", s):
         return int(s)
     raise ParseError("bad integer")
 
