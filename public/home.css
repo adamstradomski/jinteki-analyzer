@@ -12,3 +12,4 @@ body { margin: 0; background: var(--bg); }
 /* A badge in a panel title takes the title's colour, so it stays readable on filled title bars. */
 .home-apps .panel h2 .badge { color: inherit; border-color: currentColor; vertical-align: middle; }
 .home-footer { margin-top: var(--space-5); }
+.home-apps code { font-family: var(--font-mono); font-size: 0.92em; color: var(--text); }

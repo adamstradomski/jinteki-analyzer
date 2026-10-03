@@ -1,9 +1,10 @@
 # jinteki.win
 
-Netrunner tools on [jinteki.win](https://jinteki.win/). The landing page at `/` links to both apps:
+Netrunner tools on [jinteki.win](https://jinteki.win/). The landing page at `/` links to all three:
 
 - **Trace** (`/trace/`): a single-page, client-side log analyzer for [jinteki.net](https://jinteki.net) games, described below.
 - **Market Research** (`/market-research/`): card meta from NSG Netrunner Standard tournaments. See [docs/market-research/](docs/market-research/).
+- **Cobra Bot** (`/cobra-bot/`): a static page about the Cobra Discord bot, described below.
 
 Trace: Paste (or bookmarklet-import) a finished game's chat log and get parsed stats, per-turn charts, and a per-card credit/cost breakdown — no server, no accounts, nothing leaves your browser unless you explicitly opt in.
 
@@ -83,6 +84,10 @@ Short links accept only this site's log payloads (never arbitrary URLs), are cre
 ## Market Research
 
 `/market-research/` is a second page: tournament card meta (most played cards, trends, winrates, top-cut conversion) for NSG Netrunner Standard, built from [AlwaysBeRunning.net](https://alwaysberunning.net), NSG Cobra and NetrunnerDB data. The page lives in `public/market-research/` and reads precomputed snapshots from `data.jinteki.win`; the batch pipeline that builds them is in [`market-research/`](market-research/README.md), with docs in [`docs/market-research/`](docs/market-research/architecture.md).
+
+## Cobra Bot
+
+`/cobra-bot/` is a static page (no JavaScript beyond the theme controls) that introduces the Cobra Discord bot: its `/cobra standings`, `/cobra pairings` and `/cobra player` commands, an example reply (`standings.webp`) and the [invite link](https://discord.com/oauth2/authorize?client_id=837045273128861727). The bot itself is a separate project (`cobra-bot-lambda`); when its commands change, update `public/cobra-bot/index.html` to match.
 
 ## Support
 
