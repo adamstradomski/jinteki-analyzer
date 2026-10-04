@@ -3,13 +3,14 @@
 from __future__ import annotations
 
 import json
-from datetime import date
+from datetime import UTC, date, datetime
 
 import httpx
 import pytest
 
 from helpers import make_env
-from market_research.frontier import Frontier
+from market_research.clock import FakeClock
+from market_research.frontier import LIVE_INTERVAL, Frontier
 from market_research.ingest import Ingestor, ReloadNotFound
 from market_research.records import CobraTournament, dump
 from market_research.sources import abr
@@ -308,6 +309,20 @@ def test_reload_cobra_fetches_the_tournament_and_its_decks_again(tmp_path, clock
     assert all(
         i.frozen for k, i in ing.frontier.items.items() if k.startswith("cobra:deck:4990:")
     )  # settled again afterwards
+
+
+def test_reload_cobra_fetches_decks_of_a_live_tournament(tmp_path):
+    # 4990 is dated 2026-09-19: a day later it is still live, so a scheduled run leaves its decks.
+    env = make_env(tmp_path, FakeClock(datetime(2026, 9, 20, 12, tzinfo=UTC)))
+    run(env)
+    assert not any("/tournaments/4990/players/" in u for u in urls(env))
+    _serve_cobra_show(env, 4990)
+    env.routes.calls.clear()
+    ing = _reloader(env)
+    ing.reload(cobra_ids=[4990])
+    assert sum("/tournaments/4990/players/" in u for u in urls(env)) == 16
+    # Its results are still rechecked as live afterwards.
+    assert ing.frontier.items["cobra:tournament:4990"].interval_s == LIVE_INTERVAL
 
 
 def test_reload_abr_fetches_entries_even_outside_discovery_rules(tmp_path, clock):

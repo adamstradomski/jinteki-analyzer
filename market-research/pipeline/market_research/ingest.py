@@ -749,7 +749,8 @@ class Ingestor:
             raise NotFound(f"status {r.status}")
         changed = self.write(key, rec, known_hash=stored.get("record_hash"))
         live = cobra.is_live(rec, self.today)
-        if not live:
+        if not live or self._reload is not None:
+            # A reload pulls the decks even while the event is live (its decks lock when it starts).
             self.enqueue_cobra_decks(rec, base_priority(it.priority))
         with self._lock:
             self.frontier.complete(

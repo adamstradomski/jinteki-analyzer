@@ -129,8 +129,10 @@ The backfill is the only way to load history (no source offers a bulk export), s
 those tournaments again, in full, whatever the frontier says: results or entries, settings, deck
 pages, claimed decklists and their daily lists. The date window and the Cobra format check of
 discovery are skipped; normalization still decides whether an event counts. It then normalizes and
-publishes once. Use it after fixing a parser or a rule, to check a few events before a full
-backfill. Every ID is looked up first; if one does not exist, it exits `1` without writing anything.
+publishes once. Public Cobra deck pages are pulled even while the event still counts as live (the
+first 3 days after its date, when scheduled runs wait), so decks published right after a big event
+can be loaded straight away. Use it after fixing a parser or a rule, to check a few events before a
+full backfill, or to force-pull a fresh event's decks. Every ID is looked up first; if one does not exist, it exits `1` without writing anything.
 
 ## Run logs
 
