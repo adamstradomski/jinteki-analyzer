@@ -87,7 +87,7 @@ Short links accept only this site's log payloads (never arbitrary URLs), are cre
 
 ## Cobra Bot
 
-`/cobra-bot/` is a static page (no JavaScript beyond the theme controls) that introduces the Cobra Discord bot: its `/cobra standings`, `/cobra pairings` and `/cobra player` commands, an example reply (`standings.webp`) and the [invite link](https://discord.com/oauth2/authorize?client_id=837045273128861727). The bot itself is a separate project (`cobra-bot-lambda`); when its commands change, update `public/cobra-bot/index.html` to match.
+`/cobra-bot/` is a static page (no JavaScript beyond the theme controls) that introduces the Cobra Discord bot: its `/cobra standings`, `/cobra pairings`, `/cobra top-cut`, `/cobra bracket` and `/cobra player` commands, an example reply (`standings.webp`) and the [invite link](https://discord.com/oauth2/authorize?client_id=837045273128861727). The bot itself is a separate project (`cobra-bot-lambda`); when its commands change, update `public/cobra-bot/index.html` to match.
 
 ## Support
 

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; base-uri 'none'; form-action 'none'; object-src 'none'">
 <title>Cobra Bot · jinteki.win</title>
-<meta name="description" content="A Discord bot that shows pairings, standings and players of Cobra Netrunner tournaments in your channel.">
+<meta name="description" content="A Discord bot that shows pairings, standings, the top cut and its bracket, and players of Cobra Netrunner tournaments in your channel.">
 <link rel="stylesheet" href="../shared/jw/tokens.css">
 <link rel="stylesheet" href="../shared/jw/bundle.css">
 <link rel="stylesheet" href="style.css">
@@ -20,7 +20,7 @@
       <div class="jw-controls"><div id="theme-switcher"></div><div id="mode-toggle"></div></div>
     </div>
     <h1 class="jw-title">Cobra Bot</h1>
-    <p class="lede">A Discord bot that shows pairings, standings and players of
+    <p class="lede">A Discord bot that shows pairings, standings, the top cut and players of
       <a href="https://tournaments.nullsignal.games/" target="_blank" rel="noopener">Cobra</a> Netrunner tournaments,
       right in your channel.</p>
     <a class="btn" href="https://discord.com/oauth2/authorize?client_id=837045273128861727" target="_blank" rel="noopener">Add to Discord</a>
@@ -30,21 +30,26 @@
     <section class="panel" aria-labelledby="commands-title">
       <div class="panel-header"><h2 id="commands-title">Commands</h2></div>
       <div class="panel-body">
-        <p class="cb-note"><code>&lt;tournament&gt;</code> is a Cobra tournament number or a link to any of its pages,
-          e.g. <code>https://tournaments.nullsignal.games/tournaments/5018</code>.</p>
+        <p class="cb-note"><code>&lt;tournament&gt;</code> is a Cobra tournament number (<code>4909</code>), its shortcode (<code>QNSF</code>)
+          or a link to any of its pages, e.g. <code>https://tournaments.nullsignal.games/tournaments/4909/players/standings</code>.</p>
         <dl class="cb-commands">
           <dt><code>/cobra standings &lt;tournament&gt;</code></dt>
-          <dd>Standings after the last completed round: rank, player, points, Strength of Schedule and both IDs.
-            Before round 1 it lists the registered players.</dd>
+          <dd>Swiss standings: rank, player, Corp and Runner ID, points and Strength of Schedule, and after which round they apply.
+            Once Swiss is over it also says whether there is a top cut and how far it has got.</dd>
           <dt><code>/cobra pairings &lt;tournament&gt; [round]</code></dt>
-          <dd>Pairings of the latest Swiss round, or of the round you give: tables, players, sides, IDs and results
-            reported so far. Works for single-sided and double-sided Swiss.</dd>
+          <dd>Pairings of the latest round, Swiss or top cut, or of the round you give: whether it is complete or in progress,
+            tables, players, sides, IDs and results. A top cut round shows game numbers and who won.</dd>
+          <dt><code>/cobra top-cut &lt;tournament&gt;</code></dt>
+          <dd>The top cut ranking: place, player, IDs, games won and lost in the cut, and seed.</dd>
+          <dt><code>/cobra bracket &lt;tournament&gt;</code></dt>
+          <dd>The top cut bracket as one picture, laid out like the bracket page on Cobra.</dd>
           <dt><code>/cobra player &lt;tournament&gt; &lt;names&gt;</code></dt>
-          <dd>A card for each matching player: rank, points, SoS, IDs and their current table. List up to 10 names
-            separated by commas to follow a group; letter case and accents don't matter.</dd>
+          <dd>Players whose name contains the text, with their standing and their game in the latest round. List up to 10 names
+            separated by commas (<code>Alice, Bob</code>) to follow a group; letter case and accents don't matter.</dd>
         </dl>
-        <p class="cb-note">Replies are posted in the channel for everyone to see. Top cut rounds aren't supported yet.
-          If Cobra is down, the bot shows the last data it fetched and says when.</p>
+        <p class="cb-note">Replies are posted in the channel for everyone to see. Tables are pictures, so they look the same on desktop and phones;
+          long lists are split into up to 5 pictures, with a link to the full page on Cobra after that. Data is at most a minute old.
+          If Cobra is down or the tournament has been made private, the bot shows the last data it fetched and says when.</p>
       </div>
     </section>
 
