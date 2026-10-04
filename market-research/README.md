@@ -83,6 +83,9 @@ run's full log is kept in R2 (`logs/…`, see [CLI](#cli)).
   - Cobra lists tournaments by creation, not by date, and some are created long after the date they
     carry; listing stops on creation date and skips older-dated events one by one.
   - Cobra records a bye with the player in either seat.
+  - While a cut is being played, Cobra lists its players without IDs. The players in elimination
+    games then count as the cut, ranked by their seed until Cobra has the final placements, so a
+    `backfill --cobra ID` can pull the public cut decks of a big event while its top cut is still on.
   - A Cobra event with a result still missing 14 days after its date counts as finished, so its decks
     are still fetched.
 

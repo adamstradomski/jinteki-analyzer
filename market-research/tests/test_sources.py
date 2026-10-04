@@ -1,4 +1,5 @@
-"""Source helpers and the ABR parser: strict ID and value parsing, JSON:API paging, lenient events."""
+"""Source helpers, the ABR parser and Cobra's NRTM export: strict ID and value parsing, JSON:API
+paging, lenient events, the cut."""
 
 from __future__ import annotations
 
@@ -8,8 +9,9 @@ from urllib.parse import parse_qs, urlsplit
 import pytest
 
 from market_research.http import HttpResult
+from market_research.records import CobraTournament, DeckVisibility
 from market_research.scrub import IngestQuality
-from market_research.sources import abr
+from market_research.sources import abr, cobra
 from market_research.sources.common import (
     NotFound,
     ParseError,
@@ -226,3 +228,57 @@ def test_abr_entries_keep_one_entry_per_swiss_rank():
     for bad in ({"rank_swiss": 1}, [["rank_swiss", 1]]):
         with pytest.raises(ParseError):
             abr.parse_entries(9, bad, q)
+
+
+# ---------------- Cobra NRTM export: who made the cut ----------------
+
+
+def _cobra_meta() -> CobraTournament:
+    return CobraTournament(
+        id=1, fetched_at="2026-10-04T00:00:00Z", date="2026-10-03", swiss_format="single_sided",
+        deck_visibility=DeckVisibility(swiss="private", cut="public"),
+    )  # fmt: skip
+
+
+def _nrtm(elimination_players: list[dict], elimination_rounds: list[list[tuple[int, int]]]) -> dict:
+    """Four players ranked 1-4 by swiss (IDs 10, 20, 30, 40), one swiss round, then the cut."""
+    swiss = [
+        {"table": 1, "player1": {"id": 10, "role": "corp", "corpScore": 3}, "player2": {"id": 40, "role": "runner", "runnerScore": 0}, "eliminationGame": False},
+        {"table": 2, "player1": {"id": 20, "role": "corp", "corpScore": 3}, "player2": {"id": 30, "role": "runner", "runnerScore": 0}, "eliminationGame": False},
+    ]  # fmt: skip
+    cut = [
+        [{"table": n, "player1": {"id": a, "role": "corp"}, "player2": {"id": b, "role": "runner"}, "eliminationGame": True}
+         for n, (a, b) in enumerate(rnd, 1)]
+        for rnd in elimination_rounds
+    ]  # fmt: skip
+    return {
+        "preliminaryRounds": 1,
+        "cutToTop": 2,
+        "players": [{"id": pid, "rank": rank} for rank, pid in enumerate((10, 20, 30, 40), 1)],
+        "eliminationPlayers": elimination_players,
+        "rounds": [swiss, *cut],
+    }
+
+
+def _cut_ranks(payload: dict) -> dict[int, int | None]:
+    t = cobra.parse_nrtm(payload, _cobra_meta(), IngestQuality(), "2026-10-04T00:00:00Z")
+    return {p.pid: p.cut_rank for p in t.players}
+
+
+def test_cobra_cut_ranks_come_from_elimination_players():
+    payload = _nrtm([{"id": 20, "rank": 1, "seed": 2}, {"id": 10, "rank": 2, "seed": 1}], [[(10, 20)]])
+    assert _cut_ranks(payload) == {10: 2, 20: 1, 30: None, 40: None}
+
+
+def test_cobra_cut_in_progress_is_taken_from_elimination_pairings_by_seed():
+    # Seen live at Worlds 2026: while the cut is played, its players are listed without IDs.
+    hidden = [
+        {"id": None, "name": None, "rank": 1, "seed": None},
+        {"id": None, "name": None, "rank": 2, "seed": None},
+    ]
+    payload = _nrtm(hidden, [[(30, 20)]])
+    assert _cut_ranks(payload) == {10: None, 20: 1, 30: 2, 40: None}
+
+
+def test_cobra_without_elimination_games_nobody_made_the_cut():
+    assert set(_cut_ranks(_nrtm([], [])).values()) == {None}

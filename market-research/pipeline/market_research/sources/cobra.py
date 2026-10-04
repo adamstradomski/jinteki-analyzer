@@ -204,6 +204,8 @@ def parse_nrtm(payload: object, meta: CobraTournament, q: IngestQuality, fetched
         for g in rnd:
             q.check_drift("cobra.nrtm.pairing", g.keys(), NRTM_PAIRING_KEYS)
             pairings.append(_pairing(g, stage, rno, elimination, double_sided, q))
+    if not cut_rank:
+        players = _provisional_cut(players, pairings)
     stages = [
         CobraStage(
             n=1, format="swiss" if double_sided else "single_sided_swiss", rounds=swiss_rounds or prelim
@@ -221,6 +223,16 @@ def parse_nrtm(payload: object, meta: CobraTournament, q: IngestQuality, fetched
         }
     )
     return CobraTournament.model_validate(rec.model_dump(by_alias=True)).hashed()
+
+
+def _provisional_cut(players: list[CobraPlayer], pairings: list[CobraPairing]) -> list[CobraPlayer]:
+    """While a cut is played, Cobra lists its players without IDs (seen live at Worlds 2026). The
+    players in elimination pairings made the cut; until Cobra has their placements, each gets its
+    seed (order by swiss rank) as cut rank. Live rechecks replace it with the final one."""
+    in_cut = {pid for p in pairings if p.elimination for pid in (p.p1, p.p2) if pid is not None}
+    seeded = sorted((p for p in players if p.pid in in_cut), key=lambda p: (p.swiss_rank or 10**6, p.pid))
+    seed = {p.pid: n for n, p in enumerate(seeded, 1)}
+    return [p.model_copy(update={"cut_rank": seed[p.pid]}) if p.pid in seed else p for p in players]
 
 
 def _title(value: object) -> str | None:
