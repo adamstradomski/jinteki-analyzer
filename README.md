@@ -62,7 +62,7 @@ The site runs on one Cloudflare Worker per environment, built from this repo wit
 - `public/` holds the static site, served directly as Worker static assets.
 - `src/` is the Worker code for the link shortener: `POST /api/shorten` creates a short link, `GET /s/<id>` redirects to `/trace/#log=<payload>`, and a daily cron (`17 3 * * *`) deletes links not opened for `RETENTION_DAYS` days (a build variable; a value that isn't a positive whole number makes the cron log an error and delete nothing). Only these paths run code.
 - `schema.sql` is the D1 schema; each environment has its own database. It only uses `IF NOT EXISTS`, so re-running it on an existing database adds anything new (such as the `idx_links_created_at` index the daily cap uses): `npx wrangler d1 execute <D1_NAME> --remote --file schema.sql`.
-- `public/_headers` adds security headers (`nosniff`, no framing, HSTS, Referrer-Policy) to every static file; `src/index.js` sets the same ones on the shortener's responses, which `_headers` doesn't reach. Each page sets its own Content-Security-Policy in a `<meta>` tag.
+- `public/_headers` adds security headers (`nosniff`, no framing, HSTS, Referrer-Policy) to every static file; `src/index.js` sets the same ones on the shortener's responses, which `_headers` doesn't reach. Each page sets its own Content-Security-Policy in a `<meta>` tag; it must allow `https://static.cloudflareinsights.com` in `script-src` and `https://cloudflareinsights.com` in `connect-src`, or the Cloudflare Web Analytics beacon that Cloudflare injects is blocked.
 
 Production (`jinteki-analyzer`, from `main`) serves jinteki.win; the test Worker (`jinteki-analyzer-test`) is an identical copy with its own database on its workers.dev URL.
 
