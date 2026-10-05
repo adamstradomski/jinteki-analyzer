@@ -152,6 +152,31 @@ def test_tripped_host_does_not_stop_others(tmp_path, clock):
     assert any(i.kind == "cobra_deck" and i.frozen for i in ing.frontier.items.values())
 
 
+def _logged(env, name):
+    return [e for e in map(json.loads, env.log.getvalue().splitlines()) if e["event"] == name]
+
+
+def test_failed_fetch_is_logged_with_the_item_key(tmp_path, clock):
+    env = make_env(tmp_path, clock)
+    env.routes.override("https://tournaments.nullsignal.games/tournaments/4990.json", httpx.Response(500))
+    run(env)
+    (e,) = _logged(env, "item_fetch_failed")
+    assert e["key"] == "cobra:tournament:4990"
+    assert (
+        e["reason"]
+        == "cobra: retries exhausted for https://tournaments.nullsignal.games/tournaments/4990.json"
+    )
+
+
+def test_tripped_host_is_logged_with_the_item_key(tmp_path, clock):
+    env = make_env(tmp_path, clock)
+    env.settings.max_failures = 1
+    env.routes.override("https://tournaments.nullsignal.games/tournaments/4990.json", httpx.Response(500))
+    run(env)
+    (e,) = _logged(env, "host_stopped")
+    assert (e["host_group"], e["key"]) == ("cobra", "cobra:tournament:4990")
+
+
 def test_abr_claim_count_increase_enqueues_entries(tmp_path, clock):
     env = make_env(tmp_path, clock)
     ing, _ = run(env)

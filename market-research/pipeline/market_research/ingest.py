@@ -330,10 +330,13 @@ class Ingestor:
                 log.info("budget_exhausted", host_group=group)
                 self._stopped.add(group)
             except HostTripped:
+                log.warning("host_stopped", host_group=group, key=it.key)
                 self._stopped.add(group)
             except (FetchFailed, NotFound) as e:
                 with self._lock:
                     self.frontier.fail(it, self.now, type(e).__name__)
+                if isinstance(e, FetchFailed):
+                    log.warning("item_fetch_failed", key=it.key, reason=str(e))
                 progressed = True
             except RequestRefused as e:
                 with self._lock:

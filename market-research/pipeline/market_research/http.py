@@ -218,22 +218,26 @@ class PoliteHttp:
             except ResponseTooLarge:
                 raise
             except httpx.TransportError as e:
-                log.warning("http_transport_error", host_group=group, error=type(e).__name__)
+                log.warning(
+                    "http_transport_error", host_group=group, url=url, attempt=attempt, error=type(e).__name__
+                )
                 result = None
             if result is not None and result.status < 500 and result.status != 429:
                 state.stats.consecutive_failures = 0
                 return result
             if result is not None:
                 retry_after = self._retry_after(result.headers.get("retry-after"))
-                log.warning("http_retryable_status", host_group=group, status=result.status)
+                log.warning(
+                    "http_retryable_status", host_group=group, url=url, attempt=attempt, status=result.status
+                )
             state.stats.failures += 1
             state.stats.consecutive_failures += 1
             if state.stats.consecutive_failures >= self.settings.max_failures:
                 state.stats.tripped = True
-                log.error("circuit_breaker_tripped", host_group=group)
+                log.error("circuit_breaker_tripped", host_group=group, url=url)
                 raise HostTripped(group)
             if attempt >= MAX_ATTEMPTS:
-                raise FetchFailed(f"{group}: retries exhausted")
+                raise FetchFailed(f"{group}: retries exhausted for {url}")
             backoff = min(self.settings.backoff_base_s * (2 ** (attempt - 1)), self.settings.backoff_cap_s)
             wait = min(retry_after, self.settings.backoff_cap_s) if retry_after is not None else backoff
             self.clock.sleep(wait)

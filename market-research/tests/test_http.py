@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import io
+import json
 import random
 
 import httpx
 import pytest
 import respx
 
+from market_research import logs
 from market_research.clock import FakeClock
 from market_research.config import Settings
 from market_research.http import (
@@ -281,3 +284,45 @@ def test_size_cap_applies_to_a_body_without_content_length(settings, clock, rng,
     with pytest.raises(ResponseTooLarge, match="over 1000 bytes"):
         make(settings, clock, rng).get(f"{ABR}/chunked")
     assert "content-length" not in chunked.calls.last.response.headers
+
+
+@pytest.fixture
+def events():
+    """The JSON log lines written during the test, parsed."""
+    buf = io.StringIO()
+    logs.configure(buf)
+    return lambda name: [e for e in map(json.loads, buf.getvalue().splitlines()) if e["event"] == name]
+
+
+def test_retryable_status_log_names_the_url_and_attempt(settings, clock, rng, mock, events):
+    settings.max_failures = 99
+    mock.get(f"{ABR}/api/x").respond(500)
+    with pytest.raises(FetchFailed):
+        make(settings, clock, rng).get(f"{ABR}/api/x?id=7")
+    logged = events("http_retryable_status")
+    assert [(e["url"], e["attempt"], e["status"]) for e in logged] == [
+        (f"{ABR}/api/x?id=7", n, 500) for n in (1, 2, 3, 4)
+    ]
+
+
+def test_transport_error_log_names_the_url(settings, clock, rng, mock, events):
+    mock.get(f"{ABR}/t").mock(side_effect=[httpx.ConnectError("boom"), httpx.Response(200, json={})])
+    make(settings, clock, rng).get(f"{ABR}/t")
+    (e,) = events("http_transport_error")
+    assert (e["url"], e["attempt"], e["error"]) == (f"{ABR}/t", 1, "ConnectError")
+
+
+def test_circuit_breaker_log_names_the_url_that_tripped_it(settings, clock, rng, mock, events):
+    settings.max_failures = 2
+    mock.get(f"{ABR}/api/x").respond(500)
+    with pytest.raises(HostTripped):
+        make(settings, clock, rng).get(f"{ABR}/api/x")
+    (e,) = events("circuit_breaker_tripped")
+    assert e["url"] == f"{ABR}/api/x"
+
+
+def test_fetch_failed_message_names_the_url(settings, clock, rng, mock):
+    settings.max_failures = 99
+    mock.get(f"{ABR}/api/x").respond(503)
+    with pytest.raises(FetchFailed, match=r"^abr: retries exhausted for https://alwaysberunning\.net/api/x$"):
+        make(settings, clock, rng).get(f"{ABR}/api/x")
