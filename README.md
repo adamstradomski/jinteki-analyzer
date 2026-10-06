@@ -81,6 +81,45 @@ Build settings: root directory `/`, build command `node scripts/render-config.mj
 
 Short links accept only this site's log payloads (never arbitrary URLs), are created only from the site's own origin, are at most 32K characters (a long real game compresses to about 6K), are rate-limited per IP and capped at 1,000 new links a day site-wide (`DEFAULT_DAILY_CREATE_LIMIT` in `src/create.js`), and identical logs reuse the same link. Stay on the Workers Free plan: if a daily limit is reached, requests fail until the reset instead of being billed, and the site falls back to the long share link.
 
+### Release process
+
+Two branches deploy, each to its own Worker, through Workers Builds on every push. GitHub Actions
+only run tests; they never deploy.
+
+| Branch | Worker | Serves |
+|---|---|---|
+| `test` | `jinteki-analyzer-test` | its workers.dev URL |
+| `main` | `jinteki-analyzer` | jinteki.win (production) |
+
+1. Work on a feature branch, then merge it into `test` and push. Workers Builds deploys the test
+   Worker; check the change there.
+2. When it is right, fast-forward `main` to `test` and push (`git push origin test:main`, or merge
+   `test` into `main`). Workers Builds deploys production. Nothing reaches jinteki.win without
+   going through `test` first.
+
+**Both environments read the same Market Research data.** There is one pipeline and one published
+bucket: the test page and the production page both load their snapshots from `data.jinteki.win`
+(the test Worker's origin must be in the bucket's CORS policy, see
+[operations](docs/market-research/operations.md#custom-domain-and-cache-rules)). There is no test
+data set, and publishing is not tied to a branch: a snapshot goes live for both environments as
+soon as `compute` or `run-all` runs with an image built from the new pipeline code. Only the short
+links differ: each Worker has its own D1 database.
+
+So a change to the snapshot must work with both pages at once:
+
+- Keep it additive: new fields, and new columns at the end of `trends.json` rows. The page in
+  production (older code) must keep working on the new data, and the new page must keep working on
+  the data published before it (show nothing new rather than fail). A change that can't be
+  additive needs a new schema major version (`mr.summary/2` and so on).
+- Release such a change in this order: push to `test` and check the test page on the current data;
+  rebuild the image and publish (`docker build`, then `compute`, see
+  [operations](docs/market-research/operations.md)); check the test page on the new data and
+  jinteki.win still working; then push `main`.
+
+To undo a release, revert on the branch and push (or roll back the deployment in the Cloudflare
+dashboard). To undo a data change, run `compute` with the previous image: it publishes a new
+version computed with the old code. Older versions stay in the bucket for 14 days.
+
 ## Market Research
 
 `/market-research/` is a second page: tournament card meta (most played cards, trends, winrates, top-cut conversion) for NSG Netrunner Standard, built from [AlwaysBeRunning.net](https://alwaysberunning.net), NSG Cobra and NetrunnerDB data. The page lives in `public/market-research/` and reads precomputed snapshots from `data.jinteki.win`; the batch pipeline that builds them is in [`market-research/`](market-research/README.md), with docs in [`docs/market-research/`](docs/market-research/architecture.md).

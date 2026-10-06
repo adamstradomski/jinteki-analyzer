@@ -58,6 +58,10 @@ expire while `manifest.json` still points at them. Never put a lifecycle rule on
 docker build -t market-research:0.1.0 market-research
 ```
 
+Publishing isn't tied to a branch: the image runs whatever code it was built from, and its snapshot
+is read by both the test and the production page. Before publishing from new pipeline code, follow
+the [release process](../../README.md#release-process).
+
 The base image is pinned by digest, dependencies are installed from `requirements.lock` with
 `--require-hashes`, and the process runs as UID 10001. Behind a TLS-intercepting proxy, pass its CA
 at build time only: `docker build --secret id=pip_ca,src=/path/ca.pem …`.
