@@ -143,6 +143,7 @@
       "required": [
         "min_games",
         "min_entries",
+        "min_splash_decks",
         "coverage_hc",
         "min_players"
       ],
@@ -154,6 +155,10 @@
         },
         "min_entries": {
           "description": "Minimum high-coverage entries for a top-cut conversion to be marked ok.",
+          "type": "integer"
+        },
+        "min_splash_decks": {
+          "description": "Minimum decks playing a card for its splash share to be marked ok.",
           "type": "integer"
         },
         "coverage_hc": {

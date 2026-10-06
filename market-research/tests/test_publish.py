@@ -166,6 +166,19 @@ def _bump_baseline(kind: str, col: int):
     return edit
 
 
+def _bump_faction(kind: str):
+    def edit(snap):
+        snap.files[PATHS[kind].format(side="runner", **ALL)]["faction_baseline"][0][3] += 1
+
+    return edit
+
+
+def _in_faction_over_decks(snap):
+    t = snap.files[PATHS["trends"].format(side="corp", **ALL)]
+    _cid, rows = next((c, r) for c, r in sorted(t["cards"].items()) if r[0][2] > 0)
+    rows[0][-1] = rows[0][2] + 1
+
+
 def _drop_tournament(snap):
     snap.files[PATHS["tournaments"].format(**ALL)]["tournaments"].pop()
 
@@ -192,6 +205,9 @@ def _unknown_card(snap):
         (_bump_baseline("trends", 2), "runner: published decks "),
         (_bump_baseline("trends", 3), "runner: published games "),
         (_bump_baseline("trends_cut", 2), "runner: published top-cut decks != canonical"),
+        (_bump_faction("trends"), "runner: published decks per identity faction "),
+        (_bump_faction("trends_cut"), "runner: published top-cut decks per identity faction "),
+        (_in_faction_over_decks, "corp: in-faction decks exceed decks with the card: "),
     ],
 )
 def test_validation_reports_each_problem(slim, counted, edit, error):

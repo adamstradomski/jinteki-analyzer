@@ -108,7 +108,8 @@
         "tournaments_hc",
         "games_all",
         "wins_all",
-        "winrate_all"
+        "winrate_all",
+        "faction_decks"
       ],
       "additionalProperties": false,
       "properties": {
@@ -168,6 +169,18 @@
             "number",
             "null"
           ]
+        },
+        "faction_decks": {
+          "description": "Decks per identity faction (NetrunnerDB faction ID), adding up to decks. A card's in-faction popularity divides by the decks of its faction, its out-of-faction popularity by decks minus those.",
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^[a-z0-9_]{1,80}$"
+          },
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          }
         }
       }
     },
@@ -198,7 +211,18 @@
           "conversion",
           "conversion_ratio",
           "conversion_diff_pp",
-          "conversion_status"
+          "conversion_status",
+          "decks_in_faction",
+          "popularity_in",
+          "prev_popularity_in",
+          "change_in_pp",
+          "popularity_out",
+          "prev_popularity_out",
+          "change_out_pp",
+          "splash_share",
+          "prev_splash_share",
+          "change_splash_pp",
+          "splash_status"
         ],
         "additionalProperties": false,
         "properties": {
@@ -342,6 +366,85 @@
             "enum": [
               "ok",
               "insufficient"
+            ]
+          },
+          "decks_in_faction": {
+            "description": "Decks playing the card whose identity has the card's faction; the other decks - decks_in_faction play it out of faction, paying influence. Null for neutral cards and identities.",
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "popularity_in": {
+            "description": "decks_in_faction / baseline.faction_decks of the card's faction (0-1): the share of that faction's decks that play the card. Null without such decks. Null for neutral cards and identities.",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "prev_popularity_in": {
+            "description": "popularity_in in previous_period (0 if the card wasn't played then). Null without a previous period. Null for neutral cards and identities.",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "change_in_pp": {
+            "description": "popularity_in - prev_popularity_in, in percentage points. Null when either is null.",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "popularity_out": {
+            "description": "(decks - decks_in_faction) / (baseline.decks - decks of the card's faction) (0-1): the share of the other factions' decks that splash the card. Null without such decks. Null for neutral cards, identities and agendas (an agenda can only be played in its own faction).",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "prev_popularity_out": {
+            "description": "popularity_out in previous_period (0 if the card wasn't played then). Null without a previous period. Null for neutral cards, identities and agendas (an agenda can only be played in its own faction).",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "change_out_pp": {
+            "description": "popularity_out - prev_popularity_out, in percentage points. Null when either is null.",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "splash_share": {
+            "description": "(decks - decks_in_faction) / decks (0-1): of the decks playing the card, the share that play it out of faction. Null when no deck plays it. Null for neutral cards, identities and agendas (an agenda can only be played in its own faction).",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "prev_splash_share": {
+            "description": "splash_share in previous_period. Null when the card wasn't played then or there is no previous period. Null for neutral cards, identities and agendas (an agenda can only be played in its own faction).",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "change_splash_pp": {
+            "description": "splash_share - prev_splash_share, in percentage points. Null when either is null.",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "splash_status": {
+            "description": "ok when decks is at least thresholds.min_splash_decks (manifest), otherwise insufficient: too few decks for the splash share to be meaningful. Null for neutral cards, identities and agendas (an agenda can only be played in its own faction).",
+            "enum": [
+              "ok",
+              "insufficient",
+              null
             ]
           }
         }

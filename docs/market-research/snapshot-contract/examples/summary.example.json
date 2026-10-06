@@ -24,7 +24,13 @@
     "tournaments_hc": 3,
     "games_all": 240,
     "wins_all": 129.0,
-    "winrate_all": 0.5375
+    "winrate_all": 0.5375,
+    "faction_decks": {
+      "haas_bioroid": 14,
+      "jinteki": 11,
+      "nbn": 12,
+      "weyland_consortium": 8
+    }
   },
   "cards": [
     {
@@ -49,6 +55,17 @@
       "conversion_ratio": 1.0,
       "conversion_diff_pp": 0.0,
       "conversion_status": "ok",
+      "decks_in_faction": null,
+      "popularity_in": null,
+      "prev_popularity_in": null,
+      "change_in_pp": null,
+      "popularity_out": null,
+      "prev_popularity_out": null,
+      "change_out_pp": null,
+      "splash_share": null,
+      "prev_splash_share": null,
+      "change_splash_pp": null,
+      "splash_status": null,
       "rank": 1
     },
     {
@@ -73,6 +90,17 @@
       "conversion_ratio": 0.948,
       "conversion_diff_pp": -1.46,
       "conversion_status": "insufficient",
+      "decks_in_faction": null,
+      "popularity_in": null,
+      "prev_popularity_in": null,
+      "change_in_pp": null,
+      "popularity_out": null,
+      "prev_popularity_out": null,
+      "change_out_pp": null,
+      "splash_share": null,
+      "prev_splash_share": null,
+      "change_splash_pp": null,
+      "splash_status": null,
       "rank": 2
     },
     {
@@ -97,6 +125,17 @@
       "conversion_ratio": 0.646,
       "conversion_diff_pp": -9.94,
       "conversion_status": "insufficient",
+      "decks_in_faction": null,
+      "popularity_in": null,
+      "prev_popularity_in": null,
+      "change_in_pp": null,
+      "popularity_out": null,
+      "prev_popularity_out": null,
+      "change_out_pp": null,
+      "splash_share": null,
+      "prev_splash_share": null,
+      "change_splash_pp": null,
+      "splash_status": null,
       "rank": 3
     }
   ],

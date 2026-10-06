@@ -9,6 +9,11 @@ Definitions (docs/market-research/metrics.md has them verbatim):
   with the Wilson 95% interval.
 - conversion = cut_with_card_hc / entries_with_card_hc, compared with side_cut_hc / side_entries_hc
 - Winrate and conversion are `insufficient` below a minimum sample (default 30 games or 20 entries).
+- popularity_in = decks_in_faction / decks whose identity has the card's faction
+- popularity_out = (decks_with_card - decks_in_faction) / decks whose identity has another faction
+- splash_share = (decks_with_card - decks_in_faction) / decks_with_card, `insufficient` below a minimum
+  number of decks (default 20). Neutral cards and identities have none of the three; agendas (which
+  can't leave their faction) have no popularity_out or splash_share.
 """
 
 from __future__ import annotations
@@ -26,12 +31,14 @@ Z95 = 1.959963984540054
 
 CARD_COLUMNS = [
     "decks_with_card", "copies_sum", "qty1", "qty2", "qty3", "games_total", "games_won",
-    "entries_with_card_hc", "cut_with_card_hc", "tournaments_hc_with_card",
+    "entries_with_card_hc", "cut_with_card_hc", "tournaments_hc_with_card", "decks_in_faction",
 ]  # fmt: skip
 BASELINE_COLUMNS = [
     "side_decks", "side_games", "side_wins", "side_entries_hc", "side_cut_hc", "tournaments", "tournaments_hc",
     "side_games_all", "side_wins_all",
 ]  # fmt: skip
+# Decks per slice and identity faction: the denominators of in- and out-of-faction popularity.
+FACTION_COLUMNS = ["decks"]
 IDENTITY_COLUMNS = ["entries", "games_total", "games_won", "cut_entries", "cut_made"]
 IDENTITY_BASELINE_COLUMNS = ["side_entries", "side_games", "side_wins", "side_cut_entries", "side_cut_made"]
 
@@ -55,8 +62,10 @@ def _counts_sql(suffix: str, d: str, dg: str, g: str, t: str) -> str:
     return f"""
         CREATE OR REPLACE TABLE card_counts{suffix} AS
         WITH per_deck AS (
-            SELECT d.*, dc.card_id, dc.qty FROM {d} d JOIN deck_card dc USING (deck_id)
+            SELECT d.*, dc.card_id, dc.qty, cf.faction_id = d.id_faction AS in_faction
+            FROM {d} d JOIN deck_card dc USING (deck_id)
             JOIN legal l ON l.card_id = dc.card_id AND l.restriction_id = d.restriction_id
+            LEFT JOIN card_faction cf ON cf.card_id = dc.card_id
         ),
         decks AS (
             SELECT side, restriction_id, tier, month, card_id,
@@ -65,7 +74,8 @@ def _counts_sql(suffix: str, d: str, dg: str, g: str, t: str) -> str:
                    count(*) FILTER (WHERE qty >= 3) AS qty3,
                    count(*) FILTER (WHERE hc) AS entries_with_card_hc,
                    count(*) FILTER (WHERE hc AND made_cut) AS cut_with_card_hc,
-                   count(DISTINCT tid) FILTER (WHERE hc) AS tournaments_hc_with_card
+                   count(DISTINCT tid) FILTER (WHERE hc) AS tournaments_hc_with_card,
+                   count(*) FILTER (WHERE in_faction) AS decks_in_faction
             FROM per_deck GROUP BY ALL
         ),
         games AS (
@@ -78,8 +88,14 @@ def _counts_sql(suffix: str, d: str, dg: str, g: str, t: str) -> str:
         SELECT decks.side, decks.restriction_id, decks.tier, decks.month, decks.card_id,
                decks_with_card, copies_sum, qty1, qty2, qty3,
                coalesce(games_total, 0) AS games_total, coalesce(games_won, 0.0) AS games_won,
-               entries_with_card_hc, cut_with_card_hc, tournaments_hc_with_card
+               entries_with_card_hc, cut_with_card_hc, tournaments_hc_with_card, decks_in_faction
         FROM decks LEFT JOIN games USING (side, restriction_id, tier, month, card_id);
+
+        -- A deck whose identity has no faction is left out; validation then reports the mismatch
+        -- with side_decks.
+        CREATE OR REPLACE TABLE faction_counts{suffix} AS
+        SELECT side, restriction_id, tier, month, id_faction AS faction, count(*) AS decks
+        FROM {d} WHERE id_faction IS NOT NULL GROUP BY ALL;
 
         CREATE OR REPLACE TABLE side_counts{suffix} AS
         WITH sides AS (SELECT * FROM (VALUES ('corp'), ('runner')) s(side)),
@@ -115,9 +131,11 @@ def _counts_sql(suffix: str, d: str, dg: str, g: str, t: str) -> str:
 
 
 def compute_counts(con: duckdb.DuckDBPyConnection, catalog: Catalog, settings: Settings) -> None:
-    """Creates card_counts, side_counts, identity_counts and identity_side_counts from canonical tables,
-    plus card_counts_cut and side_counts_cut for decks that made the cut in events that had one."""
+    """Creates card_counts, side_counts, faction_counts, identity_counts and identity_side_counts from
+    canonical tables, plus card_counts_cut, side_counts_cut and faction_counts_cut for decks that made
+    the cut in events that had one."""
     _legal_table(con, catalog)
+    _card_faction_table(con, catalog)
     con.execute(_event_tables_sql(settings) + _counts_sql("", "d", "dg", "g", "t"))
     con.execute(_identity_counts_sql(settings))
     # Top-cut scope: only decks (and players) that made the cut, in events that had one. The same
@@ -138,6 +156,12 @@ def _legal_table(con: duckdb.DuckDBPyConnection, catalog: Catalog) -> None:
     insert_rows(con, "legal", rows)
 
 
+def _card_faction_table(con: duckdb.DuckDBPyConnection, catalog: Catalog) -> None:
+    """card_faction(card_id, faction_id) for every catalog card, identities included."""
+    con.execute("CREATE OR REPLACE TABLE card_faction (card_id VARCHAR, faction_id VARCHAR)")
+    insert_rows(con, "card_faction", [(cid, catalog.cards[cid].faction_id) for cid in sorted(catalog.cards)])
+
+
 def _event_tables_sql(settings: Settings) -> str:
     """t (the events counted), d (their legal decks), g (games, once per side) and dg (games of known decks)."""
     t = settings.thresholds
@@ -148,8 +172,10 @@ def _event_tables_sql(settings: Settings) -> str:
         FROM tournament WHERE restriction_id IS NOT NULL AND players >= {int(t.min_players)};
 
         CREATE OR REPLACE TABLE d AS
-        SELECT d.deck_id, d.tid, d.entry_no, d.side, e.made_cut, t.restriction_id, t.tier, t.month, t.hc
+        SELECT d.deck_id, d.tid, d.entry_no, d.side, e.made_cut, t.restriction_id, t.tier, t.month, t.hc,
+               cf.faction_id AS id_faction
         FROM deck d JOIN t USING (tid) JOIN entry e ON e.tid = d.tid AND e.entry_no = d.entry_no
+        LEFT JOIN card_faction cf ON cf.card_id = d.identity_card
         WHERE d.legal;
 
         CREATE OR REPLACE TABLE g AS
@@ -216,6 +242,83 @@ _CUT_TABLES_SQL = """
     SELECT g.* FROM g JOIN t_cut USING (tid)
     JOIN entry e ON e.tid = g.tid AND e.entry_no = g.entry_no WHERE e.made_cut;
 """
+
+
+FACTION_FIELDS = [
+    "decks_in_faction", "popularity_in", "prev_popularity_in", "change_in_pp",
+    "popularity_out", "prev_popularity_out", "change_out_pp",
+    "splash_share", "prev_splash_share", "change_splash_pp", "splash_status",
+]  # fmt: skip
+
+
+def faction_scope(faction_id: str | None, type_id: str | None) -> tuple[bool, bool]:
+    """(has in-faction figures, has out-of-faction figures) of a card. Neutral cards and identities have
+    neither; agendas can only be played in their own faction, so they have no out-of-faction ones."""
+    has_in = (
+        bool(faction_id)
+        and not str(faction_id).startswith("neutral")
+        and not str(type_id).endswith("identity")
+    )
+    return has_in, has_in and type_id != "agenda"
+
+
+def _faction_split(
+    c: dict[str, float] | None, side_decks: float, faction_decks: dict[str, float], faction_id: str
+) -> tuple[float | None, float | None, float | None]:
+    """(popularity in faction, popularity out of faction, splash share) from summed counts; None where
+    the denominator is zero. A card not played (c is None) is at 0% in and out, with no splash share."""
+    fd = faction_decks.get(faction_id, 0.0)
+    din = c["decks_in_faction"] if c else 0.0
+    dall = c["decks_with_card"] if c else 0.0
+    return ratio(din, fd), ratio(dall - din, side_decks - fd), ratio(dall - din, dall)
+
+
+def faction_view(
+    c: dict[str, float],
+    base: dict[str, float],
+    faction_decks: dict[str, float],
+    prev: dict[str, float] | None,
+    prev_base: dict[str, float] | None,
+    prev_faction_decks: dict[str, float] | None,
+    faction_id: str | None,
+    type_id: str | None,
+    settings: Settings,
+) -> dict[str, Any]:
+    """In- and out-of-faction popularity and splash share of one card, now and in the previous period.
+
+    `faction_decks` maps each identity faction to the side's decks with it (they sum to side_decks).
+    The previous figures follow prev_popularity: 0% for a card not played then, None without a
+    previous period."""
+    has_in, has_out = faction_scope(faction_id, type_id)
+    if not has_in or faction_id is None:
+        return dict.fromkeys(FACTION_FIELDS, None)
+    now = _faction_split(c, base["side_decks"], faction_decks, faction_id)
+    before: tuple[float | None, float | None, float | None] = (None, None, None)
+    if prev_base is not None and prev_faction_decks is not None:
+        before = _faction_split(prev, prev_base["side_decks"], prev_faction_decks, faction_id)
+
+    def change(a: float | None, b: float | None) -> float | None:
+        return _r((a - b) * 100, 2) if a is not None and b is not None else None
+
+    out: dict[str, Any] = dict.fromkeys(FACTION_FIELDS, None)
+    out |= {
+        "decks_in_faction": int(c["decks_in_faction"]),
+        "popularity_in": _r(now[0]),
+        "prev_popularity_in": _r(before[0]),
+        "change_in_pp": change(now[0], before[0]),
+    }
+    if has_out:
+        t = settings.thresholds
+        out |= {
+            "popularity_out": _r(now[1]),
+            "prev_popularity_out": _r(before[1]),
+            "change_out_pp": change(now[1], before[1]),
+            "splash_share": _r(now[2]),
+            "prev_splash_share": _r(before[2]),
+            "change_splash_pp": change(now[2], before[2]),
+            "splash_status": "ok" if c["decks_with_card"] >= t.min_splash_decks else "insufficient",
+        }
+    return out
 
 
 def card_view(

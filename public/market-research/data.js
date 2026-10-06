@@ -8,7 +8,7 @@ export const Z95 = 1.959963984540054;
 export const SIDES = ['corp', 'runner'];
 export const CARD_COLUMNS = [
   'decks_with_card', 'copies_sum', 'qty1', 'qty2', 'qty3', 'games_total', 'games_won',
-  'entries_with_card_hc', 'cut_with_card_hc', 'tournaments_hc_with_card',
+  'entries_with_card_hc', 'cut_with_card_hc', 'tournaments_hc_with_card', 'decks_in_faction',
 ];
 export const BASELINE_COLUMNS = [
   'side_decks', 'side_games', 'side_wins', 'side_entries_hc', 'side_cut_hc', 'tournaments', 'tournaments_hc',
@@ -79,13 +79,20 @@ export function defaultPeriod(manifest) {
 
 // ---------------------------------------------------------------- filter state in the URL hash
 
-/** `#<restriction>/<tier>/<from>..<to>/<side>`; invalid parts fall back to defaults. */
-export function parseHash(hash, manifest) {
+/** The views of the most played cards table: which decks a card's inclusion is counted over. */
+export const PLAYED_MODES = ['all', 'in', 'out', 'splash'];
+
+/**
+ * `#<restriction>/<tier>/<from>..<to>/<side>[/cut][/show:<mode>][/card:<id>]`; invalid parts fall
+ * back to defaults and unknown segments are ignored. `isCard(id)`, when given, drops a card the
+ * catalog doesn't have.
+ */
+export function parseHash(hash, manifest, isCard = null) {
   const parts = String(hash || '').replace(/^#/, '').split('/');
   const restrictions = manifest.restrictions.map((r) => r.id);
   const tiers = manifest.tier_groups.map((t) => t.id);
   const def = defaultPeriod(manifest);
-  const state = { restriction: 'all', tier: 'all', from: def?.from ?? null, to: def?.to ?? null, side: 'corp', custom: false, cut: false };
+  const state = { restriction: 'all', tier: 'all', from: def?.from ?? null, to: def?.to ?? null, side: 'corp', custom: false, cut: false, show: 'all', card: null };
   if (restrictions.includes(parts[0])) state.restriction = parts[0];
   if (tiers.includes(parts[1])) state.tier = parts[1];
   const m = /^(\d{4}-\d{2})\.\.(\d{4}-\d{2})$/.exec(parts[2] || '');
@@ -99,7 +106,16 @@ export function parseHash(hash, manifest) {
     }
   }
   if (SIDES.includes(parts[3])) state.side = parts[3];
-  state.cut = parts[4] === 'cut' && !!manifest.paths?.summary_cut;
+  const rest = parts.slice(4);
+  state.cut = rest.includes('cut') && !!manifest.paths?.summary_cut;
+  // The first valid segment of each kind wins.
+  for (const seg of rest) {
+    const at = seg.indexOf(':');
+    const k = at < 0 ? seg : seg.slice(0, at);
+    const v = at < 0 ? '' : seg.slice(at + 1);
+    if (k === 'show' && state.show === 'all' && PLAYED_MODES.includes(v)) state.show = v;
+    if (k === 'card' && state.card === null && ID.test(v || '') && (!isCard || isCard(v))) state.card = v;
+  }
   return state;
 }
 
@@ -110,9 +126,17 @@ export function banlistOptions(manifest) {
   return [all, ...[...lists].sort((a, b) => key(b).localeCompare(key(a)) || b.id.localeCompare(a.id))];
 }
 
+/** The state as a hash. Only a period the viewer chose is written: without one, a link follows the newest months. */
 export function formatHash(state) {
-  const period = state.from && state.to ? `${state.from}..${state.to}` : '';
-  return `#${state.restriction}/${state.tier}/${period}/${state.side}${state.cut ? '/cut' : ''}`;
+  const period = state.custom && state.from && state.to ? `${state.from}..${state.to}` : '';
+  const show = state.show && state.show !== 'all' ? `/show:${state.show}` : '';
+  const card = state.card ? `/card:${state.card}` : '';
+  return `#${state.restriction}/${state.tier}/${period}/${state.side}${state.cut ? '/cut' : ''}${show}${card}`;
+}
+
+/** The hash without the parts that change no data (table view and open card), to tell when to reload. */
+export function dataHash(state) {
+  return formatHash({ ...state, show: 'all', card: null });
 }
 
 // ---------------------------------------------------------------- summing additive counts
@@ -139,11 +163,28 @@ export function mergeTrends(list) {
     }
   }
   const sorted = (m) => [...m.values()].sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  // Decks per identity faction, keyed by month, ban list and faction names (older files have none).
+  const hasFactions = list.every((t) => t.faction_baseline);
+  const factions = hasFactions ? [...new Set(list.flatMap((t) => t.factions))].sort() : undefined;
+  const fac = new Map();
+  if (hasFactions) {
+    for (const t of list) {
+      for (const [m, r, f, n] of t.faction_baseline) {
+        const row = [months.indexOf(t.months[m]), restrictions.indexOf(t.restrictions[r]), factions.indexOf(t.factions[f]), 0];
+        const k = row.slice(0, 3).join('|');
+        const cur = fac.get(k) || row;
+        cur[3] += n;
+        fac.set(k, cur);
+      }
+    }
+  }
   return {
     ...list[0],
     tier_group: 'merged',
     months,
     restrictions,
+    factions,
+    faction_baseline: hasFactions ? [...fac.values()].sort((a, b) => a[0] - b[0] || a[1] - b[1] || a[2] - b[2]) : undefined,
     baseline: sorted(base),
     cards: Object.fromEntries([...cards.entries()].sort(([a], [b]) => (a < b ? -1 : 1)).map(([c, m]) => [c, sorted(m)])),
   };
@@ -171,6 +212,19 @@ function sumInto(names, rows, keep) {
 /** Sums the baseline over a month range (and optionally one ban list). */
 export function sumBaseline(trends, range, restriction) {
   return sumInto(BASELINE_COLUMNS, trends.baseline, monthFilter(trends, range, restriction));
+}
+
+/** Decks per identity faction over a month range, `{ faction: decks }`; null for an older file without them. */
+export function sumFactions(trends, range, restriction) {
+  if (!trends.faction_baseline) return null;
+  const keep = monthFilter(trends, range, restriction);
+  const out = {};
+  for (const row of trends.faction_baseline) {
+    if (!keep(row)) continue;
+    const f = trends.factions[row[2]];
+    out[f] = (out[f] || 0) + row[3];
+  }
+  return out;
 }
 
 /** Sums one card's counts over a month range. */
@@ -230,6 +284,63 @@ export function cardMetrics(c, base, prev, prevBase, thresholds) {
   };
 }
 
+/**
+ * Which faction figures a card has: `inF` for in-faction popularity, `outF` for out-of-faction
+ * popularity and splash share. Neutral cards and identities have neither; agendas can't leave
+ * their faction. `card` is a catalog entry.
+ */
+export function factionScope(card) {
+  const f = card?.faction || '';
+  const inF = !!f && !f.startsWith('neutral') && !String(card?.type).endsWith('identity');
+  return { inF, outF: inF && card.type !== 'agenda' };
+}
+
+export const FACTION_FIELDS = [
+  'decks_in_faction', 'popularity_in', 'prev_popularity_in', 'change_in_pp',
+  'popularity_out', 'prev_popularity_out', 'change_out_pp',
+  'splash_share', 'prev_splash_share', 'change_splash_pp', 'splash_status',
+];
+
+// [in-faction popularity, out-of-faction popularity, splash share]; a card not played is at 0% in and out.
+function factionSplit(c, sideDecks, fb, faction) {
+  const fd = fb[faction] || 0;
+  const din = c ? c.decks_in_faction : 0;
+  const all = c ? c.decks_with_card : 0;
+  return [ratio(din, fd), ratio(all - din, sideDecks - fd), ratio(all - din, all)];
+}
+
+/**
+ * In- and out-of-faction popularity and splash share of one card, now and before, as in the
+ * pipeline's summary.json. `fb` / `prevFb` are decks per identity faction (sumFactions); without
+ * them (an older snapshot) every figure is null.
+ */
+export function factionMetrics(c, base, fb, prev, prevBase, prevFb, card, thresholds) {
+  const out = Object.fromEntries(FACTION_FIELDS.map((k) => [k, null]));
+  const { inF, outF } = factionScope(card);
+  if (!inF || !fb) return out;
+  const now = factionSplit(c, base.side_decks, fb, card.faction);
+  const before = prevBase && prevFb ? factionSplit(prev, prevBase.side_decks, prevFb, card.faction) : [null, null, null];
+  const change = (a, b) => (a !== null && b !== null ? (a - b) * 100 : null);
+  Object.assign(out, {
+    decks_in_faction: c.decks_in_faction,
+    popularity_in: now[0],
+    prev_popularity_in: before[0],
+    change_in_pp: change(now[0], before[0]),
+  });
+  if (outF) {
+    Object.assign(out, {
+      popularity_out: now[1],
+      prev_popularity_out: before[1],
+      change_out_pp: change(now[1], before[1]),
+      splash_share: now[2],
+      prev_splash_share: before[2],
+      change_splash_pp: change(now[2], before[2]),
+      splash_status: c.decks_with_card >= (thresholds.min_splash_decks ?? 20) ? 'ok' : 'insufficient',
+    });
+  }
+  return out;
+}
+
 export function baselineView(b) {
   return {
     decks: b.side_decks,
@@ -249,24 +360,33 @@ export function baselineView(b) {
   };
 }
 
-/** A summary (like summary.json) for any month range, computed from trends. */
-export function summarize(trends, range, thresholds, restriction = 'all') {
+/**
+ * A summary (like summary.json) for any month range, computed from trends. `cardsById` (the
+ * catalog index) gives the in- and out-of-faction figures; without it they are null.
+ */
+export function summarize(trends, range, thresholds, restriction = 'all', cardsById = null) {
   const prevRange = previousRange(range.from, range.to);
   const base = sumBaseline(trends, range, restriction);
   const prevBase = sumBaseline(trends, prevRange, restriction);
+  const fb = sumFactions(trends, range, restriction);
+  const prevFb = sumFactions(trends, prevRange, restriction);
   const hasPrev = prevBase.side_decks > 0;
   const cards = [];
   for (const cid of Object.keys(trends.cards)) {
     const cur = sumCard(trends, cid, range, restriction);
     const prev = hasPrev ? sumCard(trends, cid, prevRange, restriction) : null;
     if (!cur.decks_with_card && !(prev && prev.decks_with_card)) continue;
-    cards.push({ card_id: cid, ...cardMetrics(cur, base, prev, hasPrev ? prevBase : null, thresholds) });
+    cards.push({
+      card_id: cid,
+      ...cardMetrics(cur, base, prev, hasPrev ? prevBase : null, thresholds),
+      ...factionMetrics(cur, base, cardsById ? fb : null, prev, hasPrev ? prevBase : null, hasPrev ? prevFb : null, cardsById?.get(cid), thresholds),
+    });
   }
   rankCards(cards);
   return {
     period: range,
     previous_period: hasPrev ? prevRange : null,
-    baseline: baselineView(base),
+    baseline: { ...baselineView(base), faction_decks: fb },
     cards,
     ...movers(cards),
   };
@@ -276,6 +396,43 @@ export function rankCards(cards) {
   cards.sort((a, b) => b.decks - a.decks || (a.card_id < b.card_id ? -1 : 1));
   cards.forEach((c, i) => { c.rank = c.decks > 0 ? i + 1 : null; });
   return cards;
+}
+
+const MODE_VALUE = { all: 'popularity', in: 'popularity_in', out: 'popularity_out', splash: 'splash_share' };
+const MODE_CHANGE = { all: 'change_pp', in: 'change_in_pp', out: 'change_out_pp', splash: 'change_splash_pp' };
+
+/**
+ * The most played cards table in one view (PLAYED_MODES): the cards it lists, ranked by its value,
+ * each with `value`, `change` and `mode_rank`. In faction lists cards some deck of their faction
+ * plays, out of faction cards some other faction splashes, splash share every card with one (only
+ * those with enough decks when `hideSmall`).
+ */
+export function playedRows(cards, mode = 'all', { hideSmall = true } = {}) {
+  const value = MODE_VALUE[mode] || MODE_VALUE.all;
+  const keep = {
+    all: (c) => c.decks > 0,
+    in: (c) => c.popularity_in != null && c.decks_in_faction > 0,
+    out: (c) => c.popularity_out != null && c.decks - c.decks_in_faction > 0,
+    splash: (c) => c.splash_share != null && c.decks > 0 && (!hideSmall || c.splash_status === 'ok'),
+  }[mode] || ((c) => c.decks > 0);
+  const rows = cards.filter(keep).map((c) => ({ ...c, value: c[value], change: c[MODE_CHANGE[mode] || 'change_pp'] }));
+  rows.sort((a, b) => b.value - a.value || b.decks - a.decks || (a.card_id < b.card_id ? -1 : 1));
+  rows.forEach((r, i) => { r.mode_rank = i + 1; });
+  return rows;
+}
+
+/**
+ * [decks counted, decks out of] behind a card's value in a view: decks with the card of all decks;
+ * in faction, of the card's faction's decks; out of faction, of the other factions' decks; splash
+ * share, of the decks with the card. `factionDecks` is the baseline's decks per identity faction.
+ */
+export function playedCount(row, mode, baseline, card) {
+  const fd = baseline.faction_decks?.[card?.faction] ?? 0;
+  const din = row.decks_in_faction ?? 0;
+  if (mode === 'in') return [din, fd];
+  if (mode === 'out') return [row.decks - din, baseline.decks - fd];
+  if (mode === 'splash') return [row.decks - din, row.decks];
+  return [row.decks, baseline.decks];
 }
 
 export function movers(cards, n = 10) {
@@ -291,12 +448,15 @@ export function movers(cards, n = 10) {
  * Monthly figures for one card: inclusion ({ popularity, decks, total }), average copies, and
  * game winrate with its 95% Wilson interval, both as a rate and against that month's baseline.
  */
-export function monthlySeries(trends, cardId, range, restriction = 'all') {
+export function monthlySeries(trends, cardId, range, restriction = 'all', card = null) {
   const months = trends.months.filter((m) => (!range || (m >= range.from && m <= range.to)));
+  const { inF, outF } = factionScope(card);
   return months.map((m) => {
     const r = { from: m, to: m };
     const c = sumCard(trends, cardId, r, restriction);
     const b = sumBaseline(trends, r, restriction);
+    const fb = inF ? sumFactions(trends, r, restriction) : null;
+    const split = fb ? factionSplit(c, b.side_decks, fb, card.faction) : [null, null, null];
     const wr = ratio(c.games_won, c.games_total);
     const baseWr = ratio(b.side_wins, b.side_games);
     const ci = wilson(c.games_won, c.games_total);
@@ -306,6 +466,11 @@ export function monthlySeries(trends, cardId, range, restriction = 'all') {
       popularity: ratio(c.decks_with_card, b.side_decks),
       decks: c.decks_with_card,
       total: b.side_decks,
+      // In and out of faction (null where the card has none, or a month has no such decks).
+      popularity_in: split[0],
+      popularity_out: outF ? split[1] : null,
+      decks_in: fb ? c.decks_in_faction : null,
+      total_in: fb ? fb[card.faction] || 0 : null,
       avg_copies: ratio(c.copies_sum, c.decks_with_card),
       games: c.games_total,
       wins: c.games_won,

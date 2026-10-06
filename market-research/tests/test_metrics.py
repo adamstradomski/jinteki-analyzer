@@ -12,7 +12,7 @@ from hypothesis import strategies as st
 
 from market_research.catalog import Catalog
 from market_research.config import load_settings
-from market_research.metrics import CARD_COLUMNS, compute_counts, wilson
+from market_research.metrics import CARD_COLUMNS, FACTION_FIELDS, compute_counts, faction_view, wilson
 from market_research.normalize import Canonical
 from market_research.publish import SliceIndex, SnapshotBuilder
 from market_research.records import CatCard, CatRestriction, CatSnapshot, NrdbCatalog
@@ -38,6 +38,13 @@ def catalog() -> Catalog:
         card("c1", "corp", "operation"),
         card("c2", "corp", "ice"),
         card("r1", "runner", "program", "shaper"),
+        # For in- and out-of-faction counts: a Jinteki and a neutral identity, a Jinteki card, a
+        # neutral card and an agenda.
+        card("corp_id_j", "corp", "corp_identity", "jinteki"),
+        card("corp_id_n", "corp", "corp_identity", "neutral_corp"),
+        card("cj", "corp", "ice", "jinteki"),
+        card("cn", "corp", "operation", "neutral_corp"),
+        card("ca", "corp", "agenda"),
     ]
     return Catalog(
         {
@@ -98,14 +105,14 @@ def entry(tid, no, cut):
     }
 
 
-def deck(tid, no, side, cards, legal=True):
+def deck(tid, no, side, cards, legal=True, ident=None):
     did = f"{tid}-{no}-{side}"
     d = {
         "deck_id": did,
         "tid": tid,
         "entry_no": no,
         "side": side,
-        "identity_card": f"{side}_id",
+        "identity_card": ident or f"{side}_id",
         "source": "cobra",
         "source_ref": did,
         "card_count": sum(cards.values()),
@@ -310,6 +317,10 @@ def test_trends_rows_sum_to_summary(con):
         assert sum(r[2] for r in rows) == c["decks"]
         assert sum(r[2 + CARD_COLUMNS.index("games_total")] for r in rows) == c["games"]
     assert sum(r[2] for r in tr["baseline"]) == s["baseline"]["decks"]
+    per_faction: dict[str, int] = {}
+    for r in tr["faction_baseline"]:
+        per_faction[tr["factions"][r[2]]] = per_faction.get(tr["factions"][r[2]], 0) + r[3]
+    assert per_faction == s["baseline"]["faction_decks"]
 
 
 def test_slice_index_yields_what_a_filtered_scan_would_in_order():
@@ -367,7 +378,8 @@ def random_data(draw):
         for e in range(1, n_e + 1):
             c.rows["entry"].append(entry(tid, e, cut > 0 and e <= cut))
             if draw(st.booleans()):
-                d, dc = deck(tid, e, "corp", draw(cards_st), legal=draw(st.booleans()))
+                ident = draw(st.sampled_from(["corp_id", "corp_id_j"]))
+                d, dc = deck(tid, e, "corp", draw(cards_st), legal=draw(st.booleans()), ident=ident)
                 c.rows["deck"].append(d)
                 c.rows["deck_card"].extend(dc)
         for g in range(draw(st.integers(0, 5))):
@@ -408,3 +420,181 @@ def test_monthly_counts_add_up(data):
     for t in merged.rows["tournament"]:
         t["date"] = date(2026, 8, 1)
     assert per_month == _counts_for(merged)
+
+
+# ---------------------------------------------------------------- in and out of faction
+
+
+def faction_dataset() -> Canonical:
+    """One event (T1, with a cut): HB decks 1-2, a Jinteki deck 3 and a neutral-identity deck 4.
+    Only deck 1 makes the cut."""
+    c = Canonical()
+    c.rows["tournament"] = [tournament("T1", date(2026, 8, 10), "megacity", 2)]
+    c.rows["entry"] = [entry("T1", n, n == 1) for n in (1, 2, 3, 4)]
+    for d, cards in [
+        deck("T1", 1, "corp", {"c1": 3, "cj": 1, "cn": 2}),
+        deck("T1", 2, "corp", {"c1": 1}),
+        deck("T1", 3, "corp", {"c1": 2, "cj": 3}, ident="corp_id_j"),
+        deck("T1", 4, "corp", {"cn": 1}, ident="corp_id_n"),
+    ]:
+        c.rows["deck"].append(d)
+        c.rows["deck_card"].extend(cards)
+    return c
+
+
+@pytest.fixture
+def fcon():
+    c = duckdb.connect()
+    faction_dataset().load_into(c)
+    compute_counts(c, catalog(), load_settings({}))
+    yield c
+    c.close()
+
+
+def _decks(con, table="card_counts"):
+    return {r["card_id"]: (r["decks_with_card"], r["decks_in_faction"]) for r in counts(con, table)}
+
+
+def test_a_card_in_a_deck_of_its_faction_counts_in_faction(fcon):
+    assert _decks(fcon)["cj"] == (2, 1)  # the Jinteki deck; the HB deck splashes it
+
+
+def test_a_card_in_a_deck_of_another_faction_counts_out_of_faction(fcon):
+    assert _decks(fcon)["c1"] == (3, 2)  # two HB decks, splashed by the Jinteki deck
+
+
+def test_neutral_card_in_a_neutral_identity_deck_matches_its_faction(fcon):
+    # Raw counts compare factions as they are; faction_view leaves neutral cards out.
+    assert _decks(fcon)["cn"] == (2, 1)
+
+
+def test_faction_counts_count_decks_per_identity_faction(fcon):
+    rows = {r["faction"]: r["decks"] for r in counts(fcon, "faction_counts")}
+    assert rows == {"hb": 2, "jinteki": 1, "neutral_corp": 1}
+
+
+def test_faction_counts_of_top_cut_decks_count_only_those(fcon):
+    assert {r["faction"]: r["decks"] for r in counts(fcon, "faction_counts_cut")} == {"hb": 1}
+    assert _decks(fcon, "card_counts_cut")["cj"] == (1, 0)  # deck 1 is HB and splashes cj
+
+
+def test_a_deck_whose_identity_is_not_in_the_catalog_has_no_faction():
+    c = faction_dataset()
+    c.rows["deck"][1]["identity_card"] = "made_up_id"
+    con = duckdb.connect()
+    c.load_into(con)
+    compute_counts(con, catalog(), load_settings({}))
+    # Left out of the per-faction decks, which validation then reports against side_decks.
+    assert {r["faction"]: r["decks"] for r in counts(con, "faction_counts")} == {
+        "hb": 1,
+        "jinteki": 1,
+        "neutral_corp": 1,
+    }
+    assert _decks(con)["c1"] == (3, 1)
+    con.close()
+
+
+def test_summary_carries_faction_figures_by_hand(fcon):
+    b = SnapshotBuilder(fcon, catalog(), load_settings({}), datetime(2026, 9, 27, tzinfo=UTC))
+    s = b.summary("corp", "all", "all")
+    assert s["baseline"]["faction_decks"] == {"hb": 2, "jinteki": 1, "neutral_corp": 1}
+    c1 = next(c for c in s["cards"] if c["card_id"] == "c1")
+    assert (c1["decks_in_faction"], c1["popularity_in"], c1["popularity_out"], c1["splash_share"]) == (
+        2,
+        1.0,  # both HB decks
+        0.5,  # one of the two other decks
+        round(1 / 3, 4),
+    )
+    cn = next(c for c in s["cards"] if c["card_id"] == "cn")
+    assert {k: cn[k] for k in FACTION_FIELDS} == dict.fromkeys(FACTION_FIELDS)
+
+
+# faction_view on summed counts: one rule per test.
+
+S = load_settings({})
+BASE = {"side_decks": 10.0}
+FACTIONS = {"hb": 4.0, "jinteki": 6.0}
+
+
+def counted_card(decks, in_faction):
+    return {"decks_with_card": float(decks), "decks_in_faction": float(in_faction)}
+
+
+def view(c, *, prev=None, prev_base=None, prev_factions=None, faction="hb", typ="ice", settings=S):
+    return faction_view(c, BASE, FACTIONS, prev, prev_base, prev_factions, faction, typ, settings)
+
+
+def test_faction_view_popularity_in_divides_by_decks_of_the_cards_faction():
+    assert view(counted_card(3, 2))["popularity_in"] == 0.5  # 2 of 4 HB decks
+
+
+def test_faction_view_popularity_out_divides_by_decks_of_other_factions():
+    assert view(counted_card(3, 2))["popularity_out"] == round(1 / 6, 4)  # 1 of 6 Jinteki decks
+
+
+def test_faction_view_splash_share_divides_by_decks_with_the_card():
+    assert view(counted_card(4, 1))["splash_share"] == 0.75
+
+
+def test_faction_view_neutral_card_has_no_faction_figures():
+    assert view(counted_card(3, 3), faction="neutral_corp") == dict.fromkeys(FACTION_FIELDS)
+
+
+def test_faction_view_identity_has_no_faction_figures():
+    assert view(counted_card(3, 3), typ="corp_identity") == dict.fromkeys(FACTION_FIELDS)
+
+
+def test_faction_view_card_without_catalog_entry_has_no_faction_figures():
+    assert view(counted_card(3, 3), faction=None, typ=None) == dict.fromkeys(FACTION_FIELDS)
+
+
+def test_faction_view_agenda_has_in_faction_figures_only():
+    v = view(counted_card(3, 3), typ="agenda")
+    assert v["popularity_in"] == 0.75
+    assert [v[k] for k in FACTION_FIELDS[4:]] == [None] * 7
+
+
+def test_faction_view_no_decks_of_the_cards_faction_gives_no_popularity_in():
+    v = view(counted_card(2, 0), faction="nbn")
+    assert v["popularity_in"] is None and v["popularity_out"] == 0.2  # 2 of 10 decks, none NBN
+
+
+def test_faction_view_no_decks_of_other_factions_gives_no_popularity_out():
+    v = faction_view(counted_card(2, 2), BASE, {"hb": 10.0}, None, None, None, "hb", "ice", S)
+    assert v["popularity_in"] == 0.2 and v["popularity_out"] is None
+
+
+@pytest.mark.parametrize(("decks", "status"), [(19, "insufficient"), (20, "ok"), (21, "ok")])
+def test_faction_view_splash_status_at_the_minimum_decks(decks, status):
+    assert view(counted_card(decks, 0))["splash_status"] == status
+
+
+def test_faction_view_minimum_decks_comes_from_settings():
+    v = view(counted_card(5, 0), settings=load_settings({"MR_MIN_SPLASH_DECKS": "5"}))
+    assert v["splash_status"] == "ok"
+
+
+def test_faction_view_without_a_previous_period_has_no_change():
+    v = view(counted_card(3, 2))
+    assert [
+        v[k] for k in ("prev_popularity_in", "change_in_pp", "prev_splash_share", "change_splash_pp")
+    ] == [None] * 4
+
+
+def test_faction_view_card_not_played_before_was_at_zero_with_no_splash_share():
+    v = view(counted_card(3, 2), prev=None, prev_base={"side_decks": 5.0}, prev_factions={"hb": 5.0})
+    assert (v["prev_popularity_in"], v["change_in_pp"]) == (0.0, 50.0)
+    assert (v["prev_popularity_out"], v["change_out_pp"]) == (None, None)  # no other faction's decks then
+    assert (v["prev_splash_share"], v["change_splash_pp"]) == (None, None)
+
+
+def test_faction_view_change_compares_with_the_previous_period():
+    v = view(
+        counted_card(4, 2),
+        prev=counted_card(2, 2),
+        prev_base={"side_decks": 8.0},
+        prev_factions={"hb": 4.0, "jinteki": 4.0},
+    )
+    assert (v["prev_popularity_in"], v["change_in_pp"]) == (0.5, 0.0)
+    assert (v["prev_popularity_out"], v["change_out_pp"]) == (0.0, round(2 / 6 * 100, 2))
+    assert (v["prev_splash_share"], v["change_splash_pp"]) == (0.0, 50.0)

@@ -24,6 +24,7 @@ VARIABLES = [
     "MR_COVERAGE_HC",
     "MR_MIN_GAMES",
     "MR_MIN_ENTRIES",
+    "MR_MIN_SPLASH_DECKS",
     "MR_PERIOD_MONTHS",
 ]
 
@@ -36,7 +37,21 @@ def test_defaults():
         "nrdb": (1.0, 0.2, 400),
     }
     t = s.thresholds
-    assert (t.min_players, t.coverage_hc, t.min_games, t.min_entries, t.period_months) == (8, 0.7, 30, 20, 3)
+    assert (
+        t.min_players,
+        t.coverage_hc,
+        t.min_games,
+        t.min_entries,
+        t.min_splash_decks,
+        t.period_months,
+    ) == (
+        8,
+        0.7,
+        30,
+        20,
+        20,
+        3,
+    )
     assert (s.bucket_source, s.bucket_canonical, s.bucket_published) == (
         "mr-source",
         "mr-canonical",
@@ -74,6 +89,7 @@ def test_thresholds_and_storage():
             "MR_COVERAGE_HC": "0.8",
             "MR_MIN_GAMES": "40",
             "MR_MIN_ENTRIES": "25",
+            "MR_MIN_SPLASH_DECKS": "15",
             "MR_PERIOD_MONTHS": "6",
             "MR_BUCKET_PUBLISHED": "mr-published-test",
             "MR_LOCAL_STORE": "/tmp/store",
@@ -81,7 +97,21 @@ def test_thresholds_and_storage():
         }
     )
     t = s.thresholds
-    assert (t.min_players, t.coverage_hc, t.min_games, t.min_entries, t.period_months) == (12, 0.8, 40, 25, 6)
+    assert (
+        t.min_players,
+        t.coverage_hc,
+        t.min_games,
+        t.min_entries,
+        t.min_splash_decks,
+        t.period_months,
+    ) == (
+        12,
+        0.8,
+        40,
+        25,
+        15,
+        6,
+    )
     assert (s.bucket_published, s.local_store, s.r2_account_id) == ("mr-published-test", "/tmp/store", "acct")
 
 

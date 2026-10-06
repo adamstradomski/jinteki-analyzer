@@ -60,6 +60,7 @@
   "thresholds": {
     "min_games": 30,
     "min_entries": 20,
+    "min_splash_decks": 20,
     "coverage_hc": 0.7,
     "min_players": 8
   },

@@ -51,6 +51,7 @@ class Thresholds(BaseModel):
     coverage_hc: float = 0.7
     min_games: int = 30
     min_entries: int = 20
+    min_splash_decks: int = 20
     period_months: int = 3
 
 
@@ -114,6 +115,7 @@ def load_settings(env: Mapping[str, str] | None = None) -> Settings:
         coverage_hc=_float(e, "MR_COVERAGE_HC", 0.7),
         min_games=_int(e, "MR_MIN_GAMES", 30),
         min_entries=_int(e, "MR_MIN_ENTRIES", 20),
+        min_splash_decks=_int(e, "MR_MIN_SPLASH_DECKS", 20),
         period_months=_int(e, "MR_PERIOD_MONTHS", 3),
     )
     key_id = e.get("R2_ACCESS_KEY_ID")

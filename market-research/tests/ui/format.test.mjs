@@ -35,6 +35,10 @@ test('percentage points carry a sign, with a true minus and ± for zero', () => 
   assert.equal(F.fmtPp(3.21), '+3.2 pp');
   assert.equal(F.fmtPp(-3.26), '−3.3 pp');
   assert.equal(F.fmtPp(0), '±0.0 pp');
+  assert.equal(F.fmtPp(-0.04), '±0.0 pp'); // rounds to zero: no minus sign
+  assert.equal(F.fmtPp(0.04), '±0.0 pp');
+  assert.equal(F.fmtPp(-0.05), '−0.1 pp'); // rounds away from zero
+  assert.equal(F.fmtPp(-0.4, 0), '±0 pp');
   assert.equal(F.fmtPp(1, 0), '+1 pp');
 });
 

@@ -4,7 +4,7 @@
 
 The pipeline stores counts per `(side, restriction, tier_group, month, card_id)`:
 
-`decks_total, decks_with_card, copies_sum, games_total, games_won, entries_total_hc, entries_with_card_hc, cut_total_hc, cut_with_card_hc`
+`decks_total, decks_with_card, copies_sum, games_total, games_won, entries_total_hc, entries_with_card_hc, cut_total_hc, cut_with_card_hc, decks_in_faction`
 
 - `_hc` counts come only from **high-coverage tournaments**: decklist coverage ≥ 0.7 (configurable) and a cut exists.
 - Baselines per slice and month: `side_decks, side_games, side_wins, side_entries_hc, side_cut_hc,
@@ -18,6 +18,11 @@ every card row. Card rows also carry `qty1`, `qty2`, `qty3` (decks playing 1, 2,
 most common copy count) and `tournaments_hc_with_card`; baseline rows also carry `tournaments` and
 `tournaments_hc`. All of these are additive too: each tournament falls in exactly one month, ban
 list and tier group.
+
+Decks per identity faction are a third table, `faction_baseline` in `trends.json`: rows of
+`[month, ban list, faction, decks]` indexing the file's `factions` list, adding up to `side_decks`
+for each month and ban list. They are the denominators of in- and out-of-faction popularity
+(`faction_decks` in a summary's baseline).
 
 Because every ratio is a sum divided by a sum, the UI can combine any months or tiers and compute
 popularity, winrate, conversion and the Wilson interval itself (`public/market-research/data.js`).
@@ -48,7 +53,11 @@ statistics use). Validation checks that the all/all list has exactly as many eve
 - avg_copies = copies_sum / decks_with_card
 - winrate = games_won / games_total, over games where the card's deck played on the card's side, excluding intentional draws; draws count as half a win. The UI shows winrate − side baseline winrate, with the Wilson 95% interval.
 - conversion = cut_with_card_hc / entries_with_card_hc, compared with side_cut_hc / side_entries_hc
-- Winrate and conversion are marked `insufficient` below a minimum sample (default 30 games or 20 entries, configurable).
+- popularity_in = decks_in_faction / decks whose identity has the card's faction
+- popularity_out = (decks_with_card − decks_in_faction) / (side_decks − decks whose identity has the card's faction)
+- splash_share = (decks_with_card − decks_in_faction) / decks_with_card
+- Winrate and conversion are marked `insufficient` below a minimum sample (default 30 games or 20 entries, configurable),
+  splash share below 20 decks playing the card (`MR_MIN_SPLASH_DECKS`).
 - Identities have their own section: share, winrate and conversion per identity.
 
 ## Details that follow from the definitions
@@ -73,5 +82,12 @@ statistics use). Validation checks that the all/all list has exactly as many eve
   Identity winrate uses every reported game (identities are known for all Cobra entries), with the
   same draw rules. Identity conversion uses tournaments with a cut in which identities are known for
   at least 70% of entries (the same survivor-bias guard as decks).
+- **In and out of faction.** A deck plays a card in faction when its identity's faction (NetrunnerDB
+  `faction_id`) is the card's, out of faction (paying influence) otherwise. Neutral cards
+  and identities have no in- or out-of-faction figures. Agendas can't be played outside their
+  faction, so they have in-faction popularity only. Decks on neutral or mini-faction identities
+  (Adam, Apex, Sunny Lebeau) are a faction of their own: every faction card they play is out of
+  faction. The previous period's figures follow `prev_popularity` (0% for a card not played then);
+  a card not played then has no previous splash share.
 - **Every card played in a slice** is listed, not a top N. A card played only in the previous period
   appears with 0% popularity so it can show up as a faller.

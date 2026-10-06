@@ -88,6 +88,9 @@ body { margin: 0; background: var(--bg); }
 .mr-events td, .mr-events th { white-space: nowrap; }
 .mr-events td:first-child { white-space: normal; min-width: 14em; }
 .mr-toolbar { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: flex-end; margin-bottom: var(--space-3); }
+.mr-toolbar-label { align-self: center; color: var(--dim); font-size: 13px; }
+.mr-toolbar-end { margin-left: auto; }
+.data-table td.mr-dim { color: var(--dim); }
 .mr-chip { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--text); }
 .mr-x { all: unset; cursor: pointer; padding: 0 2px; color: var(--dim); }
 .mr-x:hover { color: var(--accent); }

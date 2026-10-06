@@ -15,6 +15,8 @@
     "columns",
     "baseline_columns",
     "baseline",
+    "factions",
+    "faction_baseline",
     "cards"
   ],
   "additionalProperties": false,
@@ -62,7 +64,7 @@
       }
     },
     "columns": {
-      "description": "Names of the numbers in each card row after [month_index, restriction_index]: decks with the card, copies summed over them, decks with 1 / 2 / 3+ copies, games and wins (a draw is half a win) of those decks, entries with the card in high-coverage tournaments and how many made the cut, and high-coverage tournaments where the card was played.",
+      "description": "Names of the numbers in each card row after [month_index, restriction_index]: decks with the card, copies summed over them, decks with 1 / 2 / 3+ copies, games and wins (a draw is half a win) of those decks, entries with the card in high-coverage tournaments and how many made the cut, high-coverage tournaments where the card was played, and decks with the card whose identity has the card's faction (decks_in_faction; the rest of decks_with_card play it out of faction).",
       "const": [
         "decks_with_card",
         "copies_sum",
@@ -73,7 +75,8 @@
         "games_won",
         "entries_with_card_hc",
         "cut_with_card_hc",
-        "tournaments_hc_with_card"
+        "tournaments_hc_with_card",
+        "decks_in_faction"
       ]
     },
     "baseline_columns": {
@@ -103,6 +106,27 @@
         "maxItems": 11
       }
     },
+    "factions": {
+      "description": "Identity factions (NetrunnerDB faction IDs, e.g. jinteki, neutral_corp) of the snapshot's decks, the same list in every trends file. The third number of each faction_baseline row indexes this list.",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9_]{1,80}$"
+      }
+    },
+    "faction_baseline": {
+      "description": "The side's decks per month, ban list and identity faction: rows of [month_index, restriction_index, faction_index, decks]. Only triples with decks have a row; per month and ban list they add up to side_decks. The denominators of in-faction popularity (decks of the card's faction) and out-of-faction popularity (side_decks minus those). In cut/trends.json, over top-cut decks only.",
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "minItems": 4,
+        "maxItems": 4
+      }
+    },
     "cards": {
       "description": "Per card ID, rows of [month_index, restriction_index, ...columns], one per month and ban list in which the card was played. All numbers are additive: sum rows over any months, ban lists or tier groups, then divide the sums (e.g. popularity = sum of decks_with_card / sum of side_decks).",
       "type": "object",
@@ -118,8 +142,8 @@
             "type": "number",
             "minimum": 0
           },
-          "minItems": 12,
-          "maxItems": 12
+          "minItems": 13,
+          "maxItems": 13
         }
       }
     }

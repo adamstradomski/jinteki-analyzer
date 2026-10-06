@@ -23,10 +23,12 @@ from market_research.config import SIDES, Settings, tier_config
 from market_research.metrics import (
     BASELINE_COLUMNS,
     CARD_COLUMNS,
+    FACTION_COLUMNS,
     IDENTITY_BASELINE_COLUMNS,
     IDENTITY_COLUMNS,
     card_view,
     compute_counts,
+    faction_view,
     identity_view,
 )
 from market_research.normalize import NORMALIZE_QUALITY_KEY, Normalizer, load_sources, load_tables
@@ -195,6 +197,20 @@ def _sum_cards(
     return per_c, per_p
 
 
+def _sum_factions(
+    rows: Iterable[Row], cur: set[str], prev: set[str]
+) -> tuple[dict[str, float], dict[str, float]]:
+    """Decks per identity faction summed over the current and the previous period."""
+    fac_c: dict[str, float] = defaultdict(float)
+    fac_p: dict[str, float] = defaultdict(float)
+    for r in rows:
+        if r[3] in cur:
+            fac_c[r[4]] += r[5]
+        elif r[3] in prev:
+            fac_p[r[4]] += r[5]
+    return dict(fac_c), dict(fac_p)
+
+
 def _movers(cards: list[dict[str, Any]], n: int = 10) -> tuple[list[str], list[str]]:
     """The `n` cards whose popularity rose most and the `n` that fell most since the previous period."""
     movers = [c for c in cards if c["change_pp"] is not None]
@@ -211,7 +227,7 @@ def _movers(cards: list[dict[str, Any]], n: int = 10) -> tuple[list[str], list[s
     return risers, fallers
 
 
-def _summary_baseline(base: dict[str, float]) -> dict[str, Any]:
+def _summary_baseline(base: dict[str, float], factions: dict[str, float]) -> dict[str, Any]:
     """The side baseline a summary's card figures are compared with."""
     wr = base["side_wins"] / base["side_games"] if base["side_games"] else None
     wr_all = base["side_wins_all"] / base["side_games_all"] if base["side_games_all"] else None
@@ -229,6 +245,7 @@ def _summary_baseline(base: dict[str, float]) -> dict[str, Any]:
         "games_all": int(base["side_games_all"]),
         "wins_all": _num(base["side_wins_all"]),
         "winrate_all": round(wr_all, 4) if wr_all is not None else None,
+        "faction_decks": {f: int(n) for f, n in sorted(factions.items())},
     }
 
 
@@ -268,6 +285,7 @@ class Scope:
 
     cards: SliceIndex
     base: SliceIndex
+    factions: SliceIndex
 
 
 class SnapshotBuilder:
@@ -290,10 +308,14 @@ class SnapshotBuilder:
         self.base = _rows(con, "side_counts", _SLICE_KEYS, BASELINE_COLUMNS)
         cut_cards = _rows(con, "card_counts_cut", [*_SLICE_KEYS, "card_id"], CARD_COLUMNS)
         cut_base = _rows(con, "side_counts_cut", _SLICE_KEYS, BASELINE_COLUMNS)
+        fac = _rows(con, "faction_counts", [*_SLICE_KEYS, "faction"], FACTION_COLUMNS)
+        cut_fac = _rows(con, "faction_counts_cut", [*_SLICE_KEYS, "faction"], FACTION_COLUMNS)
         self.scopes = {
-            "all": Scope(SliceIndex(self.cards), SliceIndex(self.base)),
-            "cut": Scope(SliceIndex(cut_cards), SliceIndex(cut_base)),
+            "all": Scope(SliceIndex(self.cards), SliceIndex(self.base), SliceIndex(fac)),
+            "cut": Scope(SliceIndex(cut_cards), SliceIndex(cut_base), SliceIndex(cut_fac)),
         }
+        # Identity factions of the side's decks; every trends file indexes the same list.
+        self.factions = sorted({r[4] for r in fac})
         self.idents = SliceIndex(_rows(con, "identity_counts", [*_SLICE_KEYS, "identity"], IDENTITY_COLUMNS))
         self.ibase = SliceIndex(_rows(con, "identity_side_counts", _SLICE_KEYS, IDENTITY_BASELINE_COLUMNS))
         order = {r: i for i, r in enumerate(catalog.standard_restrictions())}
@@ -344,14 +366,17 @@ class SnapshotBuilder:
         cs, ps = set(cur), set(prev)
         base_c, base_p = _sum_baselines(data.base.rows(side, restriction, group), cs, ps)
         per_c, per_p = _sum_cards(data.cards.rows(side, restriction, group), cs, ps)
+        fac_c, fac_p = _sum_factions(data.factions.rows(side, restriction, group), cs, ps)
         has_prev = base_p["side_decks"] > 0
-        cards = self._ranked_cards(per_c, per_p, base_c, base_p if has_prev else None)
+        cards = self._ranked_cards(
+            per_c, per_p, base_c, base_p if has_prev else None, fac_c, fac_p if has_prev else None
+        )
         risers, fallers = _movers(cards)
         return {
             **self._head("summary", side, restriction, group),
             "period": {"from": cur[0], "to": cur[-1]} if cur else None,
             "previous_period": {"from": prev[0], "to": prev[-1]} if has_prev else None,
-            "baseline": _summary_baseline(base_c),
+            "baseline": _summary_baseline(base_c, fac_c),
             "cards": [c for c in cards if c["decks"] > 0 or c["prev_popularity"]],
             "risers": risers,
             "fallers": fallers,
@@ -363,14 +388,29 @@ class SnapshotBuilder:
         per_p: dict[str, dict[str, float]],
         base_c: dict[str, float],
         base_p: dict[str, float] | None,
+        fac_c: dict[str, float],
+        fac_p: dict[str, float] | None,
     ) -> list[dict[str, Any]]:
         """Every card seen in either period, most-played first; `rank` only for cards played now."""
         empty = dict.fromkeys(CARD_COLUMNS, 0.0)
         cards = []
         for cid in sorted(set(per_c) | set(per_p)):
             prev = per_p.get(cid) if base_p is not None else None
-            v = card_view(per_c.get(cid, empty), base_c, prev, base_p, self.settings)
-            cards.append({"card_id": cid, **v})
+            cur = per_c.get(cid, empty)
+            v = card_view(cur, base_c, prev, base_p, self.settings)
+            meta = self.catalog.cards.get(cid)
+            f = faction_view(
+                cur,
+                base_c,
+                fac_c,
+                prev,
+                base_p,
+                fac_p,
+                meta.faction_id if meta else None,
+                meta.card_type_id if meta else None,
+                self.settings,
+            )
+            cards.append({"card_id": cid, **v, **f})
         cards.sort(key=lambda c: (-c["decks"], c["card_id"]))
         for i, c in enumerate(cards, start=1):
             c["rank"] = i if c["decks"] > 0 else None
@@ -422,6 +462,10 @@ class SnapshotBuilder:
         )
         for r in data.cards.rows(side, restriction, group):
             _add_into(cards[r[4]][(m_idx[r[3]], r_idx[r[1]])], r, 5)
+        f_idx = {f: i for i, f in enumerate(self.factions)}
+        fac: dict[tuple[int, int, int], float] = defaultdict(float)
+        for r in data.factions.rows(side, restriction, group):
+            fac[(m_idx[r[3]], r_idx[r[1]], f_idx[r[4]])] += r[5]
         return {
             **self._head("trends", side, restriction, group),
             "months": self.months,
@@ -429,6 +473,8 @@ class SnapshotBuilder:
             "columns": CARD_COLUMNS,
             "baseline_columns": BASELINE_COLUMNS,
             "baseline": [_trend_row(m, ri, v) for (m, ri), v in sorted(base.items()) if any(v)],
+            "factions": self.factions,
+            "faction_baseline": [[m, ri, fi, int(n)] for (m, ri, fi), n in sorted(fac.items())],
             "cards": {
                 cid: [_trend_row(m, ri, v) for (m, ri), v in sorted(rows.items())]
                 for cid, rows in sorted(cards.items())
@@ -536,6 +582,7 @@ class SnapshotBuilder:
             "thresholds": {
                 "min_games": self.settings.thresholds.min_games,
                 "min_entries": self.settings.thresholds.min_entries,
+                "min_splash_decks": self.settings.thresholds.min_splash_decks,
                 "coverage_hc": self.settings.thresholds.coverage_hc,
                 "min_players": self.settings.thresholds.min_players,
             },
@@ -648,6 +695,28 @@ def validate(snap: Snapshot, con: duckdb.DuckDBPyConnection) -> list[str]:
         row = con.execute("SELECT count(*) FROM d_cut WHERE side = ?", [side]).fetchone()
         if sum(r[2] for r in cut["baseline"]) != (row[0] if row else 0):
             errors.append(f"{side}: published top-cut decks != canonical")
+        for scope, t, table in (("", tr, "d"), ("top-cut ", cut, "d_cut")):
+            # Every deck is counted under its identity's faction (none is left without one), and a
+            # card's in-faction decks are some of its decks.
+            pub_f: dict[str, int] = defaultdict(int)
+            for r in t["faction_baseline"]:
+                pub_f[t["factions"][r[2]]] += r[3]
+            canon_f = dict(
+                con.execute(
+                    f"SELECT id_faction, count(*) FROM {table} WHERE side = ? GROUP BY 1", [side]
+                ).fetchall()
+            )
+            if dict(pub_f) != canon_f:
+                errors.append(
+                    f"{side}: published {scope}decks per identity faction {dict(pub_f)} != canonical {canon_f}"
+                )
+            i_all, i_in = (
+                2 + CARD_COLUMNS.index("decks_with_card"),
+                2 + CARD_COLUMNS.index("decks_in_faction"),
+            )
+            over = sorted(cid for cid, rows in t["cards"].items() if any(r[i_in] > r[i_all] for r in rows))
+            if over:
+                errors.append(f"{side}: {scope}in-faction decks exceed decks with the card: {over[:5]}")
     return errors
 
 

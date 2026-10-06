@@ -20,6 +20,14 @@ For each side (Corp, Runner), per ban list, tier group and period:
 3. **Card winrate**: difference from the side's baseline in the same slice, Wilson 95% interval, minimum sample.
 4. **Popularity vs winrate**: both joined, ready for a scatter plot.
 5. **Top-cut conversion**: on high-decklist-coverage tournaments only, against the side's cut rate.
+6. **In and out of faction**: the share of the card's own faction's decks that play it, the share of
+   the other factions' decks that splash it (paying influence), and of the decks playing it, the share
+   that splash it. Neutral cards have none; agendas, which can't leave their faction, only the first.
+
+The page keeps its state in the address, so a view can be shared:
+`#<ban list>/<tier>/<from>..<to>/<side>[/cut][/show:in|out|splash][/card:<card id>]`. The period is
+written only when chosen, so a link without one follows the newest months; `show:` picks the view of
+the most played cards table and `card:` opens that card's detail. Unknown or invalid parts are dropped.
 
 Every card played in a slice is included (not a top N). Definitions: [docs/market-research/metrics.md](../docs/market-research/metrics.md).
 
@@ -232,6 +240,7 @@ An empty value means the default; a number that doesn't parse stops the command 
 | `MR_COVERAGE_HC` | `0.7` | Decklist coverage for a high-coverage tournament (identity and top-cut conversion). |
 | `MR_MIN_GAMES` | `30` | Games under which a card or identity winrate is marked a small sample. |
 | `MR_MIN_ENTRIES` | `20` | Entries under which identity conversion is marked a small sample. |
+| `MR_MIN_SPLASH_DECKS` | `20` | Decks playing a card under which its splash share is marked a small sample. |
 | `MR_PERIOD_MONTHS` | `3` | Length of the page's default period (manifest `period_months`). |
 | `MR_UPDATE_GOLDEN` | none | Tests only: `1` rewrites the golden files in `tests/fixtures/expected/`. |
 

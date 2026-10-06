@@ -25,9 +25,11 @@ let identities = null;
 let events = null; // the included tournaments of the current ban list and tier
 let trendCards = []; // [{ id, slot }] – colour slots stay with the card
 let detailCard = null;
+let scrollToDetail = false;
 let sideToggle = null;
-// Per-panel "Hide small samples" switches (cards under the minimum games); on by default.
-const hideSmall = { winrate: true, scatter: true };
+// Per-panel "Hide small samples" switches (cards under the minimum games or decks); on by default.
+const hideSmall = { winrate: true, scatter: true, splash: true };
+const BASE_TITLE = document.title;
 const scatterView = { query: '', top: false };
 const SCATTER_TOP = 10;
 
@@ -114,7 +116,11 @@ async function boot() {
   }
   try { localStorage.setItem(LAST_SEEN_KEY, manifest.data_as_of || manifest.generated_at); } catch { /* ignore */ }
   cards = D.catalogIndex(catalog);
-  state = D.parseHash(location.hash, manifest);
+  state = D.parseHash(location.hash, manifest, isCard);
+  detailCard = state.card;
+  scrollToDetail = !!detailCard; // a link to a card opens on its detail
+  // Drop what the link got wrong (an unknown card or view, a bad filter) from the address.
+  if (location.hash && location.hash !== D.formatHash(state)) history.replaceState(null, '', D.formatHash(state));
   setupFilters();
   setupSearch();
   setupSampleToggle('winrate-small', 'winrate', renderWinrate);
@@ -125,15 +131,55 @@ async function boot() {
     $('scatter-top').setAttribute('aria-pressed', String(scatterView.top));
     if (view) renderScatter();
   });
-  window.addEventListener('hashchange', () => {
-    const next = D.parseHash(location.hash, manifest);
-    if (D.formatHash(next) !== D.formatHash(state)) { state = next; syncFilters(); refresh(); }
-  });
+  // Back and forward between opened cards, or an edited address: reload only when the filters changed.
+  window.addEventListener('hashchange', followUrl);
+  window.addEventListener('popstate', followUrl);
   document.addEventListener('jw:themechange', () => { drawTrends(); drawScatter(); drawDetailChart(); });
   window.addEventListener('resize', debounce(() => { drawTrends(); drawScatter(); drawDetailChart(); }, 150));
-  $('detail-close').addEventListener('click', () => { detailCard = null; $('detail').hidden = true; });
+  $('detail-close').addEventListener('click', () => {
+    hideDetail();
+    state.card = null;
+    pushUrl();
+  });
   loadQuality(); // the footer needs only the manifest, so it loads alongside the first slices
   await refresh();
+}
+
+const isCard = (id) => cards.has(id);
+
+function followUrl() {
+  const next = D.parseHash(location.hash, manifest, isCard);
+  if (D.formatHash(next) === D.formatHash(state)) return;
+  const reload = D.dataHash(next) !== D.dataHash(state);
+  const showChanged = next.show !== state.show;
+  state = next;
+  syncFilters();
+  if (reload) {
+    detailCard = state.card;
+    if (!detailCard) hideDetail();
+    refresh();
+    return;
+  }
+  if (showChanged && view) renderPlayed();
+  if (state.card && state.card !== detailCard) openDetail(state.card, true, false);
+  else if (!state.card && detailCard) hideDetail();
+}
+
+/** A new history entry for the current state (opening or closing a card), so Back returns to the last one. */
+function pushUrl() {
+  const h = D.formatHash(state);
+  if (location.hash !== h) history.pushState(null, '', h);
+  setTitle();
+}
+
+function setTitle() {
+  document.title = detailCard ? `${cardName(detailCard)} · ${BASE_TITLE}` : BASE_TITLE;
+}
+
+function hideDetail() {
+  detailCard = null;
+  $('detail').hidden = true;
+  setTitle();
 }
 
 /** Replaces the page with a notice when the data can't be loaded, instead of leaving it on placeholders. */
@@ -165,7 +211,8 @@ function setupFilters() {
   $('f-tier').addEventListener('change', (e) => { state.tier = e.target.value; commit(); });
   $('f-from').addEventListener('change', (e) => { setPeriod(e.target.value, state.to); });
   $('f-to').addEventListener('change', (e) => { setPeriod(state.from, e.target.value); });
-  $('f-reset').addEventListener('click', () => { state = D.parseHash('', manifest); syncFilters(); commit(); });
+  // Filters only: the table view and the open card stay.
+  $('f-reset').addEventListener('click', () => { state = { ...D.parseHash('', manifest), show: state.show, card: state.card }; syncFilters(); commit(); });
   $('f-cut-field').hidden = !manifest.paths.summary_cut; // snapshots before the top-cut scope
   $('f-cut').addEventListener('click', () => { state.cut = !state.cut; syncFilters(); commit(); });
 }
@@ -191,9 +238,15 @@ function syncFilters() {
 }
 
 function commit() {
+  replaceUrl();
+  refresh();
+}
+
+/** Writes the state to the address without a new history entry (filters and table views). */
+function replaceUrl() {
   const h = D.formatHash(state);
   if (location.hash !== h) history.replaceState(null, '', h);
-  refresh();
+  setTitle();
 }
 
 // ---------------------------------------------------------------- main refresh
@@ -220,7 +273,7 @@ async function refresh() {
     let v = summary;
     if (state.custom && summary.period && (state.from !== summary.period.from || state.to !== summary.period.to)) {
       const trends = await trendsReq;
-      v = D.summarize(trends, { from: state.from, to: state.to }, manifest.thresholds, 'all');
+      v = D.summarize(trends, { from: state.from, to: state.to }, manifest.thresholds, 'all', cards);
     }
     if (token !== refreshToken) return;
     view = v;
@@ -246,7 +299,10 @@ function renderAll() {
   renderScatter();
   initTrendCards();
   renderTrends();
-  if (detailCard) openDetail(detailCard, false);
+  // Taken before opening: a card of the other side switches sides and asks for the scroll again.
+  const scroll = scrollToDetail;
+  scrollToDetail = false;
+  if (detailCard) openDetail(detailCard, scroll, false);
 }
 
 function renderStats() {
@@ -290,6 +346,12 @@ function help() {
     card: 'Card name and faction. Select it for details and its monthly trend.',
     type: 'Card type.',
     inclusion: `Share of ${decks} with a known decklist in this filter that play at least one copy: decks with the card ÷ all decks.`,
+    inFaction: `Share of ${decks} whose identity is of the card's faction that play it: decks with the card in faction ÷ decks of that faction. Neutral cards and identities have none.`,
+    outFaction: `Share of ${decks} whose identity is of another faction that play the card, paying influence for it: decks with the card out of faction ÷ decks of the other factions. Neutral cards, identities and agendas (which can't leave their faction) have none.`,
+    splash: `Of the ${decks} that play the card, the share that play it out of faction, paying influence. High means the card is played mostly as a splash.`,
+    allDecks: `Inclusion over all ${decks}, for comparison.`,
+    modeChange: 'This column in this period minus the same figure in the previous period of the same length, in percentage points.',
+    modeDecks: 'The decks the percentage counts, out of the decks it is taken over.',
     avgCopies: 'Average number of copies, over the decks that play the card.',
     change: 'Inclusion in this period minus inclusion in the previous period of the same length, in percentage points.',
     decks: `Number of ${decks} with a known decklist that play the card.`,
@@ -340,19 +402,63 @@ function renderEvents() {
 
 // ---------------------------------------------------------------- card tables
 
+// The views of the most played cards table: the value they rank by, the column and the note above it.
+const PLAYED_VIEWS = {
+  all: { label: 'All decks', column: 'Inclusion', help: (h) => h.inclusion },
+  in: { label: 'In faction', column: 'In-faction inclusion', help: (h) => h.inFaction,
+    note: 'Share of the decks of the card\'s faction that play it. Neutral cards are left out.' },
+  out: { label: 'Out of faction', column: 'Out-of-faction inclusion', help: (h) => h.outFaction,
+    note: 'Share of the other factions\' decks that play the card, paying influence for it. Neutral cards and agendas are left out.' },
+  splash: { label: 'Splash share', column: 'Splash share', help: (h) => h.splash,
+    note: 'Of the decks that play the card, the share that splash it from another faction. High means the card is played mostly on influence.' },
+};
+
 function renderPlayed() {
   const h = help();
-  const rows = view.cards.filter((c) => c.decks > 0);
-  const emptyPlayed = state.cut ? 'No top-cut decks with known decklists in this filter.' : 'No cards in this filter.';
-  dataTable($('played-body'), [
-    { key: 'rank', label: 'Rank', num: true, help: h.rank, cell: (r) => el('td', { class: 'num', text: fmtInt(r.rank) }) },
+  // Older snapshots have no decks per faction: only the all-decks view.
+  const hasFactions = !!view.baseline.faction_decks;
+  const mode = hasFactions && PLAYED_VIEWS[state.show] ? state.show : 'all';
+  const v = PLAYED_VIEWS[mode];
+  const minSplash = manifest.thresholds.min_splash_decks ?? 20;
+  const rows = D.playedRows(view.cards, mode, { hideSmall: hideSmall.splash });
+  const setMode = (id) => { state.show = id; replaceUrl(); renderPlayed(); };
+  const tools = [];
+  if (hasFactions) {
+    tools.push(el('span', { class: 'mr-toolbar-label', text: 'Show' }),
+      ...Object.entries(PLAYED_VIEWS).map(([id, x]) => el('button', { type: 'button', class: 'btn chip', 'aria-pressed': String(mode === id), onclick: () => setMode(id) }, x.label)));
+    if (mode === 'splash') {
+      tools.push(el('button', { type: 'button', class: 'btn chip mr-toolbar-end', 'aria-pressed': String(hideSmall.splash),
+        onclick: () => { hideSmall.splash = !hideSmall.splash; renderPlayed(); } }, 'Hide small samples'));
+    }
+  }
+  const notes = [];
+  if (v.note) notes.push(`${v.note}${mode === 'splash' ? ` ${hideSmall.splash ? `Cards in fewer than ${minSplash} decks are hidden.` : `Rows under ${minSplash} decks are greyed.`}` : ''}`);
+  const host = $('played-body');
+  const tableHost = el('div', { id: 'played-table' });
+  host.replaceChildren(...(tools.length ? [el('div', { class: 'mr-toolbar', role: 'group', 'aria-label': 'Count inclusion over' }, ...tools)] : []),
+    ...notes.map((text) => el('p', { class: 'mr-note', text })), tableHost);
+  const count = (r) => D.playedCount(r, mode, view.baseline, cards.get(r.card_id));
+  const plain = (text) => el('td', { class: 'num mr-dim', text });
+  const columns = [
+    { key: 'mode_rank', label: 'Rank', num: true, help: h.rank, cell: (r) => el('td', { class: 'num', text: fmtInt(r.mode_rank) }) },
     { key: 'title', label: 'Card', help: h.card, value: (r) => cardName(r.card_id), cell: (r) => cardCell(r.card_id) },
     { key: 'type', label: 'Type', help: h.type, value: (r) => D.typeName(cards.get(r.card_id)?.type), cell: (r) => el('td', { text: D.typeName(cards.get(r.card_id)?.type) }) },
-    { key: 'popularity', label: 'Inclusion', num: true, help: h.inclusion, cell: (r) => meterCell(r.popularity) },
-    { key: 'avg_copies', label: 'Avg copies', num: true, help: h.avgCopies, cell: (r) => el('td', { class: 'num', text: fmtNum(r.avg_copies) }) },
-    { key: 'change_pp', label: 'Change', num: true, help: h.change, cell: (r) => changeCell(r.change_pp) },
-    { key: 'decks', label: 'Decks', num: true, help: h.decks, cell: (r) => el('td', { class: 'num', text: fmtN(r.decks) }) },
-  ], rows, { sortKey: 'rank', sortDir: 'ascending', empty: emptyPlayed });
+    { key: 'value', label: v.column, num: true, help: v.help(h), cell: (r) => meterCell(r.value) },
+  ];
+  if (mode !== 'all') columns.push({ key: 'popularity', label: 'All decks', num: true, help: h.allDecks, cell: (r) => plain(fmtPct(r.popularity)) });
+  if (mode === 'splash') columns.push({ key: 'popularity_out', label: 'Out of faction', num: true, help: h.outFaction, cell: (r) => plain(fmtPct(r.popularity_out)) });
+  if (mode === 'all') columns.push({ key: 'avg_copies', label: 'Avg copies', num: true, help: h.avgCopies, cell: (r) => el('td', { class: 'num', text: fmtNum(r.avg_copies) }) });
+  columns.push(
+    { key: 'change', label: 'Change', num: true, help: mode === 'all' ? h.change : h.modeChange, cell: (r) => changeCell(r.change) },
+    mode === 'all'
+      ? { key: 'decks', label: 'Decks', num: true, help: h.decks, cell: (r) => el('td', { class: 'num', text: fmtN(r.decks) }) }
+      : { key: 'count', label: 'Decks', num: true, help: h.modeDecks, value: (r) => count(r)[0],
+        cell: (r) => { const [n, of] = count(r); return el('td', { class: 'num', text: `${fmtInt(n)} / ${fmtInt(of)}` }); } },
+  );
+  const emptyPlayed = mode === 'splash' && hideSmall.splash ? `No card is in ${minSplash} decks in this filter.`
+    : state.cut ? 'No top-cut decks with known decklists in this filter.' : 'No cards in this filter.';
+  dataTable(tableHost, columns, rows, { sortKey: 'mode_rank', sortDir: 'ascending', empty: emptyPlayed,
+    rowClass: (r) => (mode === 'splash' && r.splash_status !== 'ok' ? 'mr-insufficient' : '') });
 }
 
 function renderIdentities() {
@@ -424,12 +530,12 @@ async function renderTrends() {
   setBusy(['trends'], true);
   try {
     const t = await slice('trends', s);
-    if (D.formatHash(s) !== D.formatHash(state)) return;
+    if (D.dataHash(s) !== D.dataHash(state)) return;
     trendsData = t;
     drawTrends();
     setBusy(['trends'], false);
   } catch {
-    if (D.formatHash(s) !== D.formatHash(state)) return;
+    if (D.dataHash(s) !== D.dataHash(state)) return;
     setBusy(['trends'], false);
     $('trend-chart').replaceChildren(el('p', { class: 'mr-note', text: 'Trends could not be loaded.' }));
   }
@@ -515,17 +621,28 @@ function setupSearch() {
   });
 }
 
-async function openDetail(id, scroll = true) {
+/** Opens a card's detail; `push` (a viewer's choice, not a redraw) adds it to the address and history. */
+async function openDetail(id, scroll = true, push = true) {
   const c = cards.get(id);
   if (!c) return;
   if (c.side !== state.side) {
     detailCard = id;
+    scrollToDetail = scroll;
     state.side = c.side;
+    state.card = id;
     syncFilters();
-    commit();
+    if (push) pushUrl();
+    else replaceUrl();
+    refresh();
     return;
   }
   detailCard = id;
+  if (state.card !== id) {
+    state.card = id;
+    if (push) pushUrl();
+    else replaceUrl();
+  }
+  setTitle();
   const panel = $('detail');
   panel.hidden = false;
   const body = $('detail-body');
@@ -545,7 +662,7 @@ async function openDetail(id, scroll = true) {
   const stats = ident
     ? [stat(fmtPct(ident.share), 'Share of entries'), stat(fmtPp(ident.winrate_diff_pp), `Winrate vs baseline (${fmtN(ident.games)})`),
       stat(`${fmtPp(ident.wilson_low_pp)} → ${fmtPp(ident.wilson_high_pp)}`, '95% interval'), stat(fmtPct(ident.conversion), `Top-cut conversion (${fmtN(ident.cut_entries)})`)]
-    : [stat(fmtPct(m.popularity), `Inclusion (${fmtN(m.decks)} decks)`), stat(fmtNum(m.avg_copies), 'Average copies'),
+    : [stat(fmtPct(m.popularity), `Inclusion (${fmtN(m.decks)} decks)`), ...factionStats(m, c, stat), stat(fmtNum(m.avg_copies), 'Average copies'),
       stat(m.copies_mode ? `${m.copies_mode}×` : '–', 'Most common copy count'),
       stat(fmtPp(m.winrate_diff_pp), `Winrate vs baseline (${fmtN(m.games)}${m.winrate_status === 'ok' ? '' : ', small sample'})`),
       stat(`${fmtPp(m.wilson_low_pp)} → ${fmtPp(m.wilson_high_pp)}`, '95% interval')];
@@ -564,17 +681,44 @@ async function openDetail(id, scroll = true) {
   }
 }
 
+/** Stat tiles for in- and out-of-faction inclusion and splash share; none for a card without them. */
+function factionStats(m, c, stat) {
+  if (m.popularity_in === null || m.popularity_in === undefined) return [];
+  const fd = view.baseline.faction_decks?.[c.faction] ?? 0;
+  const out = [stat(fmtPct(m.popularity_in), `In faction (${fmtInt(m.decks_in_faction)} of ${fmtInt(fd)} ${D.faction(c.faction).name} decks)`)];
+  if (m.popularity_out !== null) {
+    const splashed = m.decks - m.decks_in_faction;
+    out.push(stat(fmtPct(m.popularity_out), `Out of faction (${fmtInt(splashed)} of ${fmtInt(view.baseline.decks - fd)} other decks)`),
+      stat(fmtPct(m.splash_share), `Splash share (${fmtInt(splashed)} of ${fmtInt(m.decks)} decks${m.splash_status === 'ok' ? '' : ', small sample'})`));
+  }
+  return out;
+}
+
+/** The colour of a faction's line: its faction colour, or the dimmed text colour. */
+const factionColor = (factionId) => {
+  const cls = D.faction(factionId).className;
+  return cls ? `var(--faction-${cls})` : 'var(--dim)';
+};
+
 // Headings, notes and hosts for the card's monthly charts; drawDetailChart fills the hosts.
 function detailCharts() {
   const side = state.side === 'corp' ? 'Corp' : 'Runner';
   const color = JW.sideColor(state.side);
   const key = (swatch, text) => el('span', { class: 'legend-item' }, el('span', { class: 'legend-swatch', style: swatch }), text);
+  const dashed = 'background: repeating-linear-gradient(90deg, var(--dim) 0 5px, transparent 5px 9px); width: 18px; height: 2px';
+  const card = cards.get(detailCard);
+  const scope = D.factionScope(card);
+  const inclusionKey = scope.inF && view.baseline.faction_decks
+    ? [el('div', { class: 'legend' }, key(`background: ${color}`, `All ${side} decks`), key(`background: ${factionColor(card.faction)}`, `${D.faction(card.faction).name} decks (in faction)`),
+      ...(scope.outF ? [key(dashed, 'Other factions\' decks (out of faction)')] : []))]
+    : [];
   return [
     el('h3', { text: 'Inclusion by month' }),
+    ...inclusionKey,
     el('div', { id: 'detail-chart', class: 'mr-chart' }),
     el('h3', { text: 'Winrate by month' }),
     el('div', { class: 'legend' }, key(`background: ${color}`, 'Game winrate'), key(`background: ${color}; opacity: 0.25; height: 10px`, '95% interval'),
-      key('background: repeating-linear-gradient(90deg, var(--dim) 0 5px, transparent 5px 9px); width: 18px; height: 2px', `Baseline (every ${side} deck)`)),
+      key(dashed, `Baseline (every ${side} deck)`)),
     el('div', { id: 'detail-winrate', class: 'mr-chart' }),
     el('h3', { text: 'Winrate vs baseline by month' }),
     el('p', { class: 'mr-note', text: `The card's winrate minus that month's baseline, with the 95% interval shaded.` }),
@@ -591,7 +735,8 @@ function drawDetailChart() {
     return;
   }
   const name = cardName(detailCard);
-  const points = D.monthlySeries(detailTrends, detailCard, null);
+  const meta = cards.get(detailCard);
+  const points = D.monthlySeries(detailTrends, detailCard, null, 'all', meta);
   const months = points.map((p) => p.month);
   const markers = D.banlistMarkers(manifest, months);
   const range = trendRange();
@@ -603,8 +748,21 @@ function drawDetailChart() {
   const small = (p) => p.games > 0 && p.games < manifest.thresholds.min_games;
   const pctAxis = (vals) => niceAxis(Math.max(0, Math.min(...vals)), Math.min(1, Math.max(...vals)));
   const opts = { height: 200, band: range, bans };
-  lineChart(host, card, markers,
-    { ...opts, label: `Monthly inclusion of ${name} over every month, all ban lists${shaded}` });
+  // In and out of faction next to every deck, for a card that has them (and a snapshot with them).
+  const lines = [...card];
+  if (points.some((p) => p.popularity_in !== null)) lines.push({ name: 'In faction', color: factionColor(meta.faction), points, value: (p) => p.popularity_in });
+  if (points.some((p) => p.popularity_out !== null)) lines.push({ name: 'Out of faction', color: 'var(--dim)', points, value: (p) => p.popularity_out, dash: true });
+  const split = lines.length > 1;
+  lineChart(host, lines, markers, {
+    ...opts, label: `Monthly inclusion of ${name} over every month, all ban lists${split ? ', in and out of its faction' : ''}${shaded}`,
+    tip: split ? (i) => {
+      const p = points[i];
+      const out = [`All decks: ${fmtPct(p.popularity)} (${fmtInt(p.decks)} of ${fmtInt(p.total)})`,
+        `In faction: ${fmtPct(p.popularity_in)} (${fmtInt(p.decks_in)} of ${fmtInt(p.total_in)})`];
+      if (p.popularity_out !== null) out.push(`Out of faction: ${fmtPct(p.popularity_out)} (${fmtInt(p.decks - p.decks_in)} of ${fmtInt(p.total - p.total_in)})`);
+      return out;
+    } : null,
+  });
   const wr = $('detail-winrate');
   if (wr) {
     lineChart(wr, [...card, { name: 'Baseline', color: 'var(--dim)', points, value: (p) => p.baseline_winrate, dash: true }], markers, {
