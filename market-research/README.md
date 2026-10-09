@@ -27,7 +27,8 @@ For each side (Corp, Runner), per ban list, tier group and period:
 The page keeps its state in the address, so a view can be shared:
 `#<ban list>/<tier>/<from>..<to>/<side>[/cut][/show:in|out|splash][/card:<card id>]`. The period is
 written only when chosen, so a link without one follows the newest months; `show:` picks the view of
-the most played cards table and `card:` opens that card's detail. Unknown or invalid parts are dropped.
+the most played cards table and `card:` opens that card's detail (a card of the other side switches to
+its side; switching sides yourself closes it). Unknown or invalid parts are dropped.
 
 Every card played in a slice is included (not a top N). Definitions: [docs/market-research/metrics.md](../docs/market-research/metrics.md).
 
@@ -40,6 +41,7 @@ market-research/
     sources/                  ABR, Cobra and NetrunnerDB clients (parse into allowlisted records)
     records.py, scrub.py      scrubbed source record schemas, drift and quarantine
     frontier.py, ingest.py    crawl frontier (state/frontier.parquet) and the ingest loop
+    imports.py                `import-decks`: decklist files matched to Cobra players
     normalize.py, catalog.py  canonical Parquet tables, linking, legality
     metrics.py, publish.py    additive counts, snapshot slices, validation, publishing
     runner.py, cli.py         run-all, backfill phases and --plan, CLI
@@ -122,9 +124,13 @@ run's full log is kept in R2 (`logs/…`, see [CLI](#cli)).
 
 **Decks** (`decks_by_source`, `deck_comparison`, `illegal_decks`, `rejected_deck_refs`)
 
-- One deck per player and side, in this order: the list registered in Cobra (locked when the event
-  starts), then the NetrunnerDB decklist claimed on AlwaysBeRunning, then a private NetrunnerDB deck
-  linked from Cobra. When two sources exist, whether their cards match is recorded.
+- One deck per player and side, in this order: a decklist file loaded with `import-decks` (e.g. the
+  full lists the organiser sent), then the list registered in Cobra (locked when the event starts),
+  then the NetrunnerDB decklist claimed on AlwaysBeRunning, then a private NetrunnerDB deck linked
+  from Cobra. When two sources exist, whether their cards match is recorded.
+- **Imported decklists are never overwritten by the crawler.** They live under `import/` in the
+  source bucket, which ingest refuses to write; only another `import-decks` of the same tournament
+  replaces them. See [Importing decklists](#importing-decklists).
 - Deck links are read with a strict pattern and never followed elsewhere; others are rejected.
 - Every deck is checked against its event's ban list and card pool: unknown or other-side cards,
   extra identities, copies over the limit, cards or identities not legal, deck size, influence,
@@ -218,6 +224,7 @@ market-research compute  [--no-publish]
 market-research run-all  [--budget N] [--dry-run]         # ingest -> normalize -> compute/publish
 market-research backfill [--since YYYY-MM-DD] [--plan] [--phase 1|2|3] [--dry-run]
 market-research backfill --cobra ID ... --abr ID ... [--dry-run]    # reload single tournaments
+market-research import-decks FILE --cobra ID [--origin LABEL] [--check]   # load decklists from a file
 market-research report                                     # print the latest quality report
 market-research fixtures refresh --cobra ID | --abr ID [--out DIR]   # manual only
 ```
@@ -252,6 +259,7 @@ An empty value means the default; a number that doesn't parse stops the command 
 | `run-all` | `ingest`, then `normalize`, then `compute`. The daily scheduled command. | all three hosts | all of the above | yes | yes |
 | `backfill` | The initial or extended history load: no per-run budget, in three phases, publishing after each; resumable. | all three hosts | all of the above | after each phase | yes, also after each phase |
 | `backfill --cobra ID --abr ID` | Reloads only these tournaments, in full, whatever the frontier says (results or entries, settings, deck pages, decklists and their daily lists), without the date window or the Cobra format check, and pulls public Cobra deck pages even while the event still counts as live (the first 3 days after its date, when scheduled runs leave them); then normalizes and publishes once. | the tournaments' hosts | all of the above | yes, once | yes |
+| `import-decks FILE --cobra ID` | Loads a tournament's decklists from a file into `import/cobra/<id>.json` (see [Importing decklists](#importing-decklists)), then normalizes and publishes once. | Cobra (the tournament's export, once) | the import record, canonical tables | yes, once (not with `--check`) | yes |
 | `backfill --plan` | Makes only the listing requests and prints requests and estimated duration per host and phase. | listings only | nothing but its log | no | yes |
 | `report` | Prints the latest published `quality/report.json`. | none | nothing | no | no |
 | `fixtures refresh` | Fetches one live tournament, anonymises it with canaries and writes fixture files for review. | the chosen host | files in `--out` only | no | no |
@@ -268,14 +276,47 @@ Options:
 | `--phase 1\|2\|3` | `backfill` | Run one phase: 1 = events of the last 90 days, 2 = older Megacity+ events, 3 = everything else. Listings, card data and daily decklist files (phase 0) run with every phase. |
 | `--dry-run` | `ingest`, `run-all`, `backfill` | Use a `LocalObjectStore` in a new temporary directory instead of R2; its path is logged as `dry_run_store`. |
 | `--cobra ID` / `--abr ID` | `backfill` | Reload this Cobra / AlwaysBeRunning tournament (repeatable, both may be given). Every ID is looked up first; an unknown one exits `1` and writes nothing. Not combinable with `--since`, `--plan` or `--phase`. AlwaysBeRunning has no single-event API, so its results listing is read until every ID is found. |
+| `FILE` | `import-decks` | The decklist CSV to load (see below). Unreadable: exits `1`. |
+| `--cobra ID` | `import-decks` | The Cobra tournament the file belongs to. It must already be stored (`backfill --cobra ID`). |
+| `--origin LABEL` | `import-decks` | Where the file came from, kept with the decks and in `source_ref` (`import:<label>:…`). `a-z`, `0-9`, `_`, `-`, at most 32 characters; default `organiser`. |
+| `--check` | `import-decks` | Match and report only: writes no record and publishes nothing. |
 | `--cobra ID` / `--abr ID` | `fixtures refresh` | The tournament to capture; give exactly one. |
 | `--out DIR` | `fixtures refresh` | Output directory (default `tests/fixtures/refresh`). |
-| `--fixtures DIR` (hidden) | `ingest`, `normalize`, `run-all`, `backfill`, `report` | Serve every HTTP request from a recorded fixture directory. Development and tests only. |
-| `--now ISO-TIME` (hidden) | `ingest`, `normalize`, `compute`, `run-all`, `backfill` | Pin the clock, e.g. `2026-09-27T04:00:00Z`. Development and tests only. |
+| `--fixtures DIR` (hidden) | `ingest`, `normalize`, `run-all`, `backfill`, `report`, `import-decks` | Serve every HTTP request from a recorded fixture directory. Development and tests only. |
+| `--now ISO-TIME` (hidden) | `ingest`, `normalize`, `compute`, `run-all`, `backfill`, `import-decks` | Pin the clock, e.g. `2026-09-27T04:00:00Z`. Development and tests only. |
 
 Exit codes: `0` success, `2` partial (a host tripped its circuit breaker, publish still happened),
 `1` failure (nothing published; the previous manifest stays live). `report` exits `1` when nothing
-has been published yet.
+has been published yet. `import-decks` exits `1`, writing nothing, when the file can't be read, the
+tournament, its players or the card catalog aren't stored, Cobra's export can't be fetched, or no
+deck in the file matched.
+
+### Importing decklists
+
+Organisers sometimes send the full decklists of an event that Cobra keeps private (NSG sent the
+Worlds 2026 lists). `import-decks` loads such a file for one Cobra tournament:
+
+```sh
+market-research import-decks data/worlds26_long_format_decklists.csv --cobra 5132 --origin nsg --check
+market-research import-decks data/worlds26_long_format_decklists.csv --cobra 5132 --origin nsg
+```
+
+- **The file** is a UTF-8 CSV with one row per card and the columns `name` (the player's name as in
+  Cobra), `identity` and `card` (full card titles) and `card_count` (1 to 99); other columns are
+  ignored. Up to 5 MB.
+- **Players** are found by name in Cobra's export of the tournament, fetched once and kept in memory:
+  the exact name, else the only player whose name is the same ignoring case, accents, spaces and
+  punctuation. The stored record keeps the Cobra player ID, never the name.
+- **Each deck is checked on its own**; one that fails is left out and the rest are imported. Reasons,
+  reported in the `import_report` log line with the CSV line where the player or deck starts:
+  `player_not_found` (no or several Cobra players fit the name; both decks), `unknown_identity`,
+  `unknown_card` (a title not in the NetrunnerDB catalog, or one two cards share), `bad_count`,
+  `identity_differs_from_cobra`, and `two_decks_for_one_side`. The report also lists the Swiss ranks
+  of Cobra players the file has no deck for.
+- **Imported decks come first** for their player and side, and are compared with the next source
+  (Cobra's list, else the claimed NetrunnerDB decklist): `match`, `mismatch` or `import_only` in
+  `deck_comparison`. They are checked for legality like every other deck.
+- Keep the files themselves out of git: they contain player names (`data/` is ignored).
 
 Logs are JSON lines on stdout. The first line (`run_log`) names the R2 key the log is uploaded to
 (`logs/<date>/<start>-<command>.jsonl.gz` in the canonical bucket) and the last is `run_summary`

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import io
 import random
-import sys
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -10,11 +9,6 @@ import pytest
 
 from market_research.clock import FakeClock
 from market_research.config import Settings, load_settings
-
-# DuckDB tries `import pandas` for every Python value it converts. pandas isn't installed, and a
-# failed import isn't cached, so each try rescans sys.path through pytest's import hook (100,000+
-# per backfill). A None entry makes the import fail at once.
-sys.modules.setdefault("pandas", None)
 
 FIXTURES = Path(__file__).parent / "fixtures"
 NOW = datetime(2026, 9, 27, 4, 0, tzinfo=UTC)

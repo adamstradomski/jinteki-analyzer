@@ -26,6 +26,7 @@ from market_research.runner import (
     do_normalize,
     dry_run_stores,
     format_plan,
+    import_decks,
     parse_now,
     plan,
     reload,
@@ -195,6 +196,35 @@ def backfill_cmd(
         _upload_log()
         raise typer.Exit(EXIT_OK)
     _finish(backfill(rt, start, phase=phase), "backfill")
+
+
+@app.command("import-decks")
+def import_decks_cmd(
+    file: Annotated[Path, typer.Argument(help="Long-format decklist CSV: name,identity,card,card_count.")],
+    cobra: Annotated[int, typer.Option("--cobra", help="The Cobra tournament the decklists belong to.")],
+    origin: Annotated[
+        str, typer.Option(help="Short label for where the file came from (a-z, 0-9, _ and -).")
+    ] = "organiser",
+    check: Annotated[bool, typer.Option("--check", help="Only match and report; write nothing.")] = False,
+    fixtures: Fixtures = None,
+    now: Now = None,
+) -> None:
+    """Load a tournament's decklists from a file; they take precedence over every crawled source.
+
+    Then normalizes and publishes once (not with --check)."""
+    from market_research.imports import ORIGIN
+
+    if not ORIGIN.fullmatch(origin):
+        typer.echo("--origin may only use a-z, 0-9, _ and - (at most 32).", err=True)
+        raise typer.Exit(EXIT_FAILURE)
+    try:
+        data = file.read_bytes()
+    except OSError as e:
+        typer.echo(f"cannot read {file}: {e.strerror}", err=True)
+        raise typer.Exit(EXIT_FAILURE) from None
+    command = "import-decks-check" if check else "import-decks"
+    rt = _runtime(False, fixtures, now, command=command)
+    _finish(import_decks(rt, data, cobra_id=cobra, origin=origin, check=check), command)
 
 
 @app.command()

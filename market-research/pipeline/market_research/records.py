@@ -16,7 +16,7 @@ from pydantic import BaseModel, ConfigDict, Field
 Side = Literal["corp", "runner"]
 Visibility = Literal["public", "open", "private"]
 
-_HASH_EXCLUDE = {"record_hash", "fetched_at"}
+_HASH_EXCLUDE = {"record_hash", "fetched_at", "imported_at"}
 
 
 def canonical_json(obj: Any) -> str:
@@ -336,6 +336,35 @@ class NrdbCatalog(Record):
     formats: list[CatFormat] = []
     restrictions: list[CatRestriction] = []
     snapshots: list[CatSnapshot] = []
+    record_hash: str = ""
+
+    model_config = ConfigDict(extra="forbid", frozen=True, populate_by_name=True)
+
+
+# ---------------- Imported decklists ----------------
+
+
+class CardQty(Part):
+    card_id: str
+    qty: int
+
+
+class ImportedDeck(Part):
+    pid: int  # the Cobra player; the player's name is only used to find it and never kept
+    side: Side
+    identity: str
+    cards: list[CardQty]
+
+
+class ImportedDecks(Record):
+    """Decklists of one Cobra tournament loaded from a file (e.g. one the organiser sent). Stored under
+    `import/`, which the crawler never writes, so later runs never replace them."""
+
+    schema_: Literal["import.decks/1"] = Field("import.decks/1", alias="schema")
+    cobra_id: int
+    origin: str  # a short label for where the file came from, e.g. "nsg"
+    imported_at: str
+    decks: list[ImportedDeck]
     record_hash: str = ""
 
     model_config = ConfigDict(extra="forbid", frozen=True, populate_by_name=True)

@@ -7,6 +7,7 @@ __pycache__/
 .coverage.*
 .mypy_cache/
 .ruff_cache/
+data/
 market-research.env
 # Saved run logs (e.g. docker logs mr-backfill > backfill.log); test/*.log game logs stay tracked
 /*.log

@@ -54,9 +54,13 @@ class Catalog:
             key=lambda s: (s.date_start or "", s.id),
         )
         self.identity_by_title: dict[str, str] = {}
+        by_title: dict[str, set[str]] = {}
         for c in sorted(self.cards.values(), key=lambda c: c.id):
             if c.card_type_id.endswith("identity"):
                 self.identity_by_title.setdefault(title_key(c.title), c.id)
+            by_title.setdefault(title_key(c.title), set()).add(c.id)
+        # Titles two cards share (after title_key) name neither of them.
+        self.card_by_title: dict[str, str] = {k: next(iter(v)) for k, v in by_title.items() if len(v) == 1}
 
     def ok(self) -> bool:
         return bool(self.cards) and bool(self.standard_snapshots)
@@ -73,6 +77,10 @@ class Catalog:
         # NRTM exports sometimes carry only the identity's short name (before the colon).
         matches = {v for t, v in self.identity_by_title.items() if t.startswith(k + " ") or t == k}
         return matches.pop() if len(matches) == 1 else None
+
+    def card_of_title(self, title: str | None) -> str | None:
+        """The card with this full title (any card type), compared by title_key."""
+        return self.card_by_title.get(title_key(title)) if title else None
 
     def is_standard_restriction(self, rid: str | None) -> bool:
         return any(s.restriction_id == rid for s in self.standard_snapshots) if rid else False

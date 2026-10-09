@@ -254,6 +254,24 @@ test('dataHash ignores the table view and the open card', () => {
   assert.notEqual(D.dataHash(a), D.dataHash({ ...b, cut: false }));
 });
 
+const sideOf = (id) => ({ hedge_fund: 'corp', sure_gamble: 'runner' })[id];
+
+test('withSide closes an open card of the other side', () => {
+  const s = D.withSide(D.parseHash('#all/all//corp/show:in/card:hedge_fund', manifest), 'runner', sideOf);
+  assert.deepEqual([s.side, s.card, s.show], ['runner', null, 'in']);
+  assert.equal(D.formatHash(s), '#all/all//runner/show:in');
+});
+
+test('withSide keeps an open card of the new side', () => {
+  const s = D.withSide(D.parseHash('#all/all//runner/card:hedge_fund', manifest), 'corp', sideOf);
+  assert.deepEqual([s.side, s.card], ['corp', 'hedge_fund']);
+});
+
+test('withSide with no open card only changes the side', () => {
+  const before = D.parseHash('#all/all//corp/cut', manifest);
+  assert.deepEqual(D.withSide(before, 'runner', sideOf), { ...before, side: 'runner' });
+});
+
 test('data base accepts only the production host or same-origin paths', () => {
   assert.equal(D.dataBase(''), 'https://data.jinteki.win/');
   assert.equal(D.dataBase('?data=/dev/snap'), '/dev/snap/');
