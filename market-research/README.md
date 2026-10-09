@@ -27,7 +27,8 @@ For each side (Corp, Runner), per ban list, tier group and period:
 The page keeps its state in the address, so a view can be shared:
 `#<ban list>/<tier>/<from>..<to>/<side>[/cut][/show:in|out|splash][/card:<card id>]`. The period is
 written only when chosen, so a link without one follows the newest months; `show:` picks the view of
-the most played cards table and `card:` opens that card's detail. Unknown or invalid parts are dropped.
+the most played cards table and `card:` opens that card's detail (a card of the other side switches to
+its side; switching sides yourself closes it). Unknown or invalid parts are dropped.
 
 Every card played in a slice is included (not a top N). Definitions: [docs/market-research/metrics.md](../docs/market-research/metrics.md).
 

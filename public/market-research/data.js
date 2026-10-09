@@ -134,6 +134,15 @@ export function formatHash(state) {
   return `#${state.restriction}/${state.tier}/${period}/${state.side}${state.cut ? '/cut' : ''}${show}${card}`;
 }
 
+/**
+ * The state on another side. An open card of the other side is closed: kept, it would switch the
+ * page straight back to its own side. `cardSide(id)` gives a card's side.
+ */
+export function withSide(state, side, cardSide) {
+  const card = state.card && cardSide(state.card) === side ? state.card : null;
+  return { ...state, side, card };
+}
+
 /** The hash without the parts that change no data (table view and open card), to tell when to reload. */
 export function dataHash(state) {
   return formatHash({ ...state, show: 'all', card: null });
