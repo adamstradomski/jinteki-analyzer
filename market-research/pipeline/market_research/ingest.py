@@ -31,6 +31,7 @@ from market_research.http import (
     RequestRefused,
     ResponseTooLarge,
 )
+from market_research.imports import IMPORT_PREFIX
 from market_research.records import (
     AbrTournament,
     CobraTournament,
@@ -167,6 +168,8 @@ class Ingestor:
 
     def write(self, key: str, record: Record, known_hash: str | None = None) -> bool:
         """Writes a record only when its hash changed. Returns True if written."""
+        if key.startswith(IMPORT_PREFIX):
+            raise ValueError(f"the crawler never writes imported data: {key}")
         h = record.compute_hash()
         if known_hash is None:
             existing = self.read(key)

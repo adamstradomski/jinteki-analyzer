@@ -83,14 +83,14 @@
           "type": "integer"
         },
         "decks_by_source": {
-          "description": "Decks per source: cobra (the list registered in Cobra), nrdb_decklist (a published NetrunnerDB decklist claimed on ABR) or nrdb_deck (a NetrunnerDB deck referenced by Cobra).",
+          "description": "Decks per source: import (a decklist file loaded with import-decks, e.g. from the organiser), cobra (the list registered in Cobra), nrdb_decklist (a published NetrunnerDB decklist claimed on ABR) or nrdb_deck (a NetrunnerDB deck referenced by Cobra).",
           "type": "object",
           "additionalProperties": {
             "type": "integer"
           }
         },
         "deck_comparison": {
-          "description": "How many decks had each comparison result between Cobra and NetrunnerDB: match, mismatch, cobra_only or nrdb_only.",
+          "description": "How many decks had each comparison result between the deck used and the next source (import, then Cobra, then NetrunnerDB): match, mismatch, import_only, cobra_only or nrdb_only.",
           "type": "object",
           "additionalProperties": {
             "type": "integer"

@@ -30,6 +30,7 @@ from market_research.records import (
     AbrTournament,
     CobraDeck,
     CobraTournament,
+    ImportedDecks,
     NrdbByDate,
     NrdbCatalog,
     NrdbDecklist,
@@ -116,8 +117,16 @@ class NormQuality:
         }
 
 
-# Deck precedence: Cobra's locked registration, then the ABR-claimed NRDB decklist, then a private NRDB deck.
-SOURCE_ORDER = {"cobra": 0, "nrdb_decklist": 1, "nrdb_deck": 2}
+# Deck precedence: an imported file (e.g. from the organiser), Cobra's locked registration, then the
+# ABR-claimed NRDB decklist, then a private NRDB deck.
+SOURCE_ORDER = {"import": 0, "cobra": 1, "nrdb_decklist": 2, "nrdb_deck": 3}
+# The comparison of a deck found in one source only.
+ONLY = {
+    "import": "import_only",
+    "cobra": "cobra_only",
+    "nrdb_decklist": "nrdb_only",
+    "nrdb_deck": "nrdb_only",
+}
 # Evidence needed to replace an event's ban list with one its decks fit better (see choose_restriction).
 BANLIST_MIN_GAIN = 2
 BANLIST_MIN_SHARE = 0.1
@@ -216,6 +225,7 @@ class Normalizer:
         self.catalog = Catalog(cat)
         self.cobra_t: dict[int, CobraTournament] = {}
         self.cobra_decks: dict[tuple[int, int, str], CobraDeck] = {}
+        self.imported: dict[tuple[int, int, str], _Deck] = {}
         self.abr_t: dict[int, AbrTournament] = {}
         self.abr_e: dict[int, AbrEntries] = {}
         self.decklists: dict[str, NrdbDecklist] = {}
@@ -250,6 +260,16 @@ class Normalizer:
                     self.decklists.setdefault(dl.uuid, dl)
             elif key.startswith("nrdb/deck/"):
                 self.decks[parts[-1]] = NrdbDecklist.model_validate(obj)
+            elif key.startswith("import/cobra/"):
+                imp = ImportedDecks.model_validate(obj)
+                for x in imp.decks:
+                    self.imported[(imp.cobra_id, x.pid, x.side)] = _Deck(
+                        "import",
+                        f"import:{imp.origin}:{imp.cobra_id}:{x.pid}",
+                        x.identity,
+                        {c.card_id: c.qty for c in x.cards},
+                        {},
+                    )
 
     # ----- helpers -----
 
@@ -646,9 +666,13 @@ class Normalizer:
         return ae
 
     def _cobra_deck_sources(self, cobra_id: int, pid: int, side: str, ae: AbrEntry | None) -> list[_Deck]:
-        """Every decklist found for one player's side: Cobra's own, the NRDB deck the linked ABR entry
-        claims, and otherwise the NRDB deck Cobra links (used only when Cobra has no cards)."""
+        """Every decklist found for one player's side: an imported one, Cobra's own, the NRDB deck the
+        linked ABR entry claims, and otherwise the NRDB deck Cobra links (used only when Cobra has no
+        cards)."""
         sources: list[_Deck] = []
+        imported = self.imported.get((cobra_id, pid, side))
+        if imported is not None:
+            sources.append(imported)
         cd = self.cobra_decks.get((cobra_id, pid, side))
         if cd is not None and cd.cards:
             sources.append(self.cobra_deck(cd))
@@ -734,7 +758,7 @@ class Normalizer:
             same = other.cards == best.cards and (other.identity or ident) == ident
             comparison = "match" if same else "mismatch"
         else:
-            comparison = "cobra_only" if best.source == "cobra" else "nrdb_only"
+            comparison = ONLY[best.source]
         self.q.comparisons[comparison] += 1
         leg = self.catalog.check_deck(side, ident, best.cards, restriction or "")
         issues = list(leg.issues)

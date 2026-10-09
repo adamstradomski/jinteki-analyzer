@@ -44,6 +44,7 @@ nrdb/decklist/{id}.json                     nrdb.decklist/1  (kind "decklist": f
 nrdb/deck/{id}.json                         nrdb.decklist/1  (kind "deck": private shared deck)
 nrdb/decklists/by_date/{date}.json          nrdb.by_date/1   (every decklist published that day, cards only)
 nrdb/catalog/{cards|printings|card_sets|formats|restrictions|snapshots}.json   nrdb.catalog/1
+import/cobra/{tournamentId}.json            import.decks/1   (decklists loaded from a file; never written by the crawler)
 ```
 
 The shapes follow the brief's examples, with these differences (see [sources.md](sources.md)):
@@ -54,6 +55,10 @@ The shapes follow the brief's examples, with these differences (see [sources.md]
   scores; stage 2's `format` is `elimination`.
 - `abr.tournament/1` stores `type_id` as a string (ABR may send an ID or a name).
 - Private shared decks use the `nrdb.decklist/1` schema with `kind: "deck"` and live under `nrdb/deck/`.
+- `import.decks/1` holds one Cobra tournament's decklists loaded by `market-research import-decks`:
+  `cobra_id`, `origin` (a label such as `nsg`), `imported_at`, and per deck the Cobra player ID, side,
+  identity card ID and `cards` (card ID and quantity). The player's name in the file is only used to
+  find the Cobra player and is not kept. Importing the tournament again replaces the record.
 
 Examples of every record type are in `market-research/tests/fixtures/expected/source/`.
 
@@ -63,7 +68,7 @@ Examples of every record type are in `market-research/tests/fixtures/expected/so
 |---|---|---|
 | `tournament` | `tid` | cobra_id, abr_id, name, date, type, tier, format, swiss_format, restriction_id, card_set, country, online, players, cut_size, has_games, deck_visibility, decklist_coverage |
 | `entry` | `tid, entry_no` (= swiss rank) | cut_rank, made_cut, corp_identity, runner_identity, points, cobra_pid, abr_swiss_rank |
-| `deck` | `deck_id` = hash(tid, entry_no, side) | side, identity_card, source (`cobra` > `nrdb_decklist` > `nrdb_deck`), source_ref, card_count, plain_text, content_hash, comparison (`match`, `mismatch`, `cobra_only`, `nrdb_only`), legal, issues |
+| `deck` | `deck_id` = hash(tid, entry_no, side) | side, identity_card, source (`import` > `cobra` > `nrdb_decklist` > `nrdb_deck`), source_ref, card_count, plain_text, content_hash, comparison (`match`, `mismatch`, `import_only`, `cobra_only`, `nrdb_only`), legal, issues |
 | `deck_card` | `deck_id, card_id` | qty, printing_id |
 | `game` | `tid, stage, round, table, side` | corp_entry, runner_entry, result (`corp_win`, `runner_win`, `draw`, `intentional_draw`), elimination |
 

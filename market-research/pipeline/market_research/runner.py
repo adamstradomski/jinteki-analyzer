@@ -18,11 +18,14 @@ from market_research import logs
 from market_research.clock import Clock
 from market_research.config import Settings
 from market_research.frontier import TIER_WEIGHT, Item, base_priority
-from market_research.http import PoliteHttp
+from market_research.http import HttpError, PoliteHttp
+from market_research.imports import DeckImportError, build_import, import_key, load_catalog, read_rows
 from market_research.ingest import Ingestor, ReloadNotFound
 from market_research.normalize import normalize
 from market_research.publish import PublishError, build, publish
-from market_research.records import AbrTournament, CobraTournament
+from market_research.records import AbrTournament, CobraTournament, dump
+from market_research.sources import cobra
+from market_research.sources.common import iso_now
 from market_research.storage import Stores, local_stores
 
 log = logs.get("market_research.runner")
@@ -254,6 +257,63 @@ def reload(rt: Runtime, *, cobra_ids: list[int], abr_ids: list[int]) -> RunResul
         res.absorb_http(http)
     if res.tripped and res.exit_code == EXIT_OK:
         res.exit_code = EXIT_PARTIAL
+    return res
+
+
+def import_decks(rt: Runtime, data: bytes, *, cobra_id: int, origin: str, check: bool = False) -> RunResult:
+    """Loads a decklist file into `import/cobra/<id>.json` (see imports.py), then normalizes and
+    publishes once. The tournament must already be stored (`backfill --cobra ID`); player names come
+    from Cobra's export, fetched once and kept in memory only. With `check` it only reports. Exits
+    with failure, writing nothing, when the file, the tournament or the export can't be used, or no
+    deck could be matched."""
+    res = RunResult()
+    started_at = rt.clock.now()
+    http = rt.http(unlimited=True)
+    try:
+        try:
+            rows = read_rows(data)
+            stored = rt.stores.source.get_json(f"cobra/tournament/{cobra_id}.json")
+            if not isinstance(stored, dict):
+                raise DeckImportError("tournament not stored; run backfill --cobra ID first")
+            t = CobraTournament.model_validate(stored)
+            if not t.players:
+                raise DeckImportError("tournament has no players stored yet")
+            catalog = load_catalog(rt.stores.source)
+            if not catalog.cards:
+                raise DeckImportError("card catalog not stored yet")
+            try:
+                r = http.get(cobra.nrtm_url(cobra_id))
+                payload = r.json() if r.status == 200 else None
+            except (HttpError, ValueError) as e:  # ValueError: the body is not JSON
+                raise DeckImportError(f"Cobra export not fetched: {type(e).__name__}") from e
+            players = payload.get("players") if isinstance(payload, dict) else None
+            if not isinstance(players, list):
+                raise DeckImportError(f"Cobra export not readable (status {r.status})")
+            rec, rep = build_import(
+                rows, t, [p for p in players if isinstance(p, dict)], catalog, origin, iso_now(rt.clock.now())
+            )
+        except DeckImportError as e:
+            log.error("import_failed", cobra_id=cobra_id, error=str(e))
+            res.exit_code = EXIT_FAILURE
+            return res
+        log.info("import_report", cobra_id=cobra_id, origin=origin, **rep.to_json())
+        if not rec.decks:
+            log.error("import_failed", cobra_id=cobra_id, error="no deck matched")
+            res.exit_code = EXIT_FAILURE
+            return res
+        if check:
+            return res
+        rt.stores.source.put_json(import_key(cobra_id), dump(rec))
+        res.new_records += 1
+        res.decks_added += len(rec.decks)
+        do_normalize(rt)
+        try:
+            do_compute(rt, res, started_at=started_at)
+        except PublishError:
+            res.exit_code = EXIT_FAILURE
+    finally:
+        http.close()
+        res.absorb_http(http)
     return res
 
 
