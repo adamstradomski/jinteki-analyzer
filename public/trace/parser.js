@@ -16,7 +16,12 @@ const CLICK_GAIN_OVERRIDES = { 'nanomanagement': 2 };
 const AGENDA_POINTS = {
   'regenesis': 1,
   'fujii asset retrieval': 3,
-  'sisyphus protocol': 2
+  'sisyphus protocol': 2,
+  'longevity serum': 2,
+  'hybrid release': 1,
+  'blood in the water': 2,
+  'let them dream': 2,
+  'send a message': 3
 };
 
 // Words that signal the start of appended ability/effect text rather than part of a

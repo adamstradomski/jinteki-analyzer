@@ -125,6 +125,21 @@ test('an agenda revealed into a score area counts only when its points are known
   assert.match(d.flagged[0].reason, /^Unlisted Agenda \(Corp\) — added to score area by another card's effect/);
 });
 
+// Agenda point values as listed on NetrunnerDB.
+for (const [agenda, points] of [
+  ['Longevity Serum', 2],
+  ['Hybrid Release', 1],
+  ['Blood in the Water', 2],
+  ['Let Them Dream', 2],
+  ['Send a Message', 3],
+]) {
+  test(`${agenda} revealed into a score area counts ${points} points`, () => {
+    const d = parse([...ROUND, `Corp uses Regenesis to reveal ${agenda} and add it to his score area.`]);
+    assert.deepEqual(d.finalScore, { Corp: points, Runner: 0 });
+    assert.deepEqual(d.flagged, []);
+  });
+}
+
 test('a third player means the log did not parse cleanly', () => {
   const d = parse([...ROUND, 'Stray started their turn 1 with 5  and 5 cards in HQ.']);
   assert.match(d.playerCountError, /^Detected 3 distinct players \(Corp, Runner, Stray\)/);
